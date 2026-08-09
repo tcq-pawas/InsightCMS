@@ -21,3 +21,4 @@ Willow>=1.11,<2
 beautifulsoup4>=4.13.3,<5
 html5lib
 telepath>=0.3.1,<1
+drf-yasg>=1.21.7,<2

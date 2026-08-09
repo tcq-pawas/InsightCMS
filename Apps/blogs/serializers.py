@@ -41,9 +41,9 @@ class BlogPageSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'slug', 'featured_image', 'short_description',
             'body', 'author_name', 'category', 'tags', 'featured',
-            'status', 'publish_date', 'company_name', 'created_at', 'updated_at'
+            'status', 'publish_date', 'company_name'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id']
 
     def get_author_name(self, obj):
         return obj.author.get_full_name() if obj.author else None

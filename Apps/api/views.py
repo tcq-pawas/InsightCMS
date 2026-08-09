@@ -1,6 +1,8 @@
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from django_filters.rest_framework import DjangoFilterBackend
 from wagtail.models import Page
 from Apps.blogs.models import BlogPage, BlogCategory, BlogTag
@@ -13,6 +15,11 @@ from Apps.common.permissions import IsCompanyAuthenticated
 from Apps.api.pagination import StandardResultsSetPagination
 
 
+@swagger_auto_schema(
+    tags=['Blogs'],
+    operation_description="API endpoint for blog posts. Only returns published blogs for the authenticated company.",
+    responses={200: BlogPageListSerializer, 404: 'Blog not found'}
+)
 class BlogViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint for blog posts.
@@ -60,6 +67,11 @@ class BlogViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
 
+@swagger_auto_schema(
+    tags=['Categories'],
+    operation_description="API endpoint for blog categories.",
+    responses={200: BlogCategorySerializer}
+)
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint for blog categories.
@@ -73,6 +85,11 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     ordering = ['name']
 
 
+@swagger_auto_schema(
+    tags=['Tags'],
+    operation_description="API endpoint for blog tags.",
+    responses={200: BlogTagSerializer}
+)
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint for blog tags.
@@ -86,6 +103,11 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     ordering = ['name']
 
 
+@swagger_auto_schema(
+    tags=['Company'],
+    operation_description="API endpoint for company information. Returns the authenticated company's details.",
+    responses={200: CompanySerializer}
+)
 class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint for company information.
