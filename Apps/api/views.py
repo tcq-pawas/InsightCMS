@@ -37,6 +37,8 @@ class BlogViewSet(viewsets.ReadOnlyModelViewSet):
         """
         Filter blogs to only return published blogs for the authenticated company.
         """
+        if getattr(self, 'swagger_fake_view', False):
+            return BlogPage.objects.none()
         company = self.request.company
         return BlogPage.objects.live().public().filter(
             company=company,
@@ -120,6 +122,8 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         """
         Only return the authenticated company.
         """
+        if getattr(self, 'swagger_fake_view', False):
+            return []
         return [self.request.company]
 
     def list(self, request, *args, **kwargs):
