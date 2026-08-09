@@ -19,24 +19,31 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    
+    'django.contrib.postgres',
+
     # Wagtail
-    'wagtail',
-    'wagtail.admin',
-    'wagtail.documents',
+    'wagtail.contrib.forms',
+    'wagtail.contrib.redirects',
     'wagtail.embeds',
-    'wagtail.forms',
-    'wagtail.images',
-    'wagtail.search',
     'wagtail.sites',
     'wagtail.users',
-    
+    'wagtail.snippets',
+    'wagtail.documents',
+    'wagtail.images',
+    'wagtail.search',
+    'wagtail.admin',
+    'wagtail',
+
+    # Wagtail dependencies
+    'modelcluster',
+    'taggit',
+
     # REST Framework
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
     'corsheaders',
-    
+
     # Custom Apps
     'Apps.common',
     'Apps.accounts',
@@ -106,6 +113,12 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# django.contrib.sites
+SITE_ID = 1
+
+# Wagtail page editor can exceed Django's default form field limit
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -120,6 +133,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Wagtail Settings
 WAGTAIL_SITE_NAME = 'InsightCMS'
+WAGTAILADMIN_BASE_URL = config('WAGTAILADMIN_BASE_URL', default='http://localhost:8000')
 WAGTAILADMIN_SITE_NAME = 'InsightCMS Administration'
 
 # REST Framework Settings

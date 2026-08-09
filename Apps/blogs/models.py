@@ -3,7 +3,6 @@ from django.utils.translation import gettext_lazy as _
 from wagtail.models import Page
 from wagtail.fields import RichTextField
 from wagtail.admin.panels import FieldPanel
-from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.search import index
 from Apps.companies.models import Company
 from Apps.accounts.models import User
@@ -17,7 +16,7 @@ class BlogIndexPage(Page):
         verbose_name_plural = _('Blog Indices')
 
     parent_page_types = ['wagtailcore.Page']
-    subpage_types = ['BlogPage']
+    subpage_types = ['blogs.BlogPage']
 
     def get_context(self, request):
         context = super().get_context(request)
@@ -34,7 +33,7 @@ class BlogPage(Page):
 
     company = models.ForeignKey(
         Company,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='blogs',
         verbose_name=_('Company')
     )
@@ -101,7 +100,7 @@ class BlogPage(Page):
 
     content_panels = Page.content_panels + [
         FieldPanel('company'),
-        ImageChooserPanel('featured_image'),
+        FieldPanel('featured_image'),
         FieldPanel('short_description'),
         FieldPanel('body'),
         FieldPanel('author'),
@@ -112,13 +111,13 @@ class BlogPage(Page):
         FieldPanel('publish_date'),
     ]
 
-    parent_page_types = ['BlogIndexPage']
+    parent_page_types = ['blogs.BlogIndexPage']
     subpage_types = []
 
     class Meta:
         verbose_name = _('Blog')
         verbose_name_plural = _('Blogs')
-        ordering = ['-publish_date', '-created_at']
+        ordering = ['-publish_date']
 
     def __str__(self):
         return self.title

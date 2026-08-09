@@ -1,7 +1,5 @@
 from django.contrib import admin
-from wagtail.admin.panels import FieldPanel
-from wagtail.images.admin import ImageChooserPanel
-from Apps.blogs.models import BlogIndexPage, BlogPage, BlogCategory, BlogTag
+from Apps.blogs.models import BlogCategory, BlogTag
 
 
 class BlogCategoryAdmin(admin.ModelAdmin):
