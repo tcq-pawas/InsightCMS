@@ -1,0 +1,40 @@
+{% load wagtailimages_tags %}
+
+<section class="blog-preview-section py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-4">
+      {% if value.heading %}
+        <h2>{{ value.heading }}</h2>
+      {% endif %}
+      {% if value.subheading %}
+        <p class="text-muted">{{ value.subheading }}</p>
+      {% endif %}
+    </div>
+    <div class="row g-4">
+      {% for post in posts %}
+        <div class="col-md-4">
+          <div class="card h-100 shadow-sm border-0">
+            {% if post.featured_image %}
+              {% image post.featured_image fill-600x400 class="card-img-top" %}
+            {% endif %}
+            <div class="card-body">
+              <h5 class="card-title">{{ post.title }}</h5>
+              <p class="card-text text-muted">{{ post.short_description }}</p>
+              {% if value.read_more_text %}
+                <a href="{{ post.url }}" class="btn btn-sm btn-outline-primary">
+                  {{ value.read_more_text }}
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        {% if value.empty_message %}
+          <div class="col-12 text-center text-muted">
+            <p>{{ value.empty_message }}</p>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>

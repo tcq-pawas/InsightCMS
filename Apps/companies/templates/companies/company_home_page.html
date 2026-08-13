@@ -1,0 +1,18 @@
+{% extends "companies/base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %} 
+{{ page.company.company_name|default:page.title }}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/company_home.css' %}">
+{% endblock %}
+
+{% block content %}
+<main>
+    {% for block in page.body %}
+        {% include_block block %}
+    {% endfor %}
+</main>
+{% endblock %}

@@ -1,0 +1,21 @@
+<section class="contact-cta-section py-5 text-center bg-primary text-white">
+  <div class="container">
+    {% if value.heading %}
+      <h2 class="mb-3">{{ value.heading }}</h2>
+    {% endif %}
+    {% if value.description %}
+      <p class="lead mb-4">{{ value.description }}</p>
+    {% endif %}
+    {% if value.button_text and value.button_link %}
+      <a href="{{ value.button_link }}" class="btn btn-light btn-lg">{{ value.button_text }}</a>
+    {% endif %}
+    <div class="mt-4">
+      {% if value.email %}
+        <span class="me-3">📧 {{ value.email }}</span>
+      {% endif %}
+      {% if value.phone %}
+        <span>📞 {{ value.phone }}</span>
+      {% endif %}
+    </div>
+  </div>
+</section>

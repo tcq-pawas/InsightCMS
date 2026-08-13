@@ -1,0 +1,31 @@
+{% load wagtailimages_tags %}
+
+<section class="testimonials-section py-5">
+  <div class="container">
+    {% if value.heading %}
+      <h2 class="text-center mb-4">{{ value.heading }}</h2>
+    {% endif %}
+    <div class="row g-4">
+      {% for item in value.testimonials %}
+        <div class="col-md-4">
+          <div class="card h-100 p-3 shadow-sm border-0">
+            <div class="card-body">
+              <p class="card-text">"{{ item.quote }}"</p>
+              <div class="d-flex align-items-center mt-3">
+                {% if item.author_image %}
+                  {% image item.author_image fill-50x50 class="rounded-circle me-3" %}
+                {% endif %}
+                <div>
+                  <h6 class="mb-0 fw-bold">{{ item.author_name }}</h6>
+                  {% if item.author_role %}
+                    <small class="text-muted">{{ item.author_role }}</small>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>

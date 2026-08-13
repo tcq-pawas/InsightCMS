@@ -1,0 +1,24 @@
+{% load wagtailcore_tags wagtailimages_tags %}
+
+<section class="about-section py-5">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        {% if value.heading %}
+          <h2 class="about-heading mb-3">{{ value.heading }}</h2>
+          <div class="heading-divider mb-4"></div>
+        {% endif %}
+        <div class="about-body">
+          {{ value.body|richtext }}
+        </div>
+      </div>
+      {% if value.image %}
+        <div class="col-lg-6">
+          <div class="about-image-wrapper">
+            {% image value.image original class="img-fluid about-image shadow-lg" %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
