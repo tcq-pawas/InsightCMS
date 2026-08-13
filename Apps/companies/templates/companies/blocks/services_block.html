@@ -1,0 +1,47 @@
+{% load wagtailimages_tags %}
+
+<section class="services-section">
+  <div class="container">
+    <div class="text-center mb-5">
+      {% if value.heading %}
+        <h2>{{ value.heading }}</h2>
+      {% endif %}
+      {% if value.subheading %}
+        <p class="text-muted">{{ value.subheading }}</p>
+      {% endif %}
+    </div>
+
+    <div class="row g-4">
+      {% for card in value.cards %}
+        <div class="col-md-4 col-lg">
+          <div class="service-card">
+            <div class="icon-circle
+              {% cycle 'icon-orange' 'icon-blue' 'icon-purple' 'icon-pink' 'icon-green' %}">
+              {% if card.icon %}
+                {% image card.icon fill-32x32 %}
+              {% else %}
+                {# Auto icon based on position #}
+                {% if forloop.counter == 1 %}
+                  <i class="fa-solid fa-layer-group"></i>
+                {% elif forloop.counter == 2 %}
+                  <i class="fa-solid fa-code"></i>
+                {% elif forloop.counter == 3 %}
+                  <i class="fa-solid fa-folder-open"></i>
+                {% elif forloop.counter == 4 %}
+                  <i class="fa-solid fa-bolt"></i>
+                {% elif forloop.counter == 5 %}
+                  <i class="fa-solid fa-bullhorn"></i>
+                {% else %}
+                  <i class="fa-solid fa-star"></i>
+                {% endif %}
+              {% endif %}
+            </div>
+            <h5>{{ card.title }}</h5>
+            <p>{{ card.description }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>

@@ -1,0 +1,91 @@
+<footer class="footer-section">
+  <div class="container">
+    <div class="row g-4 mb-4 justify-content-between">
+
+      <!-- Col 1: Brand & Description -->
+      <div class="col-12 col-lg-3">
+        {% if value.brand_name %}
+          <div class="footer-brand mb-3">
+            <span class="footer-logo-text">{{ value.brand_name }}</span>
+          </div>
+        {% endif %}
+
+        {% if value.company_description %}
+          <p class="footer-desc">{{ value.company_description }}</p>
+        {% endif %}
+
+        <!-- Social Links -->
+        {% if value.social_links %}
+          <div class="footer-socials mt-4">
+            {% for item in value.social_links %}
+              <a href="{{ item.url }}" class="social-btn" target="_blank" rel="noopener">
+                {% if item.platform == 'facebook' %}
+                  <i class="fa-brands fa-facebook-f"></i>
+                {% elif item.platform == 'twitter' %}
+                  <i class="fa-brands fa-x-twitter"></i>
+                {% elif item.platform == 'linkedin' %}
+                  <i class="fa-brands fa-linkedin-in"></i>
+                {% elif item.platform == 'instagram' %}
+                  <i class="fa-brands fa-instagram"></i>
+                {% elif item.platform == 'youtube' %}
+                  <i class="fa-brands fa-youtube"></i>
+                {% else %}
+                  <i class="fa-solid fa-link"></i>
+                {% endif %}
+              </a>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Dynamic Link Columns from Admin -->
+      {% for col in value.link_columns %}
+        <div class="col-6 col-lg-3 mx-auto text-lg-center">
+          {% if col.heading %}
+            <h6 class="footer-col-heading">{{ col.heading }}</h6>
+          {% endif %}
+          <ul class="footer-links list-unstyled">
+            {% for link in col.links %}
+              <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+
+      <!-- Contact Info -->
+      <div class="col-12 col-lg-3">
+        {% if value.address or value.email or value.phone %}
+          <ul class="footer-contact-list">
+            {% if value.address %}
+              <li>
+                <i class="fa-solid fa-location-dot text-accent"></i>
+                <span>{{ value.address }}</span>
+              </li>
+            {% endif %}
+            {% if value.email %}
+              <li>
+                <i class="fa-solid fa-envelope text-accent"></i>
+                <a href="mailto:{{ value.email }}">{{ value.email }}</a>
+              </li>
+            {% endif %}
+            {% if value.phone %}
+              <li>
+                <i class="fa-solid fa-phone text-accent"></i>
+                <a href="tel:{{ value.phone }}">{{ value.phone }}</a>
+              </li>
+            {% endif %}
+          </ul>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- Bottom Bar -->
+    {% if value.copyright_text %}
+      <div class="footer-bottom">
+        <span class="copyright-text">{{ value.copyright_text }}</span>
+      </div>
+    {% endif %}
+
+  </div>
+</footer>

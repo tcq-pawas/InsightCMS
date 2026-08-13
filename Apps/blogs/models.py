@@ -4,7 +4,7 @@ from wagtail.models import Page
 from wagtail.fields import RichTextField
 from wagtail.admin.panels import FieldPanel
 from wagtail.search import index
-from Apps.companies.models import Company
+
 from Apps.accounts.models import User
 
 
@@ -32,7 +32,7 @@ class BlogPage(Page):
         PUBLISHED = 'published', _('Published')
 
     company = models.ForeignKey(
-        Company,
+        'companies.Company',
         on_delete=models.PROTECT,
         related_name='blogs',
         verbose_name=_('Company')
