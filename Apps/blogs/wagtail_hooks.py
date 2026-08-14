@@ -2,7 +2,7 @@ from wagtail import hooks
 
 
 @hooks.register('construct_page_listing_buttons')
-def add_blog_page_listing_buttons(buttons, page, page_perms, is_parent=False, context=None):
+def add_blog_page_listing_buttons(buttons, page, page_perms=None, is_parent=False, context=None, *args, **kwargs):
     """Add custom buttons to blog page listing."""
     pass
 

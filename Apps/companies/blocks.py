@@ -206,7 +206,7 @@ class BlogPreviewBlock(blocks.StructBlock):
                 .public()
                 .descendant_of(site_root)
                 .filter(company_id=page.company_id)
-                .order_by("-publish_date")
+                .order_by("-first_published_at")
             )
             posts = list(posts_qs[: value["number_of_posts"]])
 

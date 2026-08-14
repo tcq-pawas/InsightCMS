@@ -13,13 +13,15 @@ from Apps.companies.blocks import COMPANY_HOME_PAGE_BLOCKS
 # Company (original model — must stay here, admin.py imports it from here)
 # ---------------------------------------------------------------------------
 class Company(BaseModel):
-    """Company model representing external websites."""
+    """Company model representing external websites (Tenants)."""
 
     class Status(models.TextChoices):
         ACTIVE   = 'active',   _('Active')
         INACTIVE = 'inactive', _('Inactive')
 
     company_name   = models.CharField(max_length=255, verbose_name=_('Company Name'))
+    slug           = models.SlugField(max_length=255, unique=True, blank=True, null=True, verbose_name=_('Slug'))
+    domain         = models.CharField(max_length=255, blank=True, null=True, verbose_name=_('Domain'))
     website_name   = models.CharField(max_length=255, verbose_name=_('Website Name'))
     website_url    = models.URLField(max_length=500,  verbose_name=_('Website URL'))
     logo           = models.ImageField(upload_to='company_logos/', blank=True, null=True, verbose_name=_('Logo'))
@@ -57,6 +59,42 @@ class Company(BaseModel):
         self.save()
 
 
+class CompanyMembership(BaseModel):
+    """Connects users to a company with role scoping (manager, editor)."""
+
+    class Role(models.TextChoices):
+        MANAGER = 'manager', _('Manager')
+        EDITOR  = 'editor',  _('Editor')
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='memberships',
+        verbose_name=_('Company')
+    )
+    user = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='company_memberships',
+        verbose_name=_('User')
+    )
+    role = models.CharField(
+        max_length=20,
+        choices=Role.choices,
+        default=Role.EDITOR,
+        verbose_name=_('Role')
+    )
+
+    class Meta:
+        verbose_name = _('Company Membership')
+        verbose_name_plural = _('Company Memberships')
+        unique_together = ('company', 'user')
+
+    def __str__(self):
+        return f"{self.user.email} - {self.company.company_name} ({self.get_role_display()})"
+
+
+
 # ---------------------------------------------------------------------------
 # CompanyHomePage (Wagtail page — public website for one company)
 # ---------------------------------------------------------------------------
@@ -73,6 +111,8 @@ class CompanyHomePage(Page):
         "companies.Company",
         on_delete=models.PROTECT,
         related_name="home_pages",
+        null=True,
+        blank=True,
         help_text="The company this website belongs to. Drives data "
                    "isolation for the blog preview section.",
     )
