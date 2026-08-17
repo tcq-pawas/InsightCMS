@@ -1,0 +1,52 @@
+{% load i18n %}
+<div class="company-workspace-panel" style="margin-bottom: 2em;">
+    <h2>{% trans "Your Company Workspaces" %}</h2>
+
+    {% if not cards %}
+        <p>{% trans "You are not assigned to any company yet." %}</p>
+    {% endif %}
+
+    <div class="company-workspace-cards" style="display: flex; flex-wrap: wrap; gap: 1em;">
+        {% for card in cards %}
+        <div class="company-workspace-card" style="border: 1px solid #ddd; border-radius: 6px; padding: 1em; width: 320px; background: #fff;">
+
+            <div style="display: flex; align-items: center; gap: 0.75em; margin-bottom: 0.75em;">
+                {% if card.company.logo %}
+                    <img src="{{ card.company.logo.url }}" alt="{{ card.company.company_name }}" style="width: 40px; height: 40px; object-fit: contain; border-radius: 4px;">
+                {% endif %}
+                <strong style="font-size: 1.1em;">{{ card.company.company_name }}</strong>
+            </div>
+
+            {% if card.blog_index_missing %}
+                <p style="color: #b02a37;">{% trans "Blog workspace not set up yet." %}</p>
+            {% else %}
+                <div style="display: flex; gap: 1.5em; margin-bottom: 0.75em;">
+                    <div><strong>{{ card.published_count }}</strong> {% trans "Published" %}</div>
+                    <div><strong>{{ card.draft_count }}</strong> {% trans "Drafts" %}</div>
+                </div>
+
+                {% if card.recent_posts %}
+                <div style="margin-bottom: 0.75em;">
+                    <div style="font-size: 0.85em; color: #666; margin-bottom: 0.25em;">{% trans "Recently changed" %}</div>
+                    <ul style="margin: 0; padding-left: 1.1em;">
+                        {% for post in card.recent_posts %}
+                            <li>{{ post.title }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div style="display: flex; gap: 0.5em; margin-bottom: 0.75em;">
+                    <a href="{{ card.open_workspace_url }}" class="button">{% trans "Open workspace" %}</a>
+                    <a href="{{ card.new_post_url }}" class="button button-secondary">{% trans "New blog post" %}</a>
+                </div>
+            {% endif %}
+
+            <div style="font-size: 0.8em; color: #666; border-top: 1px solid #eee; padding-top: 0.5em;">
+                {% trans "API endpoint" %}: <code>/api/v1/blogs/</code><br>
+                {% trans "Use your company's" %} <code>X-API-Key</code> {% trans "header to authenticate." %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

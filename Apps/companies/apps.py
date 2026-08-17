@@ -7,4 +7,5 @@ class CompaniesConfig(AppConfig):
     verbose_name = 'Companies'
 
     def ready(self):                               
-        import Apps.companies.signals  # noqa: F401 
+        import Apps.companies.signals
+        import Apps.companies.permissions

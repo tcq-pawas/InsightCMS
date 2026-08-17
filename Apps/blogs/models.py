@@ -4,6 +4,7 @@ from wagtail.models import Page
 from wagtail.fields import RichTextField
 from wagtail.admin.panels import FieldPanel
 from wagtail.search import index
+from .forms import BlogPageForm
 
 from Apps.accounts.models import User
 
@@ -116,6 +117,8 @@ class BlogPage(Page):
         FieldPanel('featured'),
         FieldPanel('publish_date'),
     ]
+    
+    base_form_class = BlogPageForm
 
     parent_page_types = ['blogs.BlogIndexPage']
     subpage_types = []

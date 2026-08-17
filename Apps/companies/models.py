@@ -7,6 +7,7 @@ from wagtail.admin.panels import FieldPanel
 from Apps.common.models import BaseModel
 from Apps.common.helpers import generate_api_key
 from Apps.companies.blocks import COMPANY_HOME_PAGE_BLOCKS
+from Apps.companies.forms import CompanyScopedPageForm
 
 
 # ---------------------------------------------------------------------------
@@ -129,6 +130,7 @@ class CompanyHomePage(Page):
         FieldPanel("company"),
         FieldPanel("body"),
     ]
+    base_form_class = CompanyScopedPageForm
  
     # A CompanyHomePage is typically the root of that company's Wagtail
     # Site, with a BlogIndexPage (from the `blogs` app) living under it.
