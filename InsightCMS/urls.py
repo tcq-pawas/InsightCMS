@@ -10,7 +10,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('cms/', include(wagtailadmin_urls)),
     path('documents/', include(wagtaildocs_urls)),
-    path('api/v1/', include('Apps.api.urls')),
+    # path('api/v1/', include('Apps.api.urls')),
+    path("api/v1/", include("Apps.blogs.urls")),
     path('', include(wagtail_urls)),
 ]
 

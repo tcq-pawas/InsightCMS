@@ -53,7 +53,7 @@ def filter_explorer_by_company(parent_page, pages, request):
 
 
 @hooks.register("construct_page_listing_buttons")
-def hide_buttons_for_other_companies(buttons, page, page_perms, context=None):
+def hide_buttons_for_other_companies(buttons, page, page_perms, context=None, **kwargs):
     """
     Defence-in-depth for the listing UI: if for any reason a page from
     another company briefly appears (e.g. via search), don't offer

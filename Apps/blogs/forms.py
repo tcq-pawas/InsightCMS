@@ -13,10 +13,11 @@ from wagtail.admin.forms import WagtailAdminPageForm
 
 
 class BlogPageForm(WagtailAdminPageForm):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):      
+        user = kwargs.get("for_user", None)
         super().__init__(*args, **kwargs)
 
-        user = getattr(self, "for_user", None)
+        # user = getattr(self, "for_user", None)
         if user is None or "author" not in self.fields:
             return
 

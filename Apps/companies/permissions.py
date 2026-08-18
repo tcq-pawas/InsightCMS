@@ -23,7 +23,6 @@ from django.dispatch import receiver
 from django.contrib.auth.models import Group as WagtailGroup
 from wagtail.models import GroupPagePermission
 
-
 # ---------------------------------------------------------------------------
 # 1. Group provisioning per company
 # ---------------------------------------------------------------------------
@@ -127,8 +126,7 @@ def ensure_company_workflow(company):
     they exist, and the page assignment happens next time this runs
     (e.g. after the BlogIndexPage is created).
     """
-    from wagtail.models import Workflow, WorkflowTask, WorkflowPage
-    from wagtail.workflows.models import GroupApprovalTask
+    from wagtail.models import Workflow, WorkflowTask, WorkflowPage, GroupApprovalTask
 
     manager_group, _editor_group = ensure_company_groups(company)
 

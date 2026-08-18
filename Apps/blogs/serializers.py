@@ -5,11 +5,17 @@ from Apps.blogs.models import BlogPage, BlogCategory, BlogTag
 
 class ImageSerializer(serializers.ModelSerializer):
     """Serializer for Wagtail images."""
+    url = serializers.SerializerMethodField()
     
     class Meta:
         model = Image
         fields = ['id', 'title', 'file', 'width', 'height', 'url']
 
+    def get_url(self, obj):
+        try:
+            return obj.get_rendition('width-800').url
+        except Exception:
+            return None
 
 class BlogTagSerializer(serializers.ModelSerializer):
     """Serializer for BlogTag model."""
@@ -35,13 +41,16 @@ class BlogPageSerializer(serializers.ModelSerializer):
     category = BlogCategorySerializer(read_only=True)
     tags = BlogTagSerializer(many=True, read_only=True)
     company_name = serializers.SerializerMethodField()
+    body_html = serializers.SerializerMethodField()
     
     class Meta:
         model = BlogPage
         fields = [
             'id', 'title', 'slug', 'featured_image', 'short_description',
             'body', 'author_name', 'category', 'tags', 'featured',
-            'status', 'publish_date', 'company_name', 'created_at', 'updated_at'
+            'status', 'publish_date', 'company_name', 'created_at', 'updated_at', 'seo_title', 'search_description',
+            'seo_title', 'search_description',   
+            'first_published_at', 'last_published_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -51,6 +60,8 @@ class BlogPageSerializer(serializers.ModelSerializer):
     def get_company_name(self, obj):
         return obj.company.company_name if obj.company else None
 
+    def get_body_html(self, obj):
+        return str(obj.body) if obj.body else ""
 
 class BlogPageListSerializer(BlogPageSerializer):
     """Lightweight serializer for blog list views."""
