@@ -15,7 +15,7 @@
       {% if value.image %}
         <div class="col-lg-6">
           <div class="about-image-wrapper">
-            {% image value.image original class="img-fluid about-image shadow-lg" %}
+            {% image value.image original class="img-fluid about-image shadow-lg" alt=value.image_alt_text|default:value.image.title %}
           </div>
         </div>
       {% endif %}

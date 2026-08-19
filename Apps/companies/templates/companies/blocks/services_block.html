@@ -18,21 +18,21 @@
             <div class="icon-circle
               {% cycle 'icon-orange' 'icon-blue' 'icon-purple' 'icon-pink' 'icon-green' %}">
               {% if card.icon %}
-                {% image card.icon fill-32x32 %}
+                {% image card.icon fill-32x32 alt=card.icon_alt_text|default:card.title %}
               {% else %}
                 {# Auto icon based on position #}
                 {% if forloop.counter == 1 %}
-                  <i class="fa-solid fa-layer-group"></i>
+                  <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
                 {% elif forloop.counter == 2 %}
-                  <i class="fa-solid fa-code"></i>
+                  <i class="fa-solid fa-code" aria-hidden="true"></i>
                 {% elif forloop.counter == 3 %}
-                  <i class="fa-solid fa-folder-open"></i>
+                  <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
                 {% elif forloop.counter == 4 %}
-                  <i class="fa-solid fa-bolt"></i>
+                  <i class="fa-solid fa-bolt" aria-hidden="true"></i>
                 {% elif forloop.counter == 5 %}
-                  <i class="fa-solid fa-bullhorn"></i>
+                  <i class="fa-solid fa-bullhorn" aria-hidden="true"></i>
                 {% else %}
-                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star" aria-hidden="true"></i>
                 {% endif %}
               {% endif %}
             </div>

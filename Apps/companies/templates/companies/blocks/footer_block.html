@@ -18,19 +18,19 @@
         {% if value.social_links %}
           <div class="footer-socials mt-4">
             {% for item in value.social_links %}
-              <a href="{{ item.url }}" class="social-btn" target="_blank" rel="noopener">
+              <a href="{{ item.url }}" class="social-btn" target="_blank" rel="noopener" aria-label="{{ item.platform|capfirst }}">
                 {% if item.platform == 'facebook' %}
-                  <i class="fa-brands fa-facebook-f"></i>
+                  <i class="fa-brands fa-facebook-f" aria-hidden="true"></i>
                 {% elif item.platform == 'twitter' %}
-                  <i class="fa-brands fa-x-twitter"></i>
+                  <i class="fa-brands fa-x-twitter" aria-hidden="true"></i>
                 {% elif item.platform == 'linkedin' %}
-                  <i class="fa-brands fa-linkedin-in"></i>
+                  <i class="fa-brands fa-linkedin-in" aria-hidden="true"></i>
                 {% elif item.platform == 'instagram' %}
-                  <i class="fa-brands fa-instagram"></i>
+                  <i class="fa-brands fa-instagram" aria-hidden="true"></i>
                 {% elif item.platform == 'youtube' %}
-                  <i class="fa-brands fa-youtube"></i>
+                  <i class="fa-brands fa-youtube" aria-hidden="true"></i>
                 {% else %}
-                  <i class="fa-solid fa-link"></i>
+                  <i class="fa-solid fa-link" aria-hidden="true"></i>
                 {% endif %}
               </a>
             {% endfor %}
@@ -58,19 +58,19 @@
           <ul class="footer-contact-list">
             {% if value.address %}
               <li>
-                <i class="fa-solid fa-location-dot text-accent"></i>
+                <i class="fa-solid fa-location-dot text-accent" aria-hidden="true"></i>
                 <span>{{ value.address }}</span>
               </li>
             {% endif %}
             {% if value.email %}
               <li>
-                <i class="fa-solid fa-envelope text-accent"></i>
+                <i class="fa-solid fa-envelope text-accent" aria-hidden="true"></i>
                 <a href="mailto:{{ value.email }}">{{ value.email }}</a>
               </li>
             {% endif %}
             {% if value.phone %}
               <li>
-                <i class="fa-solid fa-phone text-accent"></i>
+                <i class="fa-solid fa-phone text-accent" aria-hidden="true"></i>
                 <a href="tel:{{ value.phone }}">{{ value.phone }}</a>
               </li>
             {% endif %}

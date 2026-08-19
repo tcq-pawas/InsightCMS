@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'corsheaders',
+    'drf_spectacular', 
 
     # Custom Apps
     'Apps.common',
@@ -63,6 +64,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'wagtail.contrib.redirects.middleware.RedirectMiddleware',
 ]
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "InsightCMS Blog API",
+    "DESCRIPTION": "Company-scoped blog API for external websites",
+    "VERSION": "1.0.0",
+}
 
 ROOT_URLCONF = 'InsightCMS.urls'
 
@@ -154,6 +161,7 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # CORS Settings
@@ -175,6 +183,9 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000  
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True 
+    SECURE_HSTS_PRELOAD = True  
 
 # Email Settings (optional)
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
