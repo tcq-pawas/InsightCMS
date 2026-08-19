@@ -105,6 +105,50 @@ class BlogAPIIsolationTest(TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
+    def test_inactive_company_api_key_returns_401(self):
+        # Inactive company's API key should be rejected with 401
+        self.company_a.status = Company.Status.INACTIVE
+        self.company_a.save()
+
+        response = self.client.get(
+            "/api/v1/blogs/",
+            HTTP_X_API_KEY=self.company_a.api_key,
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_api_excludes_draft_and_unpublished_posts(self):
+        # Draft posts (never published) must never be returned by API
+        draft_post = BlogPage(
+            title="Draft Post for Company A",
+            short_description="Draft Description",
+            body="<p>Draft Body</p>",
+            live=False,
+        )
+        self.blog_index_a.add_child(instance=draft_post)
+        draft_post.save_revision()  # Saved as draft only, NOT published
+
+        # Published then unpublished post
+        unpub_post = BlogPage(
+            title="Unpublished Post for Company A",
+            short_description="Unpublished Description",
+            body="<p>Unpublished Body</p>",
+        )
+        self.blog_index_a.add_child(instance=unpub_post)
+        unpub_post.save_revision().publish()
+        unpub_post.unpublish()
+
+        response = self.client.get(
+            "/api/v1/blogs/",
+            HTTP_X_API_KEY=self.company_a.api_key,
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        titles = [post["title"] for post in data["results"]]
+
+        self.assertIn("Post from Company A", titles)
+        self.assertNotIn("Draft Post for Company A", titles)
+        self.assertNotIn("Unpublished Post for Company A", titles)
+
     def test_wrong_slug_returns_404(self):
         # Request for a non-existent slug should return 404
         response = self.client.get(
@@ -120,3 +164,21 @@ class BlogAPIIsolationTest(TestCase):
             HTTP_X_API_KEY=self.company_a.api_key,
         )
         self.assertEqual(response.status_code, 404)
+
+    def test_blog_index_page_context_isolates_live_posts(self):
+        # BlogIndexPage get_context only shows Company A's live posts
+        draft_post = BlogPage(
+            title="Company A Draft",
+            short_description="Draft",
+            body="<p>Draft</p>",
+            live=False,
+        )
+        self.blog_index_a.add_child(instance=draft_post)
+        draft_post.save_revision()
+
+        context = self.blog_index_a.get_context(self.client.get("/").wsgi_request)
+        context_blogs = list(context["blogs"])
+
+        self.assertIn(self.post_a, context_blogs)
+        self.assertNotIn(draft_post, context_blogs)
+        self.assertNotIn(self.post_b, context_blogs)

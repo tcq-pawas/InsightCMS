@@ -281,6 +281,10 @@ ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
 
 7. Set up process monitoring (Supervisor, systemd)
 
+## Administration & Setup Guide
+
+For detailed instructions on company provisioning, role management, domain routing, API key rotation, and backup/restore, refer to the [Admin Setup Guide](file:///d:/CMS/InsightCMS/ADMIN_SETUP_GUIDE.md).
+
 ## License
 
 This project is licensed under the MIT License.
