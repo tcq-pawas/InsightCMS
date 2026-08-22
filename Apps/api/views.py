@@ -1,8 +1,7 @@
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from django_filters.rest_framework import DjangoFilterBackend
 from wagtail.models import Page
 from Apps.blogs.models import BlogPage, BlogCategory, BlogTag
@@ -15,10 +14,9 @@ from Apps.common.permissions import IsCompanyAuthenticated
 from Apps.api.pagination import StandardResultsSetPagination
 
 
-@swagger_auto_schema(
+@extend_schema(
     tags=['Blogs'],
-    operation_description="API endpoint for blog posts. Only returns published blogs for the authenticated company.",
-    responses={200: BlogPageListSerializer, 404: 'Blog not found'}
+    description="API endpoint for blog posts. Only returns published blogs for the authenticated company.",
 )
 class BlogViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -37,7 +35,7 @@ class BlogViewSet(viewsets.ReadOnlyModelViewSet):
         """
         Filter blogs to only return published blogs for the authenticated company.
         """
-        if getattr(self, 'swagger_fake_view', False):
+        if getattr(self, 'spectacular_fake_view', False):
             return BlogPage.objects.none()
         company = self.request.company
         return BlogPage.objects.live().public().filter(
@@ -69,10 +67,9 @@ class BlogViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
 
-@swagger_auto_schema(
+@extend_schema(
     tags=['Categories'],
-    operation_description="API endpoint for blog categories.",
-    responses={200: BlogCategorySerializer}
+    description="API endpoint for blog categories.",
 )
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -87,10 +84,9 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     ordering = ['name']
 
 
-@swagger_auto_schema(
+@extend_schema(
     tags=['Tags'],
-    operation_description="API endpoint for blog tags.",
-    responses={200: BlogTagSerializer}
+    description="API endpoint for blog tags.",
 )
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -105,10 +101,9 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     ordering = ['name']
 
 
-@swagger_auto_schema(
+@extend_schema(
     tags=['Company'],
-    operation_description="API endpoint for company information. Returns the authenticated company's details.",
-    responses={200: CompanySerializer}
+    description="API endpoint for company information. Returns the authenticated company's details.",
 )
 class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -122,7 +117,7 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         """
         Only return the authenticated company.
         """
-        if getattr(self, 'swagger_fake_view', False):
+        if getattr(self, 'spectacular_fake_view', False):
             return []
         return [self.request.company]
 

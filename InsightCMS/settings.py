@@ -43,8 +43,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'corsheaders',
-    'drf_yasg',
-    'drf_spectacular', 
+    'drf_spectacular',
 
     # Custom Apps
     'Apps.common',
@@ -67,9 +66,11 @@ MIDDLEWARE = [
 ]
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "InsightCMS Blog API",
-    "DESCRIPTION": "Company-scoped blog API for external websites",
-    "VERSION": "1.0.0",
+    "TITLE": "InsightCMS API",
+    "DESCRIPTION": "API documentation for InsightCMS - A Wagtail-based content management system",
+    "VERSION": "v1",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 ROOT_URLCONF = 'InsightCMS.urls'
