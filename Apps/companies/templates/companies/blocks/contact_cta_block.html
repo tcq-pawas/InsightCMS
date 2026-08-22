@@ -11,10 +11,10 @@
     {% endif %}
     <div class="mt-4">
       {% if value.email %}
-        <span class="me-3">📧 {{ value.email }}</span>
+        <span class="me-3"><span aria-hidden="true">📧</span> <a href="mailto:{{ value.email }}" class="text-white">{{ value.email }}</a></span>
       {% endif %}
       {% if value.phone %}
-        <span>📞 {{ value.phone }}</span>
+        <span><span aria-hidden="true">📞</span> <a href="tel:{{ value.phone }}" class="text-white">{{ value.phone }}</a></span>
       {% endif %}
     </div>
   </div>

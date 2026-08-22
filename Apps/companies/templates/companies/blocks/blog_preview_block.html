@@ -15,14 +15,14 @@
         <div class="col-md-4">
           <div class="card h-100 shadow-sm border-0">
             {% if post.featured_image %}
-              {% image post.featured_image fill-600x400 class="card-img-top" %}
+              {% image post.featured_image fill-600x400 class="card-img-top" alt=post.title %}
             {% endif %}
             <div class="card-body">
               <h5 class="card-title">{{ post.title }}</h5>
               <p class="card-text text-muted">{{ post.short_description }}</p>
               {% if value.read_more_text %}
                 <a href="{{ post.url }}" class="btn btn-sm btn-outline-primary">
-                  {{ value.read_more_text }}
+                  {{ value.read_more_text }} <span class="visually-hidden">about {{ post.title }}</span>
                 </a>
               {% endif %}
             </div>

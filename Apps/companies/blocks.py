@@ -1,5 +1,4 @@
 """
-Apps/companies/blocks.py
 
 StreamField block definitions for CompanyHomePage.
 Lives in the `companies` app since CompanyHomePage itself belongs here
@@ -64,6 +63,7 @@ class HeroBlock(blocks.StructBlock):
     cta_text = blocks.CharBlock(
         required=False, max_length=50, label=_("Primary button text"),
         default="Get Started",
+        help_text=_("Use descriptive text (e.g. 'Start Free Trial') rather than generic text like 'Click Here', for accessibility."),
     )
     cta_link = blocks.URLBlock(
         required=False, label=_("Primary button link"),
@@ -81,6 +81,10 @@ class HeroBlock(blocks.StructBlock):
         help_text=_("Optional small subtext shown under CTA buttons with checkmark icon."),
     )
     image = ImageChooserBlock(required=False, label=_("Hero image"))
+    image_alt_text = blocks.CharBlock(
+        required=False, max_length=200, label=_("Hero image alt text"),
+        help_text=_("Describe the image for screen readers. Leave blank to use the image's title."),
+    )
     flow_cards = blocks.ListBlock(HeroFlowCardBlock(), required=False, label=_("Workflow Cards (Bottom)"))
 
     class Meta:
@@ -100,6 +104,10 @@ class AboutBlock(blocks.StructBlock):
         label=_("Content"),
     )
     image = ImageChooserBlock(required=False, label=_("Side image"))
+    image_alt_text = blocks.CharBlock(
+        required=False, max_length=200, label=_("Image alt text"),
+        help_text=_("Describe the image for screen readers. Leave blank to use the image's title."),
+    )
 
     class Meta:
         template = "companies/blocks/about_block.html"
@@ -112,6 +120,10 @@ class AboutBlock(blocks.StructBlock):
 # ---------------------------------------------------------------------------
 class ServiceCardBlock(blocks.StructBlock):
     icon = ImageChooserBlock(required=False, label=_("Icon"))
+    icon_alt_text = blocks.CharBlock(
+        required=False, max_length=150, label=_("Icon alt text"),
+        help_text=_("Describe the icon for screen readers. Leave blank to use the icon's title."),
+    )
     title = blocks.CharBlock(required=True, max_length=80)
     description = blocks.TextBlock(required=False)
 
@@ -206,7 +218,7 @@ class BlogPreviewBlock(blocks.StructBlock):
                 .public()
                 .descendant_of(site_root)
                 .filter(company_id=page.company_id)
-                .order_by("-publish_date")
+                .order_by("-first_published_at")
             )
             posts = list(posts_qs[: value["number_of_posts"]])
 
