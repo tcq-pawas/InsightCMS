@@ -9,54 +9,89 @@
 }
 
 :root {
-  --primary:        #0b0f2b;   /* deep navy — hero, footer, contact bg */
-  --primary-light:  #1a1f4d;   /* navy gradient highlight */
-  --secondary:      #8b5cf6;   /* purple — gradient start, links */
-  --accent:         #f97316;   /* orange — gradient end, CTA highlight */
-  --accent-pink:    #ec4899;   /* icon rotation */
-  --accent-blue:    #3b82f6;   /* icon rotation */
-  --accent-red:     #ef4444;   /* icon rotation */
+  --primary:        #ffffff;   /* Light background */
+  --primary-light:  #f8fafc;   /* Subtle light slate background */
+  --secondary:      #2563eb;   /* Single accent color — SaaS Royal Blue */
+  --accent:         #2563eb;   /* Single accent color */
+  --accent-pink:    #2563eb;   
+  --accent-blue:    #2563eb;   
+  --accent-red:     #2563eb;   
 
-  --background:     #f8f9fc;   /* light section backgrounds */
-  --surface:        #ffffff;   /* card / panel backgrounds */
+  --background:     #f8fafc;   /* Light section backgrounds */
+  --surface:        #ffffff;   /* Clean white card surface */
 
-  --text-heading:   #14162b;   /* dark headings on light sections */
-  --text-muted:     #a3a7c2;   /* secondary/supporting text */
+  --text-heading:   #0f172a;   /* Dark typography for headings */
+  --text-muted:     #64748b;   /* Dark slate supporting text */
 
-  --gradient: linear-gradient(90deg, var(--secondary), var(--accent));
+  --gradient: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
 
-/* Hero */
+/* Hero Light Theme & SaaS Styling */
+.hero-section {
+  background: #ffffff;
+  color: #0f172a;
+  padding: 5rem 0 3rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.hero-section h1 {
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 3rem;
+  line-height: 1.15;
+  letter-spacing: -1px;
+}
+.hero-section .lead {
+  color: #475569;
+  font-size: 1.15rem;
+}
+.gradient-text {
+  color: #2563eb !important;
+  background: none !important;
+  -webkit-text-fill-color: initial !important;
+}
+.badge-pill {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #2563eb;
+  font-weight: 600;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+}
 .btn-gradient {
-  background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+  background: #2563eb !important;
   border: none;
   color: #ffffff !important;
-  font-weight: 700;
-  padding: 0.85rem 2.25rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 25px rgba(249, 115, 22, 0.35);
-  transition: all 0.25s ease;
-  font-size: 0.98rem;
+  font-weight: 600;
+  padding: 0.75rem 2rem;
+  border-radius: 50px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
   text-decoration: none;
   display: inline-block;
 }
 .btn-gradient:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(249, 115, 22, 0.5);
+  background: #1d4ed8 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
   color: #ffffff !important;
 }
-
 .btn-outline-light-custom {
-  background: rgba(11, 15, 43, 0.6);
-  border: 1px solid rgba(139, 92, 246, 0.5);
-  color: #ffffff !important;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155 !important;
   font-weight: 600;
-  padding: 0.85rem 2.25rem;
-  border-radius: 0.75rem;
-  transition: all 0.25s ease;
-  font-size: 0.98rem;
+  padding: 0.75rem 2rem;
+  border-radius: 50px;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
   text-decoration: none;
   display: inline-block;
+}
+.btn-outline-light-custom:hover {
+  background: #e2e8f0;
+  color: #0f172a !important;
 }
 .btn-outline-light-custom:hover {
   background: rgba(139, 92, 246, 0.15);

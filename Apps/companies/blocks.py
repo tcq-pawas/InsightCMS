@@ -8,7 +8,38 @@ from django.utils.translation import gettext_lazy as _
 from wagtail import blocks
 from wagtail.images.blocks import ImageChooserBlock
 
+# ---------------------------------------------------------------------------
+# 0. Navbar
+# ---------------------------------------------------------------------------
+class NavLinkBlock(blocks.StructBlock):
+    label = blocks.CharBlock(required=True, max_length=50, label=_("Link Text"))
+    link_url = blocks.CharBlock(
+        required=True, max_length=255, label=_("Link URL"),
+        help_text=_("Use an anchor like #features or a full URL/page path."),
+    )
 
+    class Meta:
+        icon = "link"
+        label = "Nav Link"
+
+
+class NavbarBlock(blocks.StructBlock):
+    nav_links = blocks.ListBlock(NavLinkBlock(), required=False, label=_("Navigation Links"))
+    cta_text = blocks.CharBlock(
+        required=False, max_length=50, label=_("Get Started button text"),
+        default="Get Started",
+    )
+    cta_link = blocks.CharBlock(
+        required=False, max_length=255, label=_("Get Started button link"),
+        default="/cms/",
+    )
+
+    class Meta:
+        template = "companies/blocks/navbar_block.html"
+        icon = "list-ul"
+        label = "Navbar"
+        
+        
 # ---------------------------------------------------------------------------
 # 1. Hero
 # ---------------------------------------------------------------------------
@@ -315,4 +346,9 @@ COMPANY_HOME_PAGE_BLOCKS = [
     ("blog_preview", BlogPreviewBlock()),
     ("contact_cta", ContactCTABlock()),
     ("footer", FooterBlock()),
+]
+
+
+NAVBAR_BLOCKS = [
+    ("navbar", NavbarBlock()),
 ]

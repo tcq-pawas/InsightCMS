@@ -6,7 +6,7 @@ from wagtail.admin.panels import FieldPanel
 
 from Apps.common.models import BaseModel
 from Apps.common.helpers import generate_api_key
-from Apps.companies.blocks import COMPANY_HOME_PAGE_BLOCKS
+from Apps.companies.blocks import COMPANY_HOME_PAGE_BLOCKS, NAVBAR_BLOCKS
 from Apps.companies.forms import CompanyScopedPageForm
 
 
@@ -126,6 +126,14 @@ class CompanyHomePage(Page):
         related_name="+",
         help_text="Company logo shown in the header and dashboard card.",
     )
+    
+    navbar = StreamField(
+        NAVBAR_BLOCKS,
+        blank=True,
+        use_json_field=True,
+        max_num=1,
+        help_text="Configure the site navigation bar.",
+    )
 
     body = StreamField(
         COMPANY_HOME_PAGE_BLOCKS,
@@ -138,6 +146,7 @@ class CompanyHomePage(Page):
     content_panels = Page.content_panels + [
         FieldPanel("company"),
         FieldPanel("logo"),
+        FieldPanel("navbar"),
         FieldPanel("body"),
     ]
     base_form_class = CompanyScopedPageForm
@@ -153,34 +162,3 @@ class CompanyHomePage(Page):
         verbose_name = "Company Home Page"
 
 
-# ---------------------------------------------------------------------------
-# PlatformHomePage — InsightCMS main platform landing page
-# No company field. Managed entirely via Wagtail StreamField CMS.
-# ---------------------------------------------------------------------------
-class PlatformHomePage(Page):
-    """
-    The main InsightCMS platform landing page.
-    Served at the root URL (127.0.0.1:8000/).
-    No company field — this is the platform's own homepage.
-    Editors design it using StreamField blocks from Wagtail CMS.
-    """
-
-    body = StreamField(
-        COMPANY_HOME_PAGE_BLOCKS,
-        blank=True,
-        use_json_field=True,
-        help_text="Build the platform homepage by adding and reordering sections.",
-    )
-
-    content_panels = Page.content_panels + [
-        FieldPanel("body"),
-    ]
-
-    # Only allowed under root — one platform homepage
-    parent_page_types = ["wagtailcore.Page"]
-    subpage_types = []
-
-    template = "companies/platform_home_page.html"
-
-    class Meta:
-        verbose_name = "Platform Home Page"

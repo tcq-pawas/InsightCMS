@@ -1,0 +1,23 @@
+{% load wagtailimages_tags %}
+
+<header class="company-navbar">
+    <a href="#" class="company-brand">
+        {% if page.logo %}
+            {% image page.logo fill-120x60 as logo_img %}
+            <img src="{{ logo_img.url }}" alt="{{ page.company.company_name|default:page.title }}">
+        {% elif page.company.logo %}
+            <img src="{{ page.company.logo.url }}" alt="{{ page.company.company_name }}">
+        {% else %}
+            <span class="company-brand-title">{{ page.company.company_name|default:page.title }}</span>
+        {% endif %}
+    </a>
+
+    <nav class="company-nav-links d-flex align-items-center">
+        {% for link in value.nav_links %}
+            <a href="{{ link.link_url }}">{{ link.label }}</a>
+        {% endfor %}
+        {% if value.cta_text and value.cta_link %}
+            <a href="{{ value.cta_link }}" class="btn-get-started ms-4">{{ value.cta_text }}</a>
+        {% endif %}
+    </nav>
+</header>
