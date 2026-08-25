@@ -30,7 +30,8 @@ def _user_company_ids(user):
 def filter_explorer_by_company(parent_page, pages, request):
     """
     Restricts the Wagtail page explorer tree so a user only sees pages
-    under CompanyHomePages they belong to. Superusers see everything.
+    under CompanyHomePages they belong to, or the specific home pages themselves.
+    Superusers see everything.
     """
     company_ids = _user_company_ids(request.user)
     if company_ids is None:
@@ -46,19 +47,41 @@ def filter_explorer_by_company(parent_page, pages, request):
 
     from django.db.models import Q
 
+    # Users can see:
+    # 1. Any pages that start with their allowed paths (i.e. their own pages & children)
+    # 2. Ancestor pages of their allowed paths (so they can navigate down from Root to their pages)
+    # BUT they should NOT see sibling company home pages at the Welcome site level.
     query = Q()
     for path in allowed_paths:
         query |= Q(path__startswith=path)
-    return pages.filter(query)
+        # Also allow ancestors so they can navigate down from Root / Welcome page
+        ancestors_paths = [path[:i] for i in range(4, len(path) + 1, 4) if path[:i]]
+        for ap in ancestors_paths:
+            query |= Q(path=ap)
+
+    # Filter out other CompanyHomePages that are not in the allowed list
+    filtered_pages = pages.filter(query)
+    
+    # Exclude other CompanyHomePages specifically if we are listing pages at the root/welcome level
+    all_other_home_pages = CompanyHomePage.objects.exclude(company_id__in=company_ids)
+    other_home_page_ids = [hp.id for hp in all_other_home_pages]
+    if other_home_page_ids:
+        filtered_pages = filtered_pages.exclude(id__in=other_home_page_ids)
+
+    return filtered_pages
 
 
 @hooks.register("construct_page_listing_buttons")
-def hide_buttons_for_other_companies(buttons, page, page_perms, context=None, **kwargs):
+def hide_buttons_for_other_companies(buttons, page, *args, **kwargs):
     """
     Defence-in-depth for the listing UI: if for any reason a page from
     another company briefly appears (e.g. via search), don't offer
     action buttons for it unless the user is actually permitted.
     """
+    context = kwargs.get("context")
+    if not context and len(args) > 1 and isinstance(args[-1], dict):
+        context = args[-1]
+
     request = context.get("request") if context else None
     if request is None or request.user.is_superuser:
         return buttons

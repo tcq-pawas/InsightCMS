@@ -7,9 +7,62 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/company_home.css' %}">
+<style>
+.company-navbar {
+    background: #0f172a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.company-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: #fff;
+}
+.company-brand img {
+    height: 42px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 4px;
+}
+.company-brand-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.5px;
+}
+.company-nav-links a {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: 1.5rem;
+    transition: color 0.2s;
+}
+.company-nav-links a:hover {
+    color: #38bdf8;
+}
+</style>
 {% endblock %}
 
 {% block content %}
+<!-- Company Top Navigation / Header -->
+<header class="company-navbar">
+    <a href="#" class="company-brand">
+        {% if page.logo %}
+            {% image page.logo fill-120x60 as logo_img %}
+            <img src="{{ logo_img.url }}" alt="{{ page.company.company_name|default:page.title }}">
+        {% elif page.company.logo %}
+            <img src="{{ page.company.logo.url }}" alt="{{ page.company.company_name }}">
+        {% endif %}
+        <span class="company-brand-title">{{ page.company.company_name|default:page.title }}</span>
+    </a>
+    
+</header>
+
 <main>
     {% for block in page.body %}
         {% include_block block %}

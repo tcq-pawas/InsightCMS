@@ -73,10 +73,12 @@ def _card_data_for_company(company, request):
 
     open_workspace_url = None
     new_post_url = None
-    if blog_index is not None:
+    target_page = home_page or blog_index
+    if target_page is not None:
         open_workspace_url = reverse(
-            "wagtailadmin_explore", args=[blog_index.id]
+            "wagtailadmin_explore", args=[target_page.id]
         )
+    if blog_index is not None:
         new_post_url = reverse(
             "wagtailadmin_pages:add",
             args=["blogs", "blogpage", blog_index.id],

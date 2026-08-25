@@ -83,6 +83,7 @@ def ensure_company_groups(company):
     # Wagtail's built-in permission types we assign at the subtree root
     permission_types = ["add", "edit", "publish"]
 
+    # Managers: add + edit + publish page permissions
     for perm_type in permission_types:
         GroupPagePermission.objects.get_or_create(
             group=manager_group,
@@ -90,7 +91,7 @@ def ensure_company_groups(company):
             permission=_page_permission_object(perm_type),
         )
 
-    # Editors: add + edit only, never publish
+    # Editors: add + edit page permissions only, never publish
     for perm_type in ["add", "edit"]:
         GroupPagePermission.objects.get_or_create(
             group=editor_group,
@@ -104,6 +105,29 @@ def ensure_company_groups(company):
         page=home_page,
         permission=_page_permission_object("publish"),
     ).delete()
+
+    # Assign Wagtail Image and Document management permissions to both groups
+    from django.contrib.auth.models import Permission
+    from django.contrib.contenttypes.models import ContentType
+    try:
+        from wagtail.images.models import Image
+        from wagtail.documents.models import Document
+        
+        image_ct = ContentType.objects.get_for_model(Image)
+        doc_ct = ContentType.objects.get_for_model(Document)
+        
+        # Grant Wagtail Admin Access, Images and Documents permissions
+        admin_access_perm = Permission.objects.filter(codename="access_admin").first()
+        image_perms = Permission.objects.filter(content_type=image_ct, codename__in=["add_image", "change_image", "choose_image"])
+        doc_perms = Permission.objects.filter(content_type=doc_ct, codename__in=["add_document", "change_document", "choose_document"])
+        
+        for group in [manager_group, editor_group]:
+            if admin_access_perm:
+                group.permissions.add(admin_access_perm)
+            group.permissions.add(*image_perms)
+            group.permissions.add(*doc_perms)
+    except Exception:
+        pass
 
     return manager_group, editor_group
 
@@ -186,6 +210,9 @@ def on_membership_saved(sender, instance, **kwargs):
         else editor_group
     )
     instance.user.groups.add(target_group)
+    if not instance.user.is_staff:
+        instance.user.is_staff = True
+        instance.user.save(update_fields=["is_staff"])
 
 
 @receiver(post_delete, sender="companies.CompanyMembership")

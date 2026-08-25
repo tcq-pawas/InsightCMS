@@ -117,7 +117,16 @@ class CompanyHomePage(Page):
         help_text="The company this website belongs to. Drives data "
                    "isolation for the blog preview section.",
     )
- 
+
+    logo = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        help_text="Company logo shown in the header and dashboard card.",
+    )
+
     body = StreamField(
         COMPANY_HOME_PAGE_BLOCKS,
         blank=True,
@@ -125,9 +134,10 @@ class CompanyHomePage(Page):
         help_text="Build the page by adding, editing, and reordering "
                    "sections below.",
     )
- 
+
     content_panels = Page.content_panels + [
         FieldPanel("company"),
+        FieldPanel("logo"),
         FieldPanel("body"),
     ]
     base_form_class = CompanyScopedPageForm
@@ -141,3 +151,36 @@ class CompanyHomePage(Page):
  
     class Meta:
         verbose_name = "Company Home Page"
+
+
+# ---------------------------------------------------------------------------
+# PlatformHomePage — InsightCMS main platform landing page
+# No company field. Managed entirely via Wagtail StreamField CMS.
+# ---------------------------------------------------------------------------
+class PlatformHomePage(Page):
+    """
+    The main InsightCMS platform landing page.
+    Served at the root URL (127.0.0.1:8000/).
+    No company field — this is the platform's own homepage.
+    Editors design it using StreamField blocks from Wagtail CMS.
+    """
+
+    body = StreamField(
+        COMPANY_HOME_PAGE_BLOCKS,
+        blank=True,
+        use_json_field=True,
+        help_text="Build the platform homepage by adding and reordering sections.",
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel("body"),
+    ]
+
+    # Only allowed under root — one platform homepage
+    parent_page_types = ["wagtailcore.Page"]
+    subpage_types = []
+
+    template = "companies/platform_home_page.html"
+
+    class Meta:
+        verbose_name = "Platform Home Page"
