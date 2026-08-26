@@ -3,19 +3,51 @@
 <section class="about-section py-5">
   <div class="container">
     <div class="row align-items-center g-5">
-      <div class="col-lg-6">
+      <div class="col-lg-5">
         {% if value.heading %}
-          <h2 class="about-heading mb-3">{{ value.heading }}</h2>
+          <h2 class="about-heading mb-1">{{ value.heading }}</h2>
+        {% endif %}
+        {% if value.heading_highlight %}
+          <h2 class="about-heading-highlight mb-3">{{ value.heading_highlight }}</h2>
+        {% endif %}
+        {% if not value.heading_highlight %}
           <div class="heading-divider mb-4"></div>
         {% endif %}
         <div class="about-body">
           {{ value.body|richtext }}
         </div>
       </div>
-      {% if value.image %}
-        <div class="col-lg-6">
-          <div class="about-image-wrapper">
-            {% image value.image original class="img-fluid about-image shadow-lg" alt=value.image_alt_text|default:value.image.title %}
+
+      {% if value.image or value.second_image %}
+        <div class="col-lg-7">
+          <div class="about-dual-image-wrapper">
+
+            {% if value.image %}
+              <div class="about-mockup-card">
+                {% if value.image_label %}
+                  <div class="mockup-label">{{ value.image_label }}</div>
+                {% endif %}
+                {% image value.image fill-400x300 class="img-fluid" alt=value.image_alt_text|default:value.image.title %}
+              </div>
+            {% endif %}
+
+            {% if value.connector_text %}
+              <div class="about-connector">
+                <span class="connector-arrow left">&#8592;</span>
+                <span class="connector-circle">{{ value.connector_text }}</span>
+                <span class="connector-arrow right">&#8594;</span>
+              </div>
+            {% endif %}
+
+            {% if value.second_image %}
+              <div class="about-mockup-card">
+                {% if value.second_image_label %}
+                  <div class="mockup-label">{{ value.second_image_label }}</div>
+                {% endif %}
+                {% image value.second_image fill-400x300 class="img-fluid" alt=value.second_image_alt_text|default:value.second_image.title %}
+              </div>
+            {% endif %}
+
           </div>
         </div>
       {% endif %}

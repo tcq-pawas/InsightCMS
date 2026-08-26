@@ -37,8 +37,47 @@
                     {% endif %}
                 </div>
 
+                {% if value.flow_cards %}
+                    <div class="hero-mini-flow d-flex align-items-center flex-wrap gap-2 mt-4 pt-2">
+                        {% for card in value.flow_cards %}
+                            <div class="mini-flow-item text-center">
+                                <div class="mini-flow-icon mb-1">
+                                    {% if card.icon_name == 'pencil' %}
+                                        <i class="fa-solid fa-pen"></i>
+                                    {% elif card.icon_name == 'grid' %}
+                                        <i class="fa-solid fa-table-cells"></i>
+                                    {% elif card.icon_name == 'paper-plane' %}
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                    {% elif card.icon_name == 'globe' %}
+                                        <i class="fa-solid fa-globe"></i>
+                                    {% elif card.icon_name == 'bars' %}
+                                        <i class="fa-solid fa-bars-staggered"></i>
+                                    {% elif card.icon_name == 'gear' %}
+                                        <i class="fa-solid fa-gear"></i>
+                                    {% elif card.icon_name == 'desktop' %}
+                                        <i class="fa-solid fa-desktop"></i>
+                                    {% elif card.icon_name == 'users' %}
+                                        <i class="fa-solid fa-users"></i>
+                                    {% elif card.icon_name == 'bolt' %}
+                                        <i class="fa-solid fa-bolt"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-pen"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="mini-flow-title fw-bold" style="font-size: 0.8rem;">{{ card.title }}</div>
+                                {% if card.subtitle %}
+                                    <div class="mini-flow-sub text-muted" style="font-size: 0.68rem;">{{ card.subtitle }}</div>
+                                {% endif %}
+                            </div>
+                            {% if not forloop.last %}
+                                <div class="mini-flow-arrow text-primary px-1" style="font-size: 0.85rem; font-weight: bold;">➔</div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
                 {% if value.subtext %}
-                    <div class="hero-subtext">
+                    <div class="hero-subtext mt-3">
                         <span><i class="fa-regular fa-circle-check text-warning" aria-hidden="true"></i> {{ value.subtext }}</span>
                     </div>
                 {% endif %}
@@ -53,39 +92,5 @@
             {% endif %}
         </div>
 
-        <!-- Dynamic Hero Flow Cards (100% Wagtail Admin Driven) -->
-        {% if value.flow_cards %}
-            <div class="hero-flow-container">
-                <div class="row g-3 justify-content-center">
-                    {% for card in value.flow_cards %}
-                        <div class="col-6 col-md-3">
-                            <div class="flow-card">
-                                <div class="flow-icon bg-{{ card.color_theme }}-subtle text-{{ card.color_theme }}">
-                                    {% if card.icon_name == 'bars' %}
-                                        <i class="fa-solid fa-bars-staggered" aria-hidden="true"></i>
-                                    {% elif card.icon_name == 'gear' %}
-                                        <i class="fa-solid fa-gear" aria-hidden="true"></i>
-                                    {% elif card.icon_name == 'desktop' %}
-                                        <i class="fa-solid fa-desktop" aria-hidden="true"></i>
-                                    {% elif card.icon_name == 'users' %}
-                                        <i class="fa-solid fa-users" aria-hidden="true"></i>
-                                    {% elif card.icon_name == 'bolt' %}
-                                        <i class="fa-solid fa-bolt" aria-hidden="true"></i>
-                                    {% else %}
-                                        <i class="fa-solid fa-star" aria-hidden="true"></i>
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    <h6 class="flow-title">{{ card.title }}</h6>
-                                    {% if card.subtitle %}
-                                        <small class="flow-desc">{{ card.subtitle }}</small>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
     </div>
 </section>

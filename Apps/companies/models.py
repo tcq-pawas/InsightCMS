@@ -117,6 +117,12 @@ class CompanyHomePage(Page):
         help_text="The company this website belongs to. Drives data "
                    "isolation for the blog preview section.",
     )
+    
+    brand_name = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Brand name shown in the navbar/footer (e.g. 'BlogPro').",
+    )
 
     logo = models.ForeignKey(
         "wagtailimages.Image",
@@ -144,7 +150,7 @@ class CompanyHomePage(Page):
     )
 
     content_panels = Page.content_panels + [
-        FieldPanel("company"),
+        FieldPanel("brand_name"),
         FieldPanel("logo"),
         FieldPanel("navbar"),
         FieldPanel("body"),

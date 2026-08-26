@@ -1,14 +1,21 @@
+{% load wagtailimages_tags %}
+
 <footer class="footer-section">
+  
   <div class="container">
     <div class="row g-4 mb-4 justify-content-between">
 
       <!-- Col 1: Brand & Description -->
       <div class="col-12 col-lg-3">
-        {% if value.brand_name %}
-          <div class="footer-brand mb-3">
+        <div class="footer-brand mb-3 d-flex align-items-center gap-2">
+          {% if value.logo %}
+            {% image value.logo fill-40x40 as footer_logo %}
+            <img src="{{ footer_logo.url }}" alt="{{ value.logo_alt_text|default:value.brand_name }}" class="footer-logo-img">
+          {% endif %}
+          {% if value.brand_name %}
             <span class="footer-logo-text">{{ value.brand_name }}</span>
-          </div>
-        {% endif %}
+          {% endif %}
+        </div>
 
         {% if value.company_description %}
           <p class="footer-desc">{{ value.company_description }}</p>
@@ -40,7 +47,7 @@
 
       <!-- Dynamic Link Columns from Admin -->
       {% for col in value.link_columns %}
-        <div class="col-6 col-lg-3 mx-auto text-lg-center">
+        <div class="col-6 col-lg-2 mx-auto">
           {% if col.heading %}
             <h6 class="footer-col-heading">{{ col.heading }}</h6>
           {% endif %}
@@ -52,9 +59,25 @@
         </div>
       {% endfor %}
 
-      <!-- Contact Info -->
-      <div class="col-12 col-lg-3">
-        {% if value.address or value.email or value.phone %}
+      <!-- Newsletter -->
+      {% if value.newsletter_heading %}
+        <div class="col-12 col-lg-3">
+          <h6 class="footer-col-heading">{{ value.newsletter_heading }}</h6>
+          {% if value.newsletter_text %}
+            <p class="footer-desc">{{ value.newsletter_text }}</p>
+          {% endif %}
+          <form class="footer-newsletter-form d-flex gap-2 mt-3">
+            <input type="email" class="footer-newsletter-input" placeholder="{{ value.newsletter_placeholder }}">
+            <button type="submit" class="footer-newsletter-btn" aria-label="Subscribe">
+              <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            </button>
+          </form>
+        </div>
+      {% endif %}
+
+      <!-- Contact Info (kept, shown only if filled) -->
+      {% if value.address or value.email or value.phone %}
+        <div class="col-12 col-lg-3">
           <ul class="footer-contact-list">
             {% if value.address %}
               <li>
@@ -75,8 +98,8 @@
               </li>
             {% endif %}
           </ul>
-        {% endif %}
-      </div>
+        </div>
+      {% endif %}
 
     </div>
 

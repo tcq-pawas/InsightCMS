@@ -1,14 +1,13 @@
 {% load wagtailimages_tags %}
 
 <header class="company-navbar">
-    <a href="#" class="company-brand">
+    <a href="#" class="company-brand d-flex align-items-center gap-2">
         {% if page.logo %}
-            {% image page.logo fill-120x60 as logo_img %}
-            <img src="{{ logo_img.url }}" alt="{{ page.company.company_name|default:page.title }}">
-        {% elif page.company.logo %}
-            <img src="{{ page.company.logo.url }}" alt="{{ page.company.company_name }}">
-        {% else %}
-            <span class="company-brand-title">{{ page.company.company_name|default:page.title }}</span>
+            {% image page.logo fill-40x40 as logo_img %}
+            <img src="{{ logo_img.url }}" alt="{{ page.brand_name|default:page.title }}" class="navbar-logo-img">
+        {% endif %}
+        {% if page.brand_name %}
+            <span class="company-brand-title">{{ page.brand_name }}</span>
         {% endif %}
     </a>
 

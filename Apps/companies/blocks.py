@@ -48,13 +48,17 @@ class HeroFlowCardBlock(blocks.StructBlock):
     subtitle = blocks.CharBlock(required=False, max_length=60, label=_("Subtitle"), default="Manage Blogs")
     icon_name = blocks.ChoiceBlock(
         choices=[
+            ("pencil", "Create / Pencil"),
+            ("grid", "Manage / Grid"),
+            ("paper-plane", "Publish / Paper Plane"),
+            ("globe", "Display / Globe"),
             ("bars", "Dashboard / Bars"),
             ("gear", "API / Gear"),
             ("desktop", "Website / Desktop"),
             ("users", "Visitors / Users"),
             ("bolt", "Lightning / Bolt"),
         ],
-        default="bars",
+        default="pencil",
         label=_("Icon"),
     )
     color_theme = blocks.ChoiceBlock(
@@ -129,6 +133,10 @@ class HeroBlock(blocks.StructBlock):
 # ---------------------------------------------------------------------------
 class AboutBlock(blocks.StructBlock):
     heading = blocks.CharBlock(required=False, max_length=120, default="About Us")
+    heading_highlight = blocks.CharBlock(
+        required=False, max_length=120, label=_("Heading (highlight part)"),
+        help_text=_("Optional second line shown in accent color, e.g. 'One Dashboard.'"),
+    )
     body = blocks.RichTextBlock(
         required=True,
         features=["bold", "italic", "link", "ol", "ul", "h3", "h4"],
@@ -139,7 +147,14 @@ class AboutBlock(blocks.StructBlock):
         required=False, max_length=200, label=_("Image alt text"),
         help_text=_("Describe the image for screen readers. Leave blank to use the image's title."),
     )
+    image_label = blocks.CharBlock(required=False, max_length=50, default="Blog Dashboard", label=_("Left image label"))
 
+    second_image = ImageChooserBlock(required=False, label=_("Right side image (e.g. Your Website)"))
+    second_image_alt_text = blocks.CharBlock(required=False, max_length=200, label=_("Right image alt text"))
+    second_image_label = blocks.CharBlock(required=False, max_length=50, default="Your Website", label=_("Right image label"))
+    
+    connector_text = blocks.CharBlock(required=False, max_length=20, default="API", label=_("Center connector text"))
+      
     class Meta:
         template = "companies/blocks/about_block.html"
         icon = "doc-full"
@@ -173,6 +188,71 @@ class ServicesBlock(blocks.StructBlock):
         icon = "list-ul"
         label = "Services / Feature Cards"
 
+# ---------------------------------------------------------------------------
+# How It Works
+# ---------------------------------------------------------------------------
+class StepCardBlock(blocks.StructBlock):
+    step_number = blocks.IntegerBlock(default=1, label=_("Step Number"))
+    title = blocks.CharBlock(required=True, max_length=50, label=_("Title"))
+    description = blocks.TextBlock(required=False, label=_("Description"))
+    icon_name = blocks.ChoiceBlock(
+        choices=[
+            ("dashboard", "Dashboard"),
+            ("paper-plane", "Publish / Paper Plane"),
+            ("api", "API / Cloud"),
+            ("globe", "Website / Globe"),
+            ("gear", "Gear"),
+            ("desktop", "Desktop"),
+        ],
+        default="dashboard",
+        label=_("Icon"),
+    )
+
+    class Meta:
+        icon = "order"
+        label = "Step"
+
+
+class HowItWorksBlock(blocks.StructBlock):
+    heading = blocks.CharBlock(required=False, max_length=120, default="How It Works")
+    steps = blocks.ListBlock(StepCardBlock(), label=_("Steps"))
+
+    class Meta:
+        template = "companies/blocks/how_it_works_block.html"
+        icon = "order"
+        label = "How It Works"
+
+
+# ---------------------------------------------------------------------------
+# Pricing
+# ---------------------------------------------------------------------------
+class PricingPlanBlock(blocks.StructBlock):
+    plan_name = blocks.CharBlock(required=True, max_length=50, label=_("Plan Name"))
+    description = blocks.CharBlock(required=False, max_length=150, label=_("Short Description"))
+    price = blocks.CharBlock(required=True, max_length=20, label=_("Price"), help_text=_("e.g. $29"))
+    period = blocks.CharBlock(required=False, max_length=20, default="/month", label=_("Billing Period"))
+    features = blocks.ListBlock(blocks.CharBlock(max_length=100), label=_("Features"))
+    button_text = blocks.CharBlock(required=False, max_length=30, default="Get Started", label=_("Button Text"))
+    button_link = blocks.CharBlock(required=False, max_length=255, label=_("Button Link"))
+    is_featured = blocks.BooleanBlock(
+        required=False, default=False,
+        label=_("Highlight as 'Most Popular'"),
+    )
+
+    class Meta:
+        icon = "success"
+        label = "Pricing Plan"
+
+
+class PricingBlock(blocks.StructBlock):
+    heading = blocks.CharBlock(required=False, max_length=120, default="Simple, Transparent Pricing")
+    subheading = blocks.CharBlock(required=False, max_length=200, default="Choose the plan that fits your needs.")
+    plans = blocks.ListBlock(PricingPlanBlock(), label=_("Pricing Plans"))
+
+    class Meta:
+        template = "companies/blocks/pricing_block.html"
+        icon = "success"
+        label = "Pricing"
 
 # ---------------------------------------------------------------------------
 # 4. Testimonials
@@ -320,6 +400,8 @@ class FooterColumnBlock(blocks.StructBlock):
 
 
 class FooterBlock(blocks.StructBlock):
+    logo                 = ImageChooserBlock(required=False, label=_("Footer Logo"))
+    logo_alt_text        = blocks.CharBlock(required=False, max_length=150, label=_("Logo alt text"))
     brand_name          = blocks.CharBlock(required=False, max_length=60, default="InsightCMS", label=_("Brand Name"))
     company_description = blocks.TextBlock(required=False, label=_("Company Description"))
     address             = blocks.CharBlock(required=False, max_length=255, label=_("Address"))
@@ -329,6 +411,9 @@ class FooterBlock(blocks.StructBlock):
     link_columns        = blocks.ListBlock(FooterColumnBlock(), required=False, label=_("Link Columns (e.g. Product, Company)"))
     copyright_text      = blocks.CharBlock(required=False, max_length=200, label=_("Copyright Text"))
 
+    newsletter_heading     = blocks.CharBlock(required=False, max_length=60, default="Newsletter", label=_("Newsletter Heading"))
+    newsletter_text        = blocks.CharBlock(required=False, max_length=150, default="Stay updated with new features and important updates.", label=_("Newsletter Text"))
+    newsletter_placeholder = blocks.CharBlock(required=False, max_length=50, default="Enter your email", label=_("Email Input Placeholder"))
     class Meta:
         template = "companies/blocks/footer_block.html"
         icon     = "site"
@@ -342,6 +427,8 @@ COMPANY_HOME_PAGE_BLOCKS = [
     ("hero", HeroBlock()),
     ("about", AboutBlock()),
     ("services", ServicesBlock()),
+    ("how_it_works", HowItWorksBlock()),
+    ("pricing", PricingBlock()),
     ("testimonials", TestimonialsBlock()),
     ("blog_preview", BlogPreviewBlock()),
     ("contact_cta", ContactCTABlock()),

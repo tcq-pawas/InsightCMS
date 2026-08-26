@@ -1,0 +1,44 @@
+<section class="how-it-works-section py-5">
+  <div class="container">
+    {% if value.heading %}
+      <h2 class="text-center fw-bold mb-5">{{ value.heading }}</h2>
+    {% endif %}
+
+    <div class="how-it-works-row">
+      {% for step in value.steps %}
+        <div class="how-it-works-step">
+          <div class="step-icon-wrapper">
+            <span class="step-number-badge">{{ step.step_number }}</span>
+            <div class="step-icon-circle">
+              {% if step.icon_name == 'dashboard' %}
+                <i class="fa-solid fa-table-columns" aria-hidden="true"></i>
+              {% elif step.icon_name == 'paper-plane' %}
+                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+              {% elif step.icon_name == 'api' %}
+                <i class="fa-solid fa-cloud" aria-hidden="true"></i>
+              {% elif step.icon_name == 'globe' %}
+                <i class="fa-solid fa-globe" aria-hidden="true"></i>
+              {% elif step.icon_name == 'gear' %}
+                <i class="fa-solid fa-gear" aria-hidden="true"></i>
+              {% elif step.icon_name == 'desktop' %}
+                <i class="fa-solid fa-desktop" aria-hidden="true"></i>
+              {% else %}
+                <i class="fa-solid fa-star" aria-hidden="true"></i>
+              {% endif %}
+            </div>
+          </div>
+          <h6 class="step-title">{{ step.title }}</h6>
+          {% if step.description %}
+            <p class="step-desc">{{ step.description }}</p>
+          {% endif %}
+        </div>
+
+        {% if not forloop.last %}
+          <div class="how-it-works-arrow">
+            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>

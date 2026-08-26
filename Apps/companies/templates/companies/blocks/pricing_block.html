@@ -1,0 +1,49 @@
+<section class="pricing-section py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      {% if value.heading %}
+        <h2 class="pricing-heading">{{ value.heading }}</h2>
+      {% endif %}
+      {% if value.subheading %}
+        <p class="pricing-subheading">{{ value.subheading }}</p>
+      {% endif %}
+    </div>
+
+    <div class="row g-4 justify-content-center">
+      {% for plan in value.plans %}
+        <div class="col-md-6 col-lg-4">
+          <div class="pricing-card {% if plan.is_featured %}pricing-card-featured{% endif %}">
+            {% if plan.is_featured %}
+              <div class="pricing-badge">Most Popular</div>
+            {% endif %}
+
+            <h5 class="pricing-plan-name">{{ plan.plan_name }}</h5>
+            {% if plan.description %}
+              <p class="pricing-plan-desc">{{ plan.description }}</p>
+            {% endif %}
+
+            <div class="pricing-price">
+              {{ plan.price }}
+              {% if plan.period %}<span class="pricing-period">{{ plan.period }}</span>{% endif %}
+            </div>
+
+            {% if plan.features %}
+              <ul class="pricing-features">
+                {% for feature in plan.features %}
+                  <li><i class="fa-solid fa-check" aria-hidden="true"></i> {{ feature }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+
+            {% if plan.button_text %}
+              <a href="{{ plan.button_link|default:'#' }}"
+                 class="pricing-btn {% if plan.is_featured %}pricing-btn-filled{% else %}pricing-btn-outline{% endif %}">
+                {{ plan.button_text }}
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
