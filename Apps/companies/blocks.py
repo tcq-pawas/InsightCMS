@@ -181,6 +181,14 @@ class ServiceCardBlock(blocks.StructBlock):
 class ServicesBlock(blocks.StructBlock):
     heading = blocks.CharBlock(required=False, max_length=120, default="Our Services")
     subheading = blocks.CharBlock(required=False, max_length=200)
+    columns = blocks.ChoiceBlock(
+        choices=[
+            ("3", "3 per row"),
+            ("4", "4 per row"),
+        ],
+        default="4",
+        label=_("Cards per row"),
+    )
     cards = blocks.ListBlock(ServiceCardBlock())
 
     class Meta:
@@ -383,7 +391,8 @@ class SocialLinkBlock(blocks.StructBlock):
 
 class FooterLinkBlock(blocks.StructBlock):
     label = blocks.CharBlock(required=True, max_length=80, label=_("Link Text"))
-    url   = blocks.URLBlock(required=True, label=_("URL"))
+    url   = blocks.CharBlock(required=True, label=_("URL"))
+    
 
     class Meta:
         icon  = "link"

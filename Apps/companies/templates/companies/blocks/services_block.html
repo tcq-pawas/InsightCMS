@@ -1,6 +1,6 @@
 {% load wagtailimages_tags %}
 
-<section class="services-section">
+<section class="services-section" id="features">
   <div class="container">
     <div class="text-center mb-5">
       {% if value.heading %}
@@ -13,27 +13,14 @@
 
     <div class="row g-4">
       {% for card in value.cards %}
-        <div class="col-md-4 col-lg">
+        <div class="{% if value.columns == '3' %}col-md-6 col-lg-4{% else %}col-md-6 col-lg-3{% endif %}">
           <div class="service-card">
             <div class="icon-circle
-              {% cycle 'icon-orange' 'icon-blue' 'icon-purple' 'icon-pink' 'icon-green' %}">
+              {% cycle 'icon-orange' 'icon-blue' 'icon-purple' 'icon-pink' 'icon-green' 'icon-red' %}">
               {% if card.icon %}
                 {% image card.icon fill-32x32 alt=card.icon_alt_text|default:card.title %}
               {% else %}
-                {# Auto icon based on position #}
-                {% if forloop.counter == 1 %}
-                  <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
-                {% elif forloop.counter == 2 %}
-                  <i class="fa-solid fa-code" aria-hidden="true"></i>
-                {% elif forloop.counter == 3 %}
-                  <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
-                {% elif forloop.counter == 4 %}
-                  <i class="fa-solid fa-bolt" aria-hidden="true"></i>
-                {% elif forloop.counter == 5 %}
-                  <i class="fa-solid fa-bullhorn" aria-hidden="true"></i>
-                {% else %}
-                  <i class="fa-solid fa-star" aria-hidden="true"></i>
-                {% endif %}
+                <i class="fa-solid fa-star" aria-hidden="true"></i>
               {% endif %}
             </div>
             <h5>{{ card.title }}</h5>

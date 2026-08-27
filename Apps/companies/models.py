@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from wagtail.models import Page
 from wagtail.fields import StreamField
 from wagtail.admin.panels import FieldPanel
-
+from wagtail.fields import RichTextField
 from Apps.common.models import BaseModel
 from Apps.common.helpers import generate_api_key
 from Apps.companies.blocks import COMPANY_HOME_PAGE_BLOCKS, NAVBAR_BLOCKS
@@ -160,7 +160,7 @@ class CompanyHomePage(Page):
     # A CompanyHomePage is typically the root of that company's Wagtail
     # Site, with a BlogIndexPage (from the `blogs` app) living under it.
     parent_page_types = ["wagtailcore.Page"]
-    subpage_types = ["blogs.BlogIndexPage"]
+    subpage_types = ["blogs.BlogIndexPage", "companies.SimpleContentPage"]
  
     template = "companies/company_home_page.html"
  
@@ -168,3 +168,21 @@ class CompanyHomePage(Page):
         verbose_name = "Company Home Page"
 
 
+class SimpleContentPage(Page):
+    """
+    Generic page for static content like Privacy Policy, Terms of
+    Service, About Us, etc. — a heading + rich text body.
+    """
+    body = RichTextField(blank=True)
+
+    content_panels = Page.content_panels + [
+        FieldPanel("body"),
+    ]
+
+    parent_page_types = ["companies.CompanyHomePage", "wagtailcore.Page"]
+    subpage_types = []
+
+    template = "companies/simple_content_page.html"
+
+    class Meta:
+        verbose_name = "Simple Content Page"

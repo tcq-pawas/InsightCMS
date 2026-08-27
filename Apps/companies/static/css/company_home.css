@@ -1,4 +1,7 @@
 /* InsightCMS — Company Home Page Theme */
+html {
+  scroll-behavior: smooth;
+}
 
 /* Container width expansion for full-width mockup layout */
 .container {
