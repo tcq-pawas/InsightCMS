@@ -160,7 +160,12 @@ class CompanyHomePage(Page):
     # A CompanyHomePage is typically the root of that company's Wagtail
     # Site, with a BlogIndexPage (from the `blogs` app) living under it.
     parent_page_types = ["wagtailcore.Page"]
-    subpage_types = ["blogs.BlogIndexPage", "companies.SimpleContentPage"]
+    subpage_types = [
+        "blogs.BlogIndexPage", 
+        "companies.SimpleContentPage",
+        "accounts.LoginPage",
+        "accounts.RegisterPage",
+    ]
  
     template = "companies/company_home_page.html"
  

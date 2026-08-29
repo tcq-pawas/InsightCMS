@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm, AuthenticationForm
 from Apps.accounts.models import User
 
 
@@ -17,3 +17,7 @@ class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = User
         fields = ('email', 'first_name', 'last_name', 'role', 'is_active', 'is_staff')
+
+
+class EmailLoginForm(AuthenticationForm):
+    username = forms.EmailField(label='Email')

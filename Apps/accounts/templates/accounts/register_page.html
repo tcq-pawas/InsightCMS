@@ -1,0 +1,61 @@
+{% extends "companies/base.html" %}
+{% load wagtailimages_tags static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="auth-page-section">
+  <div class="auth-card auth-card-wide">
+    <h2>{{ page.heading }}</h2>
+    <p class="text-muted">{{ page.subtext }}</p>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="auth-form-grid">
+        <div class="auth-field full-width">
+          <label for="{{ form.email.id_for_label }}">{{ page.email_label }}</label>
+          {{ form.email }}
+          {{ form.email.errors }}
+        </div>
+
+        <div class="auth-field">
+          <label for="{{ form.first_name.id_for_label }}">{{ page.first_name_label }}</label>
+          {{ form.first_name }}
+          {{ form.first_name.errors }}
+        </div>
+
+        <div class="auth-field">
+          <label for="{{ form.last_name.id_for_label }}">{{ page.last_name_label }}</label>
+          {{ form.last_name }}
+          {{ form.last_name.errors }}
+        </div>
+
+        <div class="auth-field">
+          <label for="{{ form.role.id_for_label }}">{{ page.role_label }}</label>
+          {{ form.role }}
+          {{ form.role.errors }}
+        </div>
+
+        <div class="auth-field">
+          <label for="{{ form.password1.id_for_label }}">{{ page.password_label }}</label>
+          {{ form.password1 }}
+          {{ form.password1.errors }}
+        </div>
+
+        <div class="auth-field full-width">
+          <label for="{{ form.password2.id_for_label }}">{{ page.confirm_password_label }}</label>
+          {{ form.password2 }}
+          {{ form.password2.errors }}
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary mt-2">{{ page.submit_button_text }}</button>
+    </form>
+
+    <p class="auth-switch-link">{{ page.login_prompt_text }} <a href="{{ login_url }}">{{ page.login_link_text }}</a></p>
+  </div>
+</section>
+{% endblock %}

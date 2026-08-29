@@ -2,6 +2,11 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from Apps.common.models import BaseModel
+from wagtail.models import Page
+from wagtail.admin.panels import FieldPanel
+from wagtail.images.blocks import ImageChooserBlock
+from django.shortcuts import redirect, render
+from django.contrib.auth import login as auth_login
 
 
 class UserManager(BaseUserManager):
@@ -70,3 +75,105 @@ class User(AbstractUser, BaseModel):
 
     def get_short_name(self):
         return self.first_name
+
+
+
+class LoginPage(Page):
+    heading = models.CharField(max_length=120, blank=True, default="Welcome Back")
+    subtext = models.CharField(max_length=200, blank=True, default="Login to manage your blogs")
+    submit_button_text = models.CharField(max_length=50, blank=True, default="Login")
+    register_prompt_text = models.CharField(max_length=100, blank=True, default="Don't have an account?")
+    register_link_text = models.CharField(max_length=50, blank=True, default="Register")
+    background_image = models.ForeignKey(
+        "wagtailimages.Image", null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="+",
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel("heading"),
+        FieldPanel("subtext"),
+        FieldPanel("submit_button_text"),
+        FieldPanel("register_prompt_text"),
+        FieldPanel("register_link_text"),
+        FieldPanel("background_image"),
+    ]
+
+    parent_page_types = ["companies.CompanyHomePage", "wagtailcore.Page"]
+    subpage_types = []
+    template = "accounts/login_page.html"
+
+    def serve(self, request):
+        from Apps.accounts.forms import EmailLoginForm
+        from Apps.accounts.models import RegisterPage
+
+        form = EmailLoginForm(request, data=request.POST or None)
+        if request.method == "POST" and form.is_valid():
+            auth_login(request, form.get_user())
+            return redirect("/")
+
+        context = self.get_context(request)
+        context["form"] = form
+        register_page = RegisterPage.objects.live().first()
+        context["register_url"] = register_page.url if register_page else "/register/"
+        return render(request, self.template, context)
+
+    class Meta:
+        verbose_name = "Login Page"
+        
+          
+class RegisterPage(Page):
+    heading = models.CharField(max_length=120, blank=True, default="Create Your Account")
+    subtext = models.CharField(max_length=200, blank=True, default="Get started with BlogPro")
+
+    email_label = models.CharField(max_length=50, blank=True, default="Email address")
+    first_name_label = models.CharField(max_length=50, blank=True, default="First Name")
+    last_name_label = models.CharField(max_length=50, blank=True, default="Last Name")
+    role_label = models.CharField(max_length=50, blank=True, default="Role")
+    password_label = models.CharField(max_length=50, blank=True, default="Password")
+    confirm_password_label = models.CharField(max_length=50, blank=True, default="Confirm Password")
+    submit_button_text = models.CharField(max_length=50, blank=True, default="Register")
+    login_prompt_text = models.CharField(max_length=100, blank=True, default="Already have an account?")
+    login_link_text = models.CharField(max_length=50, blank=True, default="Login")
+    
+    background_image = models.ForeignKey(
+        "wagtailimages.Image", null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="+",
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel("heading"),
+        FieldPanel("subtext"),
+        FieldPanel("email_label"),
+        FieldPanel("first_name_label"),
+        FieldPanel("last_name_label"),
+        FieldPanel("role_label"),
+        FieldPanel("password_label"),
+        FieldPanel("confirm_password_label"),
+        FieldPanel("submit_button_text"),
+        FieldPanel("login_prompt_text"),
+        FieldPanel("login_link_text"),
+        FieldPanel("background_image"),
+    ]
+
+    parent_page_types = ["companies.CompanyHomePage", "wagtailcore.Page"]
+    subpage_types = []
+    template = "accounts/register_page.html"
+
+    def serve(self, request):
+        from Apps.accounts.forms import CustomUserCreationForm
+        from Apps.accounts.models import LoginPage
+
+        form = CustomUserCreationForm(request.POST or None)
+        if request.method == "POST" and form.is_valid():
+            user = form.save()
+            auth_login(request, user)
+            return redirect("/")
+
+        context = self.get_context(request)
+        context["form"] = form
+        login_page = LoginPage.objects.live().first()
+        context["login_url"] = login_page.url if login_page else "/login/"
+        return render(request, self.template, context)
+
+    class Meta:
+        verbose_name = "Register Page"

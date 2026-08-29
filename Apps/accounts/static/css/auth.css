@@ -1,0 +1,150 @@
+/* Auth Pages (Login / Register) — InsightCMS Theme */
+
+.auth-page-section {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    padding: 3rem 1rem;
+}
+
+.auth-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 420px;
+}
+
+.auth-card h2 {
+    font-weight: 800;
+    color: #0f172a;
+    font-size: 1.75rem;
+    margin-bottom: 0.4rem;
+}
+
+.auth-card p.text-muted {
+    color: #64748b;
+    margin-bottom: 1.75rem;
+}
+
+.auth-card form p {
+    margin-bottom: 1.1rem;
+}
+
+.auth-card form label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #334155;
+    margin-bottom: 0.35rem;
+}
+
+.auth-card form input,
+.auth-card form select {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.auth-card form input:focus,
+.auth-card form select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+.auth-card form ul {
+    font-size: 0.78rem;
+    color: #64748b;
+    padding-left: 1.2rem;
+    margin-bottom: 1.1rem;
+}
+
+.auth-card .btn-primary {
+    background: #2563eb;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    padding: 0.7rem 1rem;
+    border-radius: 50px;
+    width: 100%;
+    font-size: 0.95rem;
+    transition: background 0.2s ease;
+}
+
+.auth-card .btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.auth-card .auth-switch-link {
+    text-align: center;
+    margin-top: 1.25rem;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.auth-card .auth-switch-link a {
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-card .auth-switch-link a:hover {
+    text-decoration: underline;
+}
+
+
+.auth-card-wide {
+    max-width: 520px;
+    padding: 2rem 2.25rem;
+}
+
+.auth-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.auth-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.auth-field label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #334155;
+    margin-bottom: 0.3rem;
+}
+
+.auth-field input,
+.auth-field select {
+    width: 100%;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.auth-field input:focus,
+.auth-field select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+/* Hide Django's default password help-text bullet list to keep it compact */
+.auth-field ul {
+    display: none;
+}
+
+.mt-2 {
+    margin-top: 0.5rem;
+}

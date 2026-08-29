@@ -31,7 +31,11 @@ class NavbarBlock(blocks.StructBlock):
     )
     cta_link = blocks.CharBlock(
         required=False, max_length=255, label=_("Get Started button link"),
-        default="/cms/",
+        default="/login/",
+    )
+    logout_text = blocks.CharBlock(
+        required=False, max_length=50, label=_("Logout button text"),
+        default="Logout",
     )
 
     class Meta:
