@@ -23,16 +23,18 @@
     <main class="bp-content-body">
 
       <!-- Page Header & Action Button -->
-      <div class="bp-page-header">
+      <div class="bp-page-header" id="dashboard">
         <div>
           <h1 class="bp-page-title">{{ page.welcome_heading|default:"Dashboard" }}</h1>
           <p class="bp-page-sub">{{ page.welcome_subtext|default:"Welcome back! Here's what's happening with your blog." }}</p>
         </div>
+        {% if page.new_post_button_text %}
         <div>
           <a href="{{ page.new_post_button_url|default:'/cms/pages/' }}" class="bp-btn-primary">
-            <i class="fa-solid fa-plus me-1"></i> {{ page.new_post_button_text|default:"+ New Post" }}
+            <i class="fa-solid fa-plus me-1"></i> {{ page.new_post_button_text }}
           </a>
         </div>
+        {% endif %}
       </div>
 
       <!-- 2.2 Top 5 Stat Cards -->
@@ -151,5 +153,18 @@
       }
     });
   }
+</script>
+
+<script>
+  // Smooth scroll for sidebar anchor links (e.g. Posts -> #posts)
+  document.querySelectorAll('.bp-nav a[href^="#"]').forEach(link => {
+    link.addEventListener('click', function(e) {
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
 </script>
 {% endblock %}

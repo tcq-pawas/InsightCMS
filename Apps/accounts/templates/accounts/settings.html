@@ -1,0 +1,495 @@
+{% extends "companies/base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}{{ page.settings_page_title|default:"Settings" }} | {{ page.brand_name|default:"ShivangiCMS" }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=2.0">
+<style>
+  /* ==========================================================================
+     SETTINGS PAGE DEDICATED STYLING
+     ========================================================================== */
+  .bp-settings-nav {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 1.75rem;
+    padding-bottom: 0.5rem;
+    overflow-x: auto;
+  }
+
+  .bp-settings-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.15rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #64748b;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .bp-settings-tab:hover {
+    color: #0f172a;
+    background: #f1f5f9;
+  }
+
+  .bp-settings-tab.active {
+    color: #2563eb !important;
+    background: #eff6ff !important;
+    font-weight: 600;
+  }
+
+  .bp-settings-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  }
+
+  .bp-settings-section-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .bp-settings-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.35rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .bp-settings-sub {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0;
+  }
+
+  .bp-form-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 0.4rem;
+    display: block;
+  }
+
+  .bp-form-control {
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #0f172a;
+    background-color: #fff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .bp-form-control:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  .bp-form-control:disabled, .bp-form-control[readonly] {
+    background-color: #f8fafc;
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
+
+  .bp-form-hint {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin-top: 0.35rem;
+  }
+
+  .bp-avatar-upload-wrap {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .bp-avatar-preview {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.4rem;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+  }
+
+  .bp-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f8fafc;
+  }
+
+  .bp-toggle-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .bp-toggle-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 0.15rem;
+  }
+
+  .bp-toggle-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 0;
+  }
+
+  .bp-badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  .bp-badge-success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .bp-btn-save {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 0.65rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .bp-btn-save:hover {
+    background: #1d4ed8;
+    color: #fff;
+  }
+
+  .bp-btn-secondary {
+    background: #f1f5f9;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    padding: 0.55rem 1.15rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .bp-btn-secondary:hover {
+    background: #e2e8f0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bp-app-wrapper" id="setting">
+
+  <!-- 1. Left Sidebar Navigation -->
+  {% include "accounts/blocks/sidebar.html" %}
+
+  <!-- 2. Main Container -->
+  <div class="bp-main-container">
+
+    <!-- 2.1 Topbar Header -->
+    {% include "accounts/blocks/topbar.html" %}
+
+    <main class="bp-content-body">
+
+      <!-- Page Header -->
+      <div class="bp-page-header mb-4">
+        <div>
+          <h1 class="bp-page-title">{{ page.settings_page_title|default:"Settings" }}</h1>
+          <p class="bp-page-sub">{{ page.settings_page_subtext|default:"Manage your account preferences, workspace, and security settings." }}</p>
+        </div>
+      </div>
+
+      <!-- Settings Tab Navigation (Fully Dynamic Wagtail CMS) -->
+      <div class="bp-settings-nav">
+        <button class="bp-settings-tab active" onclick="switchTab('profile', this)">
+          <i class="fa-regular fa-user"></i> {{ page.settings_tab_1_title|default:"Profile" }}
+        </button>
+        <button class="bp-settings-tab" onclick="switchTab('workspace', this)">
+          <i class="fa-solid fa-briefcase"></i> {{ page.settings_tab_2_title|default:"Workspace" }}
+        </button>
+        <button class="bp-settings-tab" onclick="switchTab('notifications', this)">
+          <i class="fa-regular fa-bell"></i> {{ page.settings_tab_3_title|default:"Notifications" }}
+        </button>
+        <button class="bp-settings-tab" onclick="switchTab('security', this)">
+          <i class="fa-solid fa-shield-halved"></i> {{ page.settings_tab_4_title|default:"Security" }}
+        </button>
+      </div>
+
+      <!-- ==========================================
+           1. PROFILE SECTION
+           ========================================== -->
+      <div id="section-profile" class="settings-tab-pane">
+        <div class="bp-settings-card">
+          <div class="bp-settings-section-header">
+            <h2 class="bp-settings-title"><i class="fa-regular fa-user text-primary"></i> {{ page.settings_profile_heading|default:"Profile Information" }}</h2>
+            <p class="bp-settings-sub">{{ page.settings_profile_subtext|default:"Update your personal details and public profile presence." }}</p>
+          </div>
+
+          <div class="bp-avatar-upload-wrap">
+            <div class="bp-avatar-preview">
+              {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+              {% else %}
+                {{ user.first_name|slice:":1"|default:user.username|slice:":1"|upper }}
+              {% endif %}
+            </div>
+            <div>
+              <div class="fw-bold text-dark">{{ user.get_full_name|default:user.username }}</div>
+              <div class="text-muted small mb-2">{{ user.email }}</div>
+              <button type="button" class="bp-btn-secondary"><i class="fa-solid fa-camera me-1"></i> Change Avatar</button>
+            </div>
+          </div>
+
+          <form onsubmit="event.preventDefault(); alert('Profile updated successfully!');">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="bp-form-label">First Name</label>
+                <input type="text" class="bp-form-control" value="{{ user.first_name|default:'Shivangi' }}">
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">Last Name</label>
+                <input type="text" class="bp-form-control" value="{{ user.last_name|default:'' }}">
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">Email Address</label>
+                <input type="email" class="bp-form-control" value="{{ user.email }}" readonly>
+                <div class="bp-form-hint">Email address is managed by your system administrator.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">Role</label>
+                <input type="text" class="bp-form-control" value="{{ user.get_role_display|default:'Super Admin' }}" disabled>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+              <button type="submit" class="bp-btn-save"><i class="fa-solid fa-check"></i> {{ page.settings_profile_btn_text|default:"Save Changes" }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           2. WORKSPACE SECTION
+           ========================================== -->
+      <div id="section-workspace" class="settings-tab-pane d-none">
+        <div class="bp-settings-card">
+          <div class="bp-settings-section-header">
+            <h2 class="bp-settings-title"><i class="fa-solid fa-briefcase text-primary"></i> {{ page.settings_workspace_heading|default:"Workspace Details" }}</h2>
+            <p class="bp-settings-sub">{{ page.settings_workspace_subtext|default:"Configure your blog workspace, public name, and publishing preferences." }}</p>
+          </div>
+
+          <form onsubmit="event.preventDefault(); alert('Workspace settings saved!');">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="bp-form-label">Workspace / Brand Name</label>
+                <input type="text" class="bp-form-control" value="{{ page.brand_name|default:'ShivangiCMS' }}">
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">Primary Domain</label>
+                <input type="text" class="bp-form-control" value="{{ page.settings_workspace_domain|default:'insightcms.local' }}" readonly>
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">Timezone</label>
+                <select class="bp-form-control">
+                  <option selected>Asia/Kolkata (GMT+05:30)</option>
+                  <option>UTC (GMT+00:00)</option>
+                  <option>America/New_York (GMT-05:00)</option>
+                  <option>Europe/London (GMT+00:00)</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">Default Publishing Language</label>
+                <select class="bp-form-control">
+                  <option selected>English (United States)</option>
+                  <option>Hindi</option>
+                  <option>Spanish</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top d-flex justify-content-end">
+              <button type="submit" class="bp-btn-save"><i class="fa-solid fa-check"></i> {{ page.settings_workspace_btn_text|default:"Save Workspace" }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           3. NOTIFICATIONS SECTION
+           ========================================== -->
+      <div id="section-notifications" class="settings-tab-pane d-none">
+        <div class="bp-settings-card">
+          <div class="bp-settings-section-header">
+            <h2 class="bp-settings-title"><i class="fa-regular fa-bell text-primary"></i> {{ page.settings_notif_heading|default:"Notification Preferences" }}</h2>
+            <p class="bp-settings-sub">{{ page.settings_notif_subtext|default:"Choose when and how you want to be notified about blog activities." }}</p>
+          </div>
+
+          <div class="bp-toggle-row">
+            <div>
+              <div class="bp-toggle-label">{{ page.settings_notif_1_title|default:"New Comments & Reader Interactions" }}</div>
+              <p class="bp-toggle-desc">{{ page.settings_notif_1_desc|default:"Get notified immediately whenever a reader leaves a comment on your posts." }}</p>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" checked style="width: 2.5em; height: 1.25em;">
+            </div>
+          </div>
+
+          <div class="bp-toggle-row">
+            <div>
+              <div class="bp-toggle-label">{{ page.settings_notif_2_title|default:"Weekly Analytics Digest" }}</div>
+              <p class="bp-toggle-desc">{{ page.settings_notif_2_desc|default:"Receive a weekly summary of your blog's visitors, top posts, and subscriber growth." }}</p>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" checked style="width: 2.5em; height: 1.25em;">
+            </div>
+          </div>
+
+          <div class="bp-toggle-row">
+            <div>
+              <div class="bp-toggle-label">{{ page.settings_notif_3_title|default:"System & Security Alerts" }}</div>
+              <p class="bp-toggle-desc">{{ page.settings_notif_3_desc|default:"Important updates about your account security and CMS updates." }}</p>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" checked disabled style="width: 2.5em; height: 1.25em;">
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-top d-flex justify-content-end">
+            <button type="button" class="bp-btn-save" onclick="alert('Notification preferences updated!');"><i class="fa-solid fa-check"></i> {{ page.settings_notif_btn_text|default:"Save Preferences" }}</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           4. SECURITY SECTION
+           ========================================== -->
+      <div id="section-security" class="settings-tab-pane d-none">
+        <div class="bp-settings-card">
+          <div class="bp-settings-section-header">
+            <h2 class="bp-settings-title"><i class="fa-solid fa-shield-halved text-primary"></i> {{ page.settings_security_heading|default:"Security & Authentication" }}</h2>
+            <p class="bp-settings-sub">{{ page.settings_security_subtext|default:"Manage your password, login security, and active sessions." }}</p>
+          </div>
+
+          <form onsubmit="event.preventDefault(); alert('Password updated successfully!');">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="bp-form-label">Current Password</label>
+                <input type="password" class="bp-form-control" placeholder="••••••••">
+              </div>
+              <div class="col-md-6"></div>
+
+              <div class="col-md-6">
+                <label class="bp-form-label">New Password</label>
+                <input type="password" class="bp-form-control" placeholder="Enter new password">
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">Confirm New Password</label>
+                <input type="password" class="bp-form-control" placeholder="Confirm new password">
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+              <div>
+                <span class="bp-badge-status bp-badge-success"><i class="fa-solid fa-circle-check"></i> {{ page.settings_security_badge_text|default:"Account Protected" }}</span>
+              </div>
+              <button type="submit" class="bp-btn-save"><i class="fa-solid fa-key"></i> {{ page.settings_security_btn_text|default:"Update Password" }}</button>
+            </div>
+          </form>
+
+          <hr class="my-4" style="border-color: #f1f5f9;">
+
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="bp-toggle-label">{{ page.settings_session_title|default:"Active Session" }}</div>
+              <p class="bp-toggle-desc">{{ page.settings_session_desc|default:"Currently signed in from this browser." }}</p>
+            </div>
+            <form method="post" action="{% url 'logout' %}" style="margin:0;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-right-from-bracket me-1"></i> Sign Out</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- 3. Dark Footer -->
+    {% include "accounts/blocks/footer.html" %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function switchTab(tabName, btnElement) {
+    // Hide all tab panes
+    document.querySelectorAll('.settings-tab-pane').forEach(el => el.classList.add('d-none'));
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.bp-settings-tab').forEach(el => el.classList.remove('active'));
+    
+    // Show selected pane
+    const target = document.getElementById('section-' + tabName);
+    if (target) {
+      target.classList.remove('d-none');
+    }
+    
+    // Set active button
+    if (btnElement) {
+      btnElement.classList.add('active');
+    }
+  }
+
+  // Support direct hash links (e.g. /settings/#security)
+  window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (['profile', 'workspace', 'notifications', 'security'].includes(hash)) {
+      const tabBtn = document.querySelector(`.bp-settings-tab[onclick*="${hash}"]`);
+      if (tabBtn) {
+        switchTab(hash, tabBtn);
+      }
+    }
+  });
+</script>
+{% endblock %}

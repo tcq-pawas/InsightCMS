@@ -6,13 +6,15 @@ from wagtail.admin import urls as wagtailadmin_urls
 from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from Apps.accounts.views import user_dashboard_view, logout_view
+from Apps.accounts.views import user_dashboard_view, logout_view, settings_view
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('cms/', include(wagtailadmin_urls)),
     path('dashboard/', user_dashboard_view, name='dashboard'),
+    path('settings/', settings_view, name='settings'),
+    path('dashboard/settings/', settings_view, name='dashboard_settings'),
     path('logout/', logout_view, name='logout'),
     path('documents/', include(wagtaildocs_urls)),
     path("api/v1/", include("Apps.blogs.urls")),

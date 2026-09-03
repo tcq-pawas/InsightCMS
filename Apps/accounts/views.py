@@ -17,3 +17,15 @@ def user_dashboard_view(request):
 def logout_view(request):
     logout(request)
     return redirect('/accounts/login/')
+
+
+@login_required(login_url='/accounts/login/')
+def settings_view(request):
+    dashboard_page = UserDashboardPage.objects.live().first()
+    context = dashboard_page.get_context(request) if dashboard_page else {}
+    context.update({
+        'page': dashboard_page,
+        'user': request.user,
+        'active_tab': 'settings',
+    })
+    return render(request, 'accounts/settings.html', context)

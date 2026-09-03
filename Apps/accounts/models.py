@@ -390,6 +390,46 @@ class UserDashboardPage(Page):
     terms_service_text = models.CharField(max_length=100, blank=True, default="Terms of Service ›")
     terms_service_url = models.CharField(max_length=255, blank=True, default="#")
 
+    # 10. Settings Page Content (Fully Dynamic Wagtail)
+    settings_page_title = models.CharField(max_length=100, blank=True, default="Settings")
+    settings_page_subtext = models.CharField(max_length=255, blank=True, default="Manage your account preferences, workspace, and security settings.")
+
+    # Settings Dynamic Tab Labels
+    settings_tab_1_title = models.CharField(max_length=50, blank=True, default="Profile")
+    settings_tab_2_title = models.CharField(max_length=50, blank=True, default="Workspace")
+    settings_tab_3_title = models.CharField(max_length=50, blank=True, default="Notifications")
+    settings_tab_4_title = models.CharField(max_length=50, blank=True, default="Security")
+
+    # Settings Profile Section
+    settings_profile_heading = models.CharField(max_length=100, blank=True, default="Profile Information")
+    settings_profile_subtext = models.CharField(max_length=255, blank=True, default="Update your personal details and public profile presence.")
+    settings_profile_btn_text = models.CharField(max_length=50, blank=True, default="Save Changes")
+
+    # Settings Workspace Section
+    settings_workspace_heading = models.CharField(max_length=100, blank=True, default="Workspace Details")
+    settings_workspace_subtext = models.CharField(max_length=255, blank=True, default="Configure your blog workspace, public name, and publishing preferences.")
+    settings_workspace_domain = models.CharField(max_length=100, blank=True, default="insightcms.local")
+    settings_workspace_btn_text = models.CharField(max_length=50, blank=True, default="Save Workspace")
+
+    # Settings Notifications Section
+    settings_notif_heading = models.CharField(max_length=100, blank=True, default="Notification Preferences")
+    settings_notif_subtext = models.CharField(max_length=255, blank=True, default="Choose when and how you want to be notified about blog activities.")
+    settings_notif_1_title = models.CharField(max_length=150, blank=True, default="New Comments & Reader Interactions")
+    settings_notif_1_desc = models.CharField(max_length=255, blank=True, default="Get notified immediately whenever a reader leaves a comment on your posts.")
+    settings_notif_2_title = models.CharField(max_length=150, blank=True, default="Weekly Analytics Digest")
+    settings_notif_2_desc = models.CharField(max_length=255, blank=True, default="Receive a weekly summary of your blog's visitors, top posts, and subscriber growth.")
+    settings_notif_3_title = models.CharField(max_length=150, blank=True, default="System & Security Alerts")
+    settings_notif_3_desc = models.CharField(max_length=255, blank=True, default="Important updates about your account security and CMS updates.")
+    settings_notif_btn_text = models.CharField(max_length=50, blank=True, default="Save Preferences")
+
+    # Settings Security Section
+    settings_security_heading = models.CharField(max_length=100, blank=True, default="Security & Authentication")
+    settings_security_subtext = models.CharField(max_length=255, blank=True, default="Manage your password, login security, and active sessions.")
+    settings_security_badge_text = models.CharField(max_length=50, blank=True, default="Account Protected")
+    settings_security_btn_text = models.CharField(max_length=50, blank=True, default="Update Password")
+    settings_session_title = models.CharField(max_length=100, blank=True, default="Active Session")
+    settings_session_desc = models.CharField(max_length=255, blank=True, default="Currently signed in from this browser.")
+
     content_panels = Page.content_panels + [
         MultiFieldPanel([
             FieldPanel("brand_name"),
@@ -469,21 +509,6 @@ class UserDashboardPage(Page):
             FieldPanel("device_legend_2"),
         ], heading="7. Audience Overview"),
 
-        MultiFieldPanel([
-            FieldPanel("quick_actions_heading"),
-            FieldPanel("action_1_title"),
-            FieldPanel("action_1_desc"),
-            FieldPanel("action_1_url"),
-            FieldPanel("action_2_title"),
-            FieldPanel("action_2_desc"),
-            FieldPanel("action_2_url"),
-            FieldPanel("action_3_title"),
-            FieldPanel("action_3_desc"),
-            FieldPanel("action_3_url"),
-            FieldPanel("action_4_title"),
-            FieldPanel("action_4_desc"),
-            FieldPanel("action_4_url"),
-        ], heading="8. Quick Actions"),
 
         MultiFieldPanel([
             FieldPanel("comments_heading"),
@@ -573,6 +598,37 @@ class UserDashboardPage(Page):
             FieldPanel("terms_service_text"),
             FieldPanel("terms_service_url"),
         ], heading="14. Footer Bottom & Legal Links"),
+
+        MultiFieldPanel([
+            FieldPanel("settings_page_title"),
+            FieldPanel("settings_page_subtext"),
+            FieldPanel("settings_tab_1_title"),
+            FieldPanel("settings_tab_2_title"),
+            FieldPanel("settings_tab_3_title"),
+            FieldPanel("settings_tab_4_title"),
+            FieldPanel("settings_profile_heading"),
+            FieldPanel("settings_profile_subtext"),
+            FieldPanel("settings_profile_btn_text"),
+            FieldPanel("settings_workspace_heading"),
+            FieldPanel("settings_workspace_subtext"),
+            FieldPanel("settings_workspace_domain"),
+            FieldPanel("settings_workspace_btn_text"),
+            FieldPanel("settings_notif_heading"),
+            FieldPanel("settings_notif_subtext"),
+            FieldPanel("settings_notif_1_title"),
+            FieldPanel("settings_notif_1_desc"),
+            FieldPanel("settings_notif_2_title"),
+            FieldPanel("settings_notif_2_desc"),
+            FieldPanel("settings_notif_3_title"),
+            FieldPanel("settings_notif_3_desc"),
+            FieldPanel("settings_notif_btn_text"),
+            FieldPanel("settings_security_heading"),
+            FieldPanel("settings_security_subtext"),
+            FieldPanel("settings_security_badge_text"),
+            FieldPanel("settings_security_btn_text"),
+            FieldPanel("settings_session_title"),
+            FieldPanel("settings_session_desc"),
+        ], heading="15. Settings Page (Dynamic)"),
     ]
 
     parent_page_types = ["wagtailcore.Page", "companies.CompanyHomePage"]

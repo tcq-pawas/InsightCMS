@@ -21,7 +21,7 @@
             </button>
           </form>
         {% else %}
-          <a href="{{ block.value.url|default:'/cms/' }}" class="bp-nav-item {% if block.value.is_active or forloop.first %}active{% endif %}">
+          <a href="{% if block.value.title|lower == 'settings' or block.value.url == '#setting' or block.value.url == '/settings/' %}/settings/{% else %}{{ block.value.url|default:'/cms/' }}{% endif %}" class="bp-nav-item {% if active_tab == 'settings' and block.value.title|lower == 'settings' %}active{% elif not active_tab and forloop.first or block.value.is_active %}active{% endif %}">
             <i class="fa-solid {{ block.value.icon|default:'fa-file-lines' }}"></i> 
             <span>{{ block.value.title }}</span>
             {% if block.value.badge_text %}
@@ -32,7 +32,7 @@
       {% endfor %}
     {% else %}
       <!-- Fallback Default Links agar CMS me links add na kiye ho -->
-      <a href="/dashboard/" class="bp-nav-item active">
+      <a href="/dashboard/" class="bp-nav-item {% if not active_tab %}active{% endif %}">
         <i class="fa-solid fa-table-cells-large"></i> <span>Dashboard</span>
       </a>
       <a href="/cms/pages/" class="bp-nav-item">
@@ -65,7 +65,7 @@
       <a href="/cms/" class="bp-nav-item">
         <i class="fa-solid fa-puzzle-piece"></i> <span>Plugins</span>
       </a>
-      <a href="/cms/" class="bp-nav-item">
+      <a href="/settings/" class="bp-nav-item {% if active_tab == 'settings' %}active{% endif %}">
         <i class="fa-solid fa-gear"></i> <span>Settings</span>
       </a>
       <!-- Fallback Logout -->
