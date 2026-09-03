@@ -1,0 +1,76 @@
+<div class="bp-stats-row">
+  <!-- Card 1 -->
+  {% if page.stat1_label or page.stat1_value %}
+  <div class="bp-stat-card">
+    <div class="bp-stat-top">
+      <div class="bp-stat-icon icon-blue"><i class="fa-regular fa-newspaper"></i></div>
+      {% if page.stat1_growth %}
+        <span class="bp-stat-badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ page.stat1_growth }}</span>
+      {% endif %}
+    </div>
+    <div class="bp-stat-label">{{ page.stat1_label }}</div>
+    <div class="bp-stat-val">{{ page.stat1_value }}</div>
+    {% if page.stat_caption %}<div class="bp-stat-caption">{{ page.stat_caption }}</div>{% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Card 2 -->
+  {% if page.stat2_label or page.stat2_value %}
+  <div class="bp-stat-card">
+    <div class="bp-stat-top">
+      <div class="bp-stat-icon icon-cyan"><i class="fa-solid fa-chart-simple"></i></div>
+      {% if page.stat2_growth %}
+        <span class="bp-stat-badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ page.stat2_growth }}</span>
+      {% endif %}
+    </div>
+    <div class="bp-stat-label">{{ page.stat2_label }}</div>
+    <div class="bp-stat-val">{{ page.stat2_value }}</div>
+    {% if page.stat_caption %}<div class="bp-stat-caption">{{ page.stat_caption }}</div>{% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Card 3 -->
+  {% if page.stat3_label or page.stat3_value %}
+  <div class="bp-stat-card">
+    <div class="bp-stat-top">
+      <div class="bp-stat-icon icon-pink"><i class="fa-regular fa-comment-dots"></i></div>
+      {% if page.stat3_growth %}
+        <span class="bp-stat-badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ page.stat3_growth }}</span>
+      {% endif %}
+    </div>
+    <div class="bp-stat-label">{{ page.stat3_label }}</div>
+    <div class="bp-stat-val">{{ page.stat3_value }}</div>
+    {% if page.stat_caption %}<div class="bp-stat-caption">{{ page.stat_caption }}</div>{% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Card 4 -->
+  {% if page.stat4_label or page.stat4_value %}
+  <div class="bp-stat-card">
+    <div class="bp-stat-top">
+      <div class="bp-stat-icon icon-purple"><i class="fa-solid fa-user-group"></i></div>
+      {% if page.stat4_growth %}
+        <span class="bp-stat-badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ page.stat4_growth }}</span>
+      {% endif %}
+    </div>
+    <div class="bp-stat-label">{{ page.stat4_label }}</div>
+    <div class="bp-stat-val">{{ page.stat4_value }}</div>
+    {% if page.stat_caption %}<div class="bp-stat-caption">{{ page.stat_caption }}</div>{% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Card 5 (Agar blank hoga to bilkul nahi dikhega) -->
+  {% if page.stat5_label or page.stat5_value %}
+  <div class="bp-stat-card">
+    <div class="bp-stat-top">
+      <div class="bp-stat-icon icon-orange"><i class="fa-regular fa-paper-plane"></i></div>
+      {% if page.stat5_growth %}
+        <span class="bp-stat-badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ page.stat5_growth }}</span>
+      {% endif %}
+    </div>
+    <div class="bp-stat-label">{{ page.stat5_label }}</div>
+    <div class="bp-stat-val">{{ page.stat5_value }}</div>
+    {% if page.stat_caption %}<div class="bp-stat-caption">{{ page.stat_caption }}</div>{% endif %}
+  </div>
+  {% endif %}
+</div>

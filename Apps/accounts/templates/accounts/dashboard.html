@@ -1,0 +1,155 @@
+{% extends "companies/base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}{{ page.welcome_heading|default:"Dashboard" }} | {{ page.brand_name|default:"BlogPro" }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bp-app-wrapper">
+
+  <!-- 1. Left Sidebar Navigation -->
+  {% include "accounts/blocks/sidebar.html" %}
+
+  <!-- 2. Main Container -->
+  <div class="bp-main-container">
+
+    <!-- 2.1 Topbar Header -->
+    {% include "accounts/blocks/topbar.html" %}
+
+    <main class="bp-content-body">
+
+      <!-- Page Header & Action Button -->
+      <div class="bp-page-header">
+        <div>
+          <h1 class="bp-page-title">{{ page.welcome_heading|default:"Dashboard" }}</h1>
+          <p class="bp-page-sub">{{ page.welcome_subtext|default:"Welcome back! Here's what's happening with your blog." }}</p>
+        </div>
+        <div>
+          <a href="{{ page.new_post_button_url|default:'/cms/pages/' }}" class="bp-btn-primary">
+            <i class="fa-solid fa-plus me-1"></i> {{ page.new_post_button_text|default:"+ New Post" }}
+          </a>
+        </div>
+      </div>
+
+      <!-- 2.2 Top 5 Stat Cards -->
+      {% include "accounts/blocks/stats_row.html" %}
+
+      <!-- 2.3 Main Content Grid -->
+      <div class="row g-4 mb-4">
+        
+        <!-- Left Column: Charts, Posts Table, Audience -->
+        <div class="col-lg-8">
+
+          <!-- Recent Posts Table -->
+          {% include "accounts/blocks/recent_post_table.html" %}
+
+          <!-- Audience Overview (Countries & Donuts) -->
+          {% include "accounts/blocks/audience_overview.html" %}
+        </div>
+
+        <!-- Right Column: Quick Actions & Recent Comments -->
+        <div class="col-lg-4">
+
+          <!-- Recent Comments -->
+          {% include "accounts/blocks/recent_comments.html" %}
+        </div>
+
+      </div>
+
+      <!-- 2.4 Bottom Blue Rocket Upgrade Banner -->
+      {% include "accounts/blocks/upgrade_banner.html" %}
+
+    </main>
+
+    <!-- 3. Dark Footer -->
+    {% include "accounts/blocks/footer.html" %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  // 1. Line Chart (Views Overview)
+  const ctx = document.getElementById('bpViewsChart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['May 05', 'May 10', 'May 15', 'May 20', 'May 25', 'May 30', 'Jun 03'],
+        datasets: [{
+          data: [2300, 3200, 2500, 4200, 3600, 2400, 4800],
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37, 99, 235, 0.05)',
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#2563eb',
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false } },
+          y: {
+            grid: { color: '#f1f5f9' },
+            ticks: {
+              callback: function(val) {
+                return val >= 1000 ? (val / 1000) + 'K' : val;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // 2. Donut Chart (Traffic Sources)
+  const trafficCtx = document.getElementById('bpTrafficChart');
+  if (trafficCtx) {
+    new Chart(trafficCtx, {
+      type: 'doughnut',
+      data: {
+        datasets: [{
+          data: [60, 20, 10, 7, 3],
+          backgroundColor: ['#2563eb', '#06b6d4', '#8b5cf6', '#ec4899', '#cbd5e1'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        cutout: '75%',
+        responsive: true,
+        plugins: { tooltip: { enabled: true } }
+      }
+    });
+  }
+
+  // 3. Donut Chart (Device Types)
+  const deviceCtx = document.getElementById('bpDeviceChart');
+  if (deviceCtx) {
+    new Chart(deviceCtx, {
+      type: 'doughnut',
+      data: {
+        datasets: [{
+          data: [60, 35, 5],
+          backgroundColor: ['#8b5cf6', '#06b6d4', '#cbd5e1'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        cutout: '75%',
+        responsive: true,
+        plugins: { tooltip: { enabled: true } }
+      }
+    });
+  }
+</script>
+{% endblock %}

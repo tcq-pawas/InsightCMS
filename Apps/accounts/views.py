@@ -1,32 +1,19 @@
-from django.contrib.auth import login, logout
-from django.contrib.auth.views import LoginView
-from django.shortcuts import redirect
-from django.urls import reverse_lazy
-from django.views.generic import CreateView
-
-from Apps.accounts.forms import EmailLoginForm, CustomUserCreationForm
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
+from Apps.accounts.models import UserDashboardPage
 
 
-class EmailLoginView(LoginView):
-    template_name = 'accounts/login_page.html'
-    authentication_form = EmailLoginForm
-    redirect_authenticated_user = True
-
-    def get_success_url(self):
-        return reverse_lazy('home')
-
-
-class RegisterView(CreateView):
-    template_name = 'accounts/register_page.html'
-    form_class = CustomUserCreationForm
-    success_url = reverse_lazy('login')
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        login(self.request, self.object)
-        return response
+@login_required(login_url='/accounts/login/')
+def user_dashboard_view(request):
+    dashboard_page = UserDashboardPage.objects.live().first()
+    context = dashboard_page.get_context(request) if dashboard_page else {}
+    context.update({'page': dashboard_page, 'user': request.user})
+    from Apps.blogs.models import BlogPage
+    context['recent_blogs'] = BlogPage.objects.all().order_by('-latest_revision_created_at')[:5]
+    return render(request, 'accounts/dashboard.html', context)
 
 
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('/accounts/login/')

@@ -14,11 +14,25 @@
     <form method="post">
       {% csrf_token %}
 
+      {% if form.non_field_errors %}
+        <div class="auth-error-box">
+          {% for error in form.non_field_errors %}
+            <p>⚠️ {{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
       <div class="auth-form-grid">
         <div class="auth-field full-width">
           <label for="{{ form.email.id_for_label }}">{{ page.email_label }}</label>
           {{ form.email }}
-          {{ form.email.errors }}
+          {% if form.email.errors %}
+            <div class="auth-field-error">
+              {% for error in form.email.errors %}
+                <span>⚠️ {{ error }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
 
         <div class="auth-field">

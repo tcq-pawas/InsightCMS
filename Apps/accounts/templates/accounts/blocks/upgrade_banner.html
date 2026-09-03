@@ -1,0 +1,14 @@
+{% if page.show_upgrade_banner %}
+<div id="bp-upgrade-banner-unique" class="bp-upgrade-banner-card">
+  <div class="bp-banner-left">
+    <div class="bp-rocket-icon"><i class="fa-solid fa-rocket"></i></div>
+    <div>
+      <h2 class="bp-banner-title">{{ page.upgrade_banner_title|default:"Ready to take your blog to the next level?" }}</h2>
+      <p class="bp-banner-sub">{{ page.upgrade_banner_text|default:"Upgrade to BlogPro Pro and unlock powerful features." }}</p>
+    </div>
+  </div>
+  <div>
+    <a href="{{ page.upgrade_banner_button_url|default:'#' }}" class="bp-banner-btn">{{ page.upgrade_banner_button_text|default:"Upgrade Now" }}</a>
+  </div>
+</div>
+{% endif %}

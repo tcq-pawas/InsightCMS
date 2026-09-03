@@ -1,0 +1,31 @@
+<header class="bp-topbar">
+  <div class="bp-topbar-left">
+    <div class="bp-search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="{{ page.search_placeholder|default:'Search anything...' }}">
+      <kbd class="bp-search-shortcut">{{ page.search_shortcut|default:'⌘K' }}</kbd>
+    </div>
+  </div>
+
+  <div class="bp-topbar-right">
+    <button class="bp-icon-btn position-relative">
+      <i class="fa-regular fa-bell"></i>
+      {% if page.notification_count %}<span class="bp-bell-dot">{{ page.notification_count }}</span>{% endif %}
+    </button>
+
+    <div class="bp-user-profile">
+      {% if user.avatar %}
+        <img src="{{ user.avatar.url }}" class="bp-user-avatar" alt="Avatar">
+      {% else %}
+        <div class="bp-user-avatar bp-avatar-default">{{ user.first_name|slice:":1"|default:"U" }}</div>
+      {% endif %}
+      <div class="bp-user-info">
+        <span class="bp-user-name">{{ user.get_full_name|default:user.email }}</span>
+        <span class="bp-user-role">{{ user.get_role_display|default:"Admin" }}</span>
+      </div>
+      <a href="{% url 'logout' %}" class="btn btn-sm btn-light ms-2 text-muted" title="Logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </a>
+    </div>
+  </div>
+</header>

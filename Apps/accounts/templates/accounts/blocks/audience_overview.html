@@ -1,0 +1,80 @@
+<div class="bp-card mb-4">
+  <div class="bp-card-header">
+    <div>
+      <h3 class="bp-card-title">{{ page.audience_heading|default:"Audience Overview" }}</h3>
+      <span class="bp-card-sub">{{ page.audience_subtext|default:"Where your readers come from and how they browse" }}</span>
+    </div>
+  </div>
+
+  <div class="row g-4 pt-2">
+    <!-- Top Countries Progress Bars -->
+    <div class="col-md-5">
+      <div class="bp-subhead mb-3">{{ page.countries_heading|default:"Top Countries" }}</div>
+      <div class="bp-country-list">
+        <div class="bp-country-item">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="bp-country-name"><i class="fa-solid fa-flag me-1 text-muted"></i> {{ page.country_1_name|default:"United States" }}</span>
+            <span class="bp-country-pct">{{ page.country_1_pct|default:"42%" }}</span>
+          </div>
+          <div class="progress bp-progress"><div class="progress-bar bg-primary" style="width: {{ page.country_1_pct|default:'42%' }}"></div></div>
+        </div>
+
+        <div class="bp-country-item">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="bp-country-name"><i class="fa-solid fa-flag me-1 text-muted"></i> {{ page.country_2_name|default:"United Kingdom" }}</span>
+            <span class="bp-country-pct">{{ page.country_2_pct|default:"18%" }}</span>
+          </div>
+          <div class="progress bp-progress"><div class="progress-bar bg-info" style="width: {{ page.country_2_pct|default:'18%' }}"></div></div>
+        </div>
+
+        <div class="bp-country-item">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="bp-country-name"><i class="fa-solid fa-flag me-1 text-muted"></i> {{ page.country_3_name|default:"Germany" }}</span>
+            <span class="bp-country-pct">{{ page.country_3_pct|default:"12%" }}</span>
+          </div>
+          <div class="progress bp-progress"><div class="progress-bar bg-warning" style="width: {{ page.country_3_pct|default:'12%' }}"></div></div>
+        </div>
+
+        <div class="bp-country-item">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="bp-country-name"><i class="fa-solid fa-flag me-1 text-muted"></i> {{ page.country_4_name|default:"India" }}</span>
+            <span class="bp-country-pct">{{ page.country_4_pct|default:"9%" }}</span>
+          </div>
+          <div class="progress bp-progress"><div class="progress-bar bg-success" style="width: {{ page.country_4_pct|default:'9%' }}"></div></div>
+        </div>
+
+        <div class="bp-country-item">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="bp-country-name"><i class="fa-solid fa-flag me-1 text-muted"></i> {{ page.country_5_name|default:"Canada" }}</span>
+            <span class="bp-country-pct">{{ page.country_5_pct|default:"6%" }}</span>
+          </div>
+          <div class="progress bp-progress"><div class="progress-bar bg-secondary" style="width: {{ page.country_5_pct|default:'6%' }}"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Traffic Sources Donut -->
+    <div class="col-md-3 text-center">
+      <div class="bp-subhead mb-3">{{ page.traffic_heading|default:"Traffic Sources" }}</div>
+      <div style="height: 140px; position: relative;">
+        <canvas id="bpTrafficChart"></canvas>
+      </div>
+      <div class="bp-chart-legend mt-2">
+        <span class="legend-dot" style="background: #2563eb"></span> {{ page.traffic_legend_1|default:"Organic 60%" }}
+        <span class="legend-dot ms-2" style="background: #06b6d4"></span> {{ page.traffic_legend_2|default:"Social 20%" }}
+      </div>
+    </div>
+
+    <!-- Device Types Donut -->
+    <div class="col-md-4 text-center">
+      <div class="bp-subhead mb-3">{{ page.device_heading|default:"Device Types" }}</div>
+      <div style="height: 140px; position: relative;">
+        <canvas id="bpDeviceChart"></canvas>
+      </div>
+      <div class="bp-chart-legend mt-2">
+        <span class="legend-dot" style="background: #8b5cf6"></span> {{ page.device_legend_1|default:"Desktop 60%" }}
+        <span class="legend-dot ms-2" style="background: #06b6d4"></span> {{ page.device_legend_2|default:"Mobile 35%" }}
+      </div>
+    </div>
+  </div>
+</div>

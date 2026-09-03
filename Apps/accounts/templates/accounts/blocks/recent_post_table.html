@@ -1,0 +1,109 @@
+<div class="bp-card mb-4" id="posts">
+  <div class="bp-card-header">
+    <div>
+      <h3 class="bp-card-title">{{ page.recent_posts_heading|default:"Recent Posts" }}</h3>
+      <span class="bp-card-sub">{{ page.recent_posts_subtext|default:"Manage your latest published and draft articles" }}</span>
+    </div>
+    <div>
+      <a href="{{ page.view_all_posts_url|default:'/cms/pages/' }}" class="bp-link-sm">
+        {{ page.view_all_posts_text|default:"View All" }} ›
+      </a>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table bp-table align-middle">
+      <thead>
+        <tr>
+          <th>{{ page.th_post_title|default:"POST TITLE" }}</th>
+          <th>{{ page.th_category|default:"CATEGORY" }}</th>
+          <th>{{ page.th_status|default:"STATUS" }}</th>
+          <th>{{ page.th_views|default:"VIEWS" }}</th>
+          <th>{{ page.th_date|default:"DATE" }}</th>
+          <th class="text-end">{{ page.th_actions|default:"ACTIONS" }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if recent_blogs %}
+          {% for blog in recent_blogs %}
+            <tr>
+              <td>
+                <div class="fw-semibold text-dark">{{ blog.title }}</div>
+                <small class="text-muted">{{ blog.sub_title|truncatechars:45|default:"" }}</small>
+              </td>
+              <td>
+                <span class="bp-tag">{{ blog.category.name|default:"General" }}</span>
+              </td>
+              <td>
+                {% if blog.live %}
+                  <span class="bp-badge badge-published">Published</span>
+                {% else %}
+                  <span class="bp-badge badge-draft">Draft</span>
+                {% endif %}
+              </td>
+              <td class="text-muted">{{ blog.views_count|default:"1.2K" }}</td>
+              <td class="text-muted">
+                {% if blog.first_published_at %}
+                  {{ blog.first_published_at|date:"M d, Y" }}
+                {% else %}
+                  {{ blog.latest_revision_created_at|date:"M d, Y" }}
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <a href="/cms/pages/{{ blog.id }}/edit/" class="btn btn-sm bp-btn-icon" title="Edit in CMS">
+                  <i class="fa-solid fa-pen"></i>
+                </a>
+                <a href="{{ blog.url }}" class="btn btn-sm bp-btn-icon" target="_blank" title="View Article">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td>
+              <div class="fw-semibold text-dark">Getting Started with Wagtail CMS</div>
+              <small class="text-muted">A beginner guide to modern Django Wagtail</small>
+            </td>
+            <td><span class="bp-tag">Design</span></td>
+            <td><span class="bp-badge badge-published">Published</span></td>
+            <td class="text-muted">4.8K</td>
+            <td class="text-muted">Jun 02, 2024</td>
+            <td class="text-end">
+              <a href="/cms/pages/" class="btn btn-sm bp-btn-icon"><i class="fa-solid fa-pen"></i></a>
+              <a href="#" class="btn btn-sm bp-btn-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="fw-semibold text-dark">10 Tips for Better Web Performance</div>
+              <small class="text-muted">Boost your site speed and SEO scores</small>
+            </td>
+            <td><span class="bp-tag">Development</span></td>
+            <td><span class="bp-badge badge-published">Published</span></td>
+            <td class="text-muted">3.2K</td>
+            <td class="text-muted">May 28, 2024</td>
+            <td class="text-end">
+              <a href="/cms/pages/" class="btn btn-sm bp-btn-icon"><i class="fa-solid fa-pen"></i></a>
+              <a href="#" class="btn btn-sm bp-btn-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="fw-semibold text-dark">The Future of AI in Blogging</div>
+              <small class="text-muted">How AI tools are changing the content landscape</small>
+            </td>
+            <td><span class="bp-tag">Technology</span></td>
+            <td><span class="bp-badge badge-draft">Draft</span></td>
+            <td class="text-muted">—</td>
+            <td class="text-muted">May 25, 2024</td>
+            <td class="text-end">
+              <a href="/cms/pages/" class="btn btn-sm bp-btn-icon"><i class="fa-solid fa-pen"></i></a>
+              <a href="#" class="btn btn-sm bp-btn-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>

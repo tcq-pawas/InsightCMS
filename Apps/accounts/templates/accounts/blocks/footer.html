@@ -1,0 +1,96 @@
+<footer class="bp-dark-footer">
+  <div class="row g-4 mb-4">
+    
+    <!-- 1. Brand & Social Links Column -->
+    <div class="col-lg-4">
+      <div class="bp-footer-brand">
+        <div class="bp-brand-icon">
+          <span class="bp-brand-letter">{{ page.brand_name|slice:":1"|default:"B" }}</span>
+        </div>
+        <span class="bp-brand-name text-white">{{ page.brand_name|default:"BlogPro" }}</span>
+      </div>
+      <p class="bp-footer-tagline">
+        {{ page.footer_tagline|default:"The all-in-one blogging platform that helps you create, manage, and grow your blog." }}
+      </p>
+      <div class="bp-social-row">
+        {% if page.footer_facebook_url and page.footer_facebook_url != '#' %}
+          <a href="{% if '://' in page.footer_facebook_url %}{{ page.footer_facebook_url }}{% else %}https://{{ page.footer_facebook_url }}{% endif %}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-facebook-f"></i></a>
+        {% endif %}
+        {% if page.footer_twitter_url and page.footer_twitter_url != '#' %}
+          <a href="{% if '://' in page.footer_twitter_url %}{{ page.footer_twitter_url }}{% else %}https://{{ page.footer_twitter_url }}{% endif %}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-twitter"></i></a>
+        {% endif %}
+        {% if page.footer_instagram_url and page.footer_instagram_url != '#' %}
+          <a href="{% if '://' in page.footer_instagram_url %}{{ page.footer_instagram_url }}{% else %}https://{{ page.footer_instagram_url }}{% endif %}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-instagram"></i></a>
+        {% endif %}
+        {% if page.footer_linkedin_url and page.footer_linkedin_url != '#' %}
+          <a href="{% if '://' in page.footer_linkedin_url %}{{ page.footer_linkedin_url }}{% else %}https://{{ page.footer_linkedin_url }}{% endif %}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-linkedin-in"></i></a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 2. Dynamic Menu Columns (Product, Support, Company) -->
+    <!-- Column 1: Product -->
+    {% if page.footer_col1_heading or page.footer_col1_link1_text %}
+    <div class="col-6 col-lg-2">
+      <div class="bp-footer-head">{{ page.footer_col1_heading }}</div>
+      <ul class="bp-footer-links">
+        {% if page.footer_col1_link1_text %}<li><a href="{{ page.footer_col1_link1_url|default:'#' }}">{{ page.footer_col1_link1_text }}</a></li>{% endif %}
+        {% if page.footer_col1_link2_text %}<li><a href="{{ page.footer_col1_link2_url|default:'#' }}">{{ page.footer_col1_link2_text }}</a></li>{% endif %}
+        {% if page.footer_col1_link3_text %}<li><a href="{{ page.footer_col1_link3_url|default:'#' }}">{{ page.footer_col1_link3_text }}</a></li>{% endif %}
+        {% if page.footer_col1_link4_text %}<li><a href="{{ page.footer_col1_link4_url|default:'#' }}">{{ page.footer_col1_link4_text }}</a></li>{% endif %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <!-- Column 2: Support (Agar blank hoga to bilkul nahi dikhega) -->
+    {% if page.footer_col2_heading or page.footer_col2_link1_text %}
+    <div class="col-6 col-lg-2">
+      <div class="bp-footer-head">{{ page.footer_col2_heading }}</div>
+      <ul class="bp-footer-links">
+        {% if page.footer_col2_link1_text %}<li><a href="{{ page.footer_col2_link1_url|default:'#' }}">{{ page.footer_col2_link1_text }}</a></li>{% endif %}
+        {% if page.footer_col2_link2_text %}<li><a href="{{ page.footer_col2_link2_url|default:'#' }}">{{ page.footer_col2_link2_text }}</a></li>{% endif %}
+        {% if page.footer_col2_link3_text %}<li><a href="{{ page.footer_col2_link3_url|default:'#' }}">{{ page.footer_col2_link3_text }}</a></li>{% endif %}
+        {% if page.footer_col2_link4_text %}<li><a href="{{ page.footer_col2_link4_url|default:'#' }}">{{ page.footer_col2_link4_text }}</a></li>{% endif %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <!-- Column 3: Company -->
+    {% if page.footer_col3_heading or page.footer_col3_link1_text %}
+    <div class="col-6 col-lg-2">
+      <div class="bp-footer-head">{{ page.footer_col3_heading }}</div>
+      <ul class="bp-footer-links">
+        {% if page.footer_col3_link1_text %}<li><a href="{{ page.footer_col3_link1_url|default:'#' }}">{{ page.footer_col3_link1_text }}</a></li>{% endif %}
+        {% if page.footer_col3_link2_text %}<li><a href="{{ page.footer_col3_link2_url|default:'#' }}">{{ page.footer_col3_link2_text }}</a></li>{% endif %}
+        {% if page.footer_col3_link3_text %}<li><a href="{{ page.footer_col3_link3_url|default:'#' }}">{{ page.footer_col3_link3_text }}</a></li>{% endif %}
+        {% if page.footer_col3_link4_text %}<li><a href="{{ page.footer_col3_link4_url|default:'#' }}">{{ page.footer_col3_link4_text }}</a></li>{% endif %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <!-- 3. Newsletter Column -->
+    <div class="col-12 col-lg-2">
+      <div class="bp-footer-head">{{ page.newsletter_heading|default:"NEWSLETTER" }}</div>
+      <p class="bp-footer-subtext">{{ page.newsletter_subtext|default:"Get the latest updates and tips for your blog." }}</p>
+      <div class="bp-newsletter-box">
+        <input type="email" placeholder="{{ page.newsletter_placeholder|default:'Enter your email' }}">
+        <button type="button"><i class="fa-regular fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Bottom Copyright & Legal Links -->
+  <div class="bp-footer-bottom">
+  <div>
+    {{ page.copyright_text|default:"© 2024 BlogPro. All rights reserved." }}
+  </div>
+  <div class="bp-footer-legal">
+    <a href="{{ page.privacy_policy_url|default:'#' }}">
+      {{ page.privacy_policy_text|default:"Privacy Policy ›" }}
+    </a>
+    <a href="{{ page.terms_service_url|default:'#' }}">
+      {{ page.terms_service_text|default:"Terms of Service ›" }}
+    </a>
+  </div>
+</div>
+</footer>
