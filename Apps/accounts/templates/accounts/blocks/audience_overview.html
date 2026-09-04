@@ -1,80 +1,126 @@
 <div class="bp-card mb-4" id="overview">
   <div class="bp-card-header">
     <div>
-      <h3 class="bp-card-title">{{ page.audience_heading|default:"Audience Overview" }}</h3>
-      <span class="bp-card-sub">{{ page.audience_subtext|default:"Where your readers come from and how they browse" }}</span>
+      <h3 class="bp-card-title">{{ value.heading|default:page.audience_heading|default:"Audience Overview" }}</h3>
+      <span class="bp-card-sub">{{ value.subtext|default:page.audience_subtext|default:"Where your readers come from and how they browse" }}</span>
     </div>
   </div>
 
-  <div class="row g-4 pt-2">
-    <!-- Top Countries Progress Bars -->
-    <div class="col-md-5">
-      <div class="bp-subhead mb-3">{{ page.countries_heading|default:"Top Countries" }}</div>
-      <div class="bp-country-list">
-        <div class="bp-country-item">
-          <div class="d-flex justify-content-between mb-1">
-            <span class="bp-country-name"><i class="fa-solid fa-flag me-1 text-muted"></i> {{ page.country_1_name|default:"United States" }}</span>
-            <span class="bp-country-pct">{{ page.country_1_pct|default:"42%" }}</span>
+  <div class="bp-card-body">
+    <div class="row g-3">
+      
+      <!-- 1. Top Country -->
+      <div class="col-md-3 col-sm-6">
+        <div class="bp-audience-stat-box">
+          <div class="bp-audience-icon bg-light-blue text-primary">
+            <i class="fa-solid fa-globe"></i>
           </div>
-          <div class="progress bp-progress"><div class="progress-bar bg-primary" style="width: {{ page.country_1_pct|default:'42%' }}"></div></div>
-        </div>
-
-        <div class="bp-country-item">
-          <div class="d-flex justify-content-between mb-1">
-            <span class="bp-country-name"><i class="fa-solid fa-flag me-1 text-muted"></i> {{ page.country_2_name|default:"United Kingdom" }}</span>
-            <span class="bp-country-pct">{{ page.country_2_pct|default:"18%" }}</span>
+          <div class="bp-audience-info">
+            <span class="bp-audience-label">{{ value.stat1_label|default:"Top Country" }}</span>
+            <div class="bp-audience-val">{{ value.stat1_value|default:"India" }}</div>
+            <span class="bp-audience-sub text-muted">{{ value.stat1_sub|default:"32% of total visitors" }}</span>
           </div>
-          <div class="progress bp-progress"><div class="progress-bar bg-info" style="width: {{ page.country_2_pct|default:'18%' }}"></div></div>
-        </div>
-
-        <div class="bp-country-item">
-          <div class="d-flex justify-content-between mb-1">
-            <span class="bp-country-name"><i class="fa-solid fa-flag me-1 text-muted"></i> {{ page.country_3_name|default:"Germany" }}</span>
-            <span class="bp-country-pct">{{ page.country_3_pct|default:"12%" }}</span>
-          </div>
-          <div class="progress bp-progress"><div class="progress-bar bg-warning" style="width: {{ page.country_3_pct|default:'12%' }}"></div></div>
-        </div>
-
-        <div class="bp-country-item">
-          <div class="d-flex justify-content-between mb-1">
-            <span class="bp-country-name"><i class="fa-solid fa-flag me-1 text-muted"></i> {{ page.country_4_name|default:"India" }}</span>
-            <span class="bp-country-pct">{{ page.country_4_pct|default:"9%" }}</span>
-          </div>
-          <div class="progress bp-progress"><div class="progress-bar bg-success" style="width: {{ page.country_4_pct|default:'9%' }}"></div></div>
-        </div>
-
-        <div class="bp-country-item">
-          <div class="d-flex justify-content-between mb-1">
-            <span class="bp-country-name"><i class="fa-solid fa-flag me-1 text-muted"></i> {{ page.country_5_name|default:"Canada" }}</span>
-            <span class="bp-country-pct">{{ page.country_5_pct|default:"6%" }}</span>
-          </div>
-          <div class="progress bp-progress"><div class="progress-bar bg-secondary" style="width: {{ page.country_5_pct|default:'6%' }}"></div></div>
         </div>
       </div>
-    </div>
 
-    <!-- Traffic Sources Donut -->
-    <div class="col-md-3 text-center">
-      <div class="bp-subhead mb-3">{{ page.traffic_heading|default:"Traffic Sources" }}</div>
-      <div style="height: 140px; position: relative;">
-        <canvas id="bpTrafficChart"></canvas>
+      <!-- 2. Total Visitors -->
+      <div class="col-md-3 col-sm-6">
+        <div class="bp-audience-stat-box">
+          <div class="bp-audience-icon bg-light-purple text-purple">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div class="bp-audience-info">
+            <span class="bp-audience-label">{{ value.stat2_label|default:"Total Visitors" }}</span>
+            <div class="bp-audience-val">{{ value.stat2_value|default:"12.4K" }}</div>
+            <span class="bp-audience-sub text-success"><i class="fa-solid fa-arrow-trend-up"></i> {{ value.stat2_sub|default:"18% vs last month" }}</span>
+          </div>
+        </div>
       </div>
-      <div class="bp-chart-legend mt-2">
-        <span class="legend-dot" style="background: #2563eb"></span> {{ page.traffic_legend_1|default:"Organic 60%" }}
-        <span class="legend-dot ms-2" style="background: #06b6d4"></span> {{ page.traffic_legend_2|default:"Social 20%" }}
-      </div>
-    </div>
 
-    <!-- Device Types Donut -->
-    <div class="col-md-4 text-center">
-      <div class="bp-subhead mb-3">{{ page.device_heading|default:"Device Types" }}</div>
-      <div style="height: 140px; position: relative;">
-        <canvas id="bpDeviceChart"></canvas>
+      <!-- 3. New Visitors -->
+      <div class="col-md-3 col-sm-6">
+        <div class="bp-audience-stat-box">
+          <div class="bp-audience-icon bg-light-green text-success">
+            <i class="fa-solid fa-user-plus"></i>
+          </div>
+          <div class="bp-audience-info">
+            <span class="bp-audience-label">{{ value.stat3_label|default:"New Visitors" }}</span>
+            <div class="bp-audience-val">{{ value.stat3_value|default:"7.7K" }}</div>
+            <span class="bp-audience-sub text-muted">{{ value.stat3_sub|default:"62% of total visitors" }}</span>
+          </div>
+        </div>
       </div>
-      <div class="bp-chart-legend mt-2">
-        <span class="legend-dot" style="background: #8b5cf6"></span> {{ page.device_legend_1|default:"Desktop 60%" }}
-        <span class="legend-dot ms-2" style="background: #06b6d4"></span> {{ page.device_legend_2|default:"Mobile 35%" }}
+
+      <!-- 4. Returning Visitors -->
+      <div class="col-md-3 col-sm-6">
+        <div class="bp-audience-stat-box">
+          <div class="bp-audience-icon bg-light-yellow text-warning">
+            <i class="fa-solid fa-rotate-right"></i>
+          </div>
+          <div class="bp-audience-info">
+            <span class="bp-audience-label">{{ value.stat4_label|default:"Returning Visitors" }}</span>
+            <div class="bp-audience-val">{{ value.stat4_value|default:"4.7K" }}</div>
+            <span class="bp-audience-sub text-muted">{{ value.stat4_sub|default:"38% of total visitors" }}</span>
+          </div>
+        </div>
       </div>
+
+      <!-- 5. Top Traffic Source -->
+      <div class="col-md-3 col-sm-6">
+        <div class="bp-audience-stat-box">
+          <div class="bp-audience-icon bg-light-cyan text-info">
+            <i class="fa-solid fa-chart-simple"></i>
+          </div>
+          <div class="bp-audience-info">
+            <span class="bp-audience-label">{{ value.stat5_label|default:"Top Traffic Source" }}</span>
+            <div class="bp-audience-val">{{ value.stat5_value|default:"Organic Search" }}</div>
+            <span class="bp-audience-sub text-muted">{{ value.stat5_sub|default:"46% of total traffic" }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Top Device -->
+      <div class="col-md-3 col-sm-6">
+        <div class="bp-audience-stat-box">
+          <div class="bp-audience-icon bg-light-purple text-purple">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+          </div>
+          <div class="bp-audience-info">
+            <span class="bp-audience-label">{{ value.stat6_label|default:"Top Device" }}</span>
+            <div class="bp-audience-val">{{ value.stat6_value|default:"Mobile" }}</div>
+            <span class="bp-audience-sub text-muted">{{ value.stat6_sub|default:"60% of total visitors" }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Avg. Time on Site -->
+      <div class="col-md-3 col-sm-6">
+        <div class="bp-audience-stat-box">
+          <div class="bp-audience-icon bg-light-green text-success">
+            <i class="fa-regular fa-clock"></i>
+          </div>
+          <div class="bp-audience-info">
+            <span class="bp-audience-label">{{ value.stat7_label|default:"Avg. Time on Site" }}</span>
+            <div class="bp-audience-val">{{ value.stat7_value|default:"3m 42s" }}</div>
+            <span class="bp-audience-sub text-success"><i class="fa-solid fa-arrow-trend-up"></i> {{ value.stat7_sub|default:"10% vs last month" }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Avg. Pages / Visit -->
+      <div class="col-md-3 col-sm-6">
+        <div class="bp-audience-stat-box">
+          <div class="bp-audience-icon bg-light-yellow text-warning">
+            <i class="fa-regular fa-file-lines"></i>
+          </div>
+          <div class="bp-audience-info">
+            <span class="bp-audience-label">{{ value.stat8_label|default:"Avg. Pages / Visit" }}</span>
+            <div class="bp-audience-val">{{ value.stat8_value|default:"2.8" }}</div>
+            <span class="bp-audience-sub text-success"><i class="fa-solid fa-arrow-trend-up"></i> {{ value.stat8_sub|default:"7% vs last month" }}</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

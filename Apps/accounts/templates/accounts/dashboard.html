@@ -37,33 +37,38 @@
         {% endif %}
       </div>
 
-      <!-- 2.2 Top 5 Stat Cards -->
-      {% include "accounts/blocks/stats_row.html" %}
+      <!-- StreamField Body or Fallback -->
+      {% if page.body %}
+        {% for block in page.body %}
+          {% include_block block %}
+        {% endfor %}
+      {% else %}
+        <!-- 2.2 Top 5 Stat Cards -->
+        {% include "accounts/blocks/stats_row.html" %}
 
-      <!-- 2.3 Main Content Grid -->
-      <div class="row g-4 mb-4">
-        
-        <!-- Left Column: Charts, Posts Table, Audience -->
-        <div class="col-lg-8">
+        <!-- 2.3 Main Content Grid -->
+        <div class="row g-4 mb-4">
+          
+          <!-- Left Column: Charts, Posts Table, Audience -->
+          <div class="col-lg-8">
+            <!-- Recent Posts Table -->
+            {% include "accounts/blocks/recent_post_table.html" %}
 
-          <!-- Recent Posts Table -->
-          {% include "accounts/blocks/recent_post_table.html" %}
+            <!-- Audience Overview (Countries & Donuts) -->
+            {% include "accounts/blocks/audience_overview.html" %}
+          </div>
 
-          <!-- Audience Overview (Countries & Donuts) -->
-          {% include "accounts/blocks/audience_overview.html" %}
+          <!-- Right Column: Recent Comments -->
+          <div class="col-lg-4">
+            <!-- Recent Comments -->
+            {% include "accounts/blocks/recent_comments.html" %}
+          </div>
+
         </div>
 
-        <!-- Right Column: Quick Actions & Recent Comments -->
-        <div class="col-lg-4">
-
-          <!-- Recent Comments -->
-          {% include "accounts/blocks/recent_comments.html" %}
-        </div>
-
-      </div>
-
-      <!-- 2.4 Bottom Blue Rocket Upgrade Banner -->
-      {% include "accounts/blocks/upgrade_banner.html" %}
+        <!-- 2.4 Bottom Blue Rocket Upgrade Banner -->
+        {% include "accounts/blocks/upgrade_banner.html" %}
+      {% endif %}
 
     </main>
 

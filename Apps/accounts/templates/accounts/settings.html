@@ -239,20 +239,23 @@
         </div>
       </div>
 
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show mb-4" role="alert">
+            <i class="fa-solid {% if message.tags == 'error' %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %} me-2"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
       <!-- Settings Tab Navigation (Fully Dynamic Wagtail CMS) -->
       <div class="bp-settings-nav">
         <button class="bp-settings-tab active" onclick="switchTab('profile', this)">
           <i class="fa-regular fa-user"></i> {{ page.settings_tab_1_title|default:"Profile" }}
         </button>
-        <button class="bp-settings-tab" onclick="switchTab('workspace', this)">
-          <i class="fa-solid fa-briefcase"></i> {{ page.settings_tab_2_title|default:"Workspace" }}
-        </button>
-        <button class="bp-settings-tab" onclick="switchTab('notifications', this)">
-          <i class="fa-regular fa-bell"></i> {{ page.settings_tab_3_title|default:"Notifications" }}
-        </button>
         <button class="bp-settings-tab" onclick="switchTab('security', this)">
           <i class="fa-solid fa-shield-halved"></i> {{ page.settings_tab_4_title|default:"Security" }}
-        </button>
+        </button> 
       </div>
 
       <!-- ==========================================
@@ -265,143 +268,55 @@
             <p class="bp-settings-sub">{{ page.settings_profile_subtext|default:"Update your personal details and public profile presence." }}</p>
           </div>
 
-          <div class="bp-avatar-upload-wrap">
-            <div class="bp-avatar-preview">
-              {% if user.avatar %}
-                <img src="{{ user.avatar.url }}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
-              {% else %}
-                {{ user.first_name|slice:":1"|default:user.username|slice:":1"|upper }}
-              {% endif %}
+          <form method="post" action="" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="bp-avatar-upload-wrap mb-4">
+              <div class="bp-avatar-preview">
+                {% if user.avatar %}
+                  <img src="{{ user.avatar.url }}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                {% else %}
+                  {{ user.first_name|slice:":1"|default:user.username|slice:":1"|upper }}
+                {% endif %}
+              </div>
+              <div>
+                <div class="fw-bold text-dark">{{ user.get_full_name|default:user.username }}</div>
+                <div class="text-muted small mb-2">{{ user.email }}</div>
+                <input type="file" name="avatar" id="avatarInput" accept="image/*" style="display:none;" onchange="document.getElementById('profileFormSubmitBtn').click();">
+                <button type="button" class="bp-btn-secondary" onclick="document.getElementById('avatarInput').click();"><i class="fa-solid fa-camera me-1"></i> {{ page.settings_profile_avatar_btn_text|default:"Change Avatar" }}</button>
+              </div>
             </div>
-            <div>
-              <div class="fw-bold text-dark">{{ user.get_full_name|default:user.username }}</div>
-              <div class="text-muted small mb-2">{{ user.email }}</div>
-              <button type="button" class="bp-btn-secondary"><i class="fa-solid fa-camera me-1"></i> Change Avatar</button>
-            </div>
-          </div>
 
-          <form onsubmit="event.preventDefault(); alert('Profile updated successfully!');">
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="bp-form-label">First Name</label>
-                <input type="text" class="bp-form-control" value="{{ user.first_name|default:'Shivangi' }}">
+                <label class="bp-form-label">{{ page.settings_profile_fname_label|default:"First Name" }}</label>
+                <input type="text" name="first_name" class="bp-form-control" value="{{ user.first_name }}">
               </div>
               <div class="col-md-6">
-                <label class="bp-form-label">Last Name</label>
-                <input type="text" class="bp-form-control" value="{{ user.last_name|default:'' }}">
+                <label class="bp-form-label">{{ page.settings_profile_lname_label|default:"Last Name" }}</label>
+                <input type="text" name="last_name" class="bp-form-control" value="{{ user.last_name }}">
               </div>
               <div class="col-md-6">
-                <label class="bp-form-label">Email Address</label>
+                <label class="bp-form-label">{{ page.settings_profile_email_label|default:"Email Address" }}</label>
                 <input type="email" class="bp-form-control" value="{{ user.email }}" readonly>
-                <div class="bp-form-hint">Email address is managed by your system administrator.</div>
+                <div class="bp-form-hint">{{ page.settings_profile_email_hint|default:"Email address is managed by your system administrator." }}</div>
               </div>
               <div class="col-md-6">
-                <label class="bp-form-label">Role</label>
+                <label class="bp-form-label">{{ page.settings_profile_role_label|default:"Role" }}</label>
                 <input type="text" class="bp-form-control" value="{{ user.get_role_display|default:'Super Admin' }}" disabled>
               </div>
             </div>
 
             <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
-              <button type="submit" class="bp-btn-save"><i class="fa-solid fa-check"></i> {{ page.settings_profile_btn_text|default:"Save Changes" }}</button>
+              <button type="submit" id="profileFormSubmitBtn" class="bp-btn-save"><i class="fa-solid fa-check"></i> {{ page.settings_profile_btn_text|default:"Save Changes" }}</button>
             </div>
           </form>
         </div>
       </div>
 
-      <!-- ==========================================
-           2. WORKSPACE SECTION
-           ========================================== -->
-      <div id="section-workspace" class="settings-tab-pane d-none">
-        <div class="bp-settings-card">
-          <div class="bp-settings-section-header">
-            <h2 class="bp-settings-title"><i class="fa-solid fa-briefcase text-primary"></i> {{ page.settings_workspace_heading|default:"Workspace Details" }}</h2>
-            <p class="bp-settings-sub">{{ page.settings_workspace_subtext|default:"Configure your blog workspace, public name, and publishing preferences." }}</p>
-          </div>
-
-          <form onsubmit="event.preventDefault(); alert('Workspace settings saved!');">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="bp-form-label">Workspace / Brand Name</label>
-                <input type="text" class="bp-form-control" value="{{ page.brand_name|default:'ShivangiCMS' }}">
-              </div>
-              <div class="col-md-6">
-                <label class="bp-form-label">Primary Domain</label>
-                <input type="text" class="bp-form-control" value="{{ page.settings_workspace_domain|default:'insightcms.local' }}" readonly>
-              </div>
-              <div class="col-md-6">
-                <label class="bp-form-label">Timezone</label>
-                <select class="bp-form-control">
-                  <option selected>Asia/Kolkata (GMT+05:30)</option>
-                  <option>UTC (GMT+00:00)</option>
-                  <option>America/New_York (GMT-05:00)</option>
-                  <option>Europe/London (GMT+00:00)</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="bp-form-label">Default Publishing Language</label>
-                <select class="bp-form-control">
-                  <option selected>English (United States)</option>
-                  <option>Hindi</option>
-                  <option>Spanish</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="mt-4 pt-3 border-top d-flex justify-content-end">
-              <button type="submit" class="bp-btn-save"><i class="fa-solid fa-check"></i> {{ page.settings_workspace_btn_text|default:"Save Workspace" }}</button>
-            </div>
-          </form>
-        </div>
-      </div>
+    
 
       <!-- ==========================================
-           3. NOTIFICATIONS SECTION
-           ========================================== -->
-      <div id="section-notifications" class="settings-tab-pane d-none">
-        <div class="bp-settings-card">
-          <div class="bp-settings-section-header">
-            <h2 class="bp-settings-title"><i class="fa-regular fa-bell text-primary"></i> {{ page.settings_notif_heading|default:"Notification Preferences" }}</h2>
-            <p class="bp-settings-sub">{{ page.settings_notif_subtext|default:"Choose when and how you want to be notified about blog activities." }}</p>
-          </div>
-
-          <div class="bp-toggle-row">
-            <div>
-              <div class="bp-toggle-label">{{ page.settings_notif_1_title|default:"New Comments & Reader Interactions" }}</div>
-              <p class="bp-toggle-desc">{{ page.settings_notif_1_desc|default:"Get notified immediately whenever a reader leaves a comment on your posts." }}</p>
-            </div>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" checked style="width: 2.5em; height: 1.25em;">
-            </div>
-          </div>
-
-          <div class="bp-toggle-row">
-            <div>
-              <div class="bp-toggle-label">{{ page.settings_notif_2_title|default:"Weekly Analytics Digest" }}</div>
-              <p class="bp-toggle-desc">{{ page.settings_notif_2_desc|default:"Receive a weekly summary of your blog's visitors, top posts, and subscriber growth." }}</p>
-            </div>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" checked style="width: 2.5em; height: 1.25em;">
-            </div>
-          </div>
-
-          <div class="bp-toggle-row">
-            <div>
-              <div class="bp-toggle-label">{{ page.settings_notif_3_title|default:"System & Security Alerts" }}</div>
-              <p class="bp-toggle-desc">{{ page.settings_notif_3_desc|default:"Important updates about your account security and CMS updates." }}</p>
-            </div>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" checked disabled style="width: 2.5em; height: 1.25em;">
-            </div>
-          </div>
-
-          <div class="mt-4 pt-3 border-top d-flex justify-content-end">
-            <button type="button" class="bp-btn-save" onclick="alert('Notification preferences updated!');"><i class="fa-solid fa-check"></i> {{ page.settings_notif_btn_text|default:"Save Preferences" }}</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==========================================
-           4. SECURITY SECTION
+           2. SECURITY SECTION
            ========================================== -->
       <div id="section-security" class="settings-tab-pane d-none">
         <div class="bp-settings-card">
@@ -410,21 +325,24 @@
             <p class="bp-settings-sub">{{ page.settings_security_subtext|default:"Manage your password, login security, and active sessions." }}</p>
           </div>
 
-          <form onsubmit="event.preventDefault(); alert('Password updated successfully!');">
+          <form method="post" action="">
+            {% csrf_token %}
+            <input type="hidden" name="action_type" value="update_password">
+
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="bp-form-label">Current Password</label>
-                <input type="password" class="bp-form-control" placeholder="••••••••">
+                <label class="bp-form-label">{{ page.settings_sec_curr_pass_label|default:"Current Password" }}</label>
+                <input type="password" name="old_password" class="bp-form-control" required placeholder="{{ page.settings_sec_curr_pass_ph|default:'••••••••' }}">
               </div>
               <div class="col-md-6"></div>
 
               <div class="col-md-6">
-                <label class="bp-form-label">New Password</label>
-                <input type="password" class="bp-form-control" placeholder="Enter new password">
+                <label class="bp-form-label">{{ page.settings_sec_new_pass_label|default:"New Password" }}</label>
+                <input type="password" name="new_password1" class="bp-form-control" required placeholder="{{ page.settings_sec_new_pass_ph|default:'Enter new password' }}">
               </div>
               <div class="col-md-6">
-                <label class="bp-form-label">Confirm New Password</label>
-                <input type="password" class="bp-form-control" placeholder="Confirm new password">
+                <label class="bp-form-label">{{ page.settings_sec_conf_pass_label|default:"Confirm New Password" }}</label>
+                <input type="password" name="new_password2" class="bp-form-control" required placeholder="{{ page.settings_sec_conf_pass_ph|default:'Confirm new password' }}">
               </div>
             </div>
 
@@ -445,7 +363,7 @@
             </div>
             <form method="post" action="{% url 'logout' %}" style="margin:0;">
               {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-right-from-bracket me-1"></i> Sign Out</button>
+              <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-right-from-bracket me-1"></i> {{ page.settings_sec_signout_btn_text|default:"Sign Out" }}</button>
             </form>
           </div>
         </div>

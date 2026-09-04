@@ -12,10 +12,7 @@ from django.contrib.auth import login as auth_login
 from Apps.accounts.blocks import (
     SidebarLinkBlock,
     StatCardBlock,
-    TopbarBlock,
-    UpgradeBannerBlock,
-    SidebarUpgradeCardBlock,
-    DashboardFooterBlock,
+    DashboardBodyStreamBlock,
 )
 
 
@@ -403,12 +400,22 @@ class UserDashboardPage(Page):
     # Settings Profile Section
     settings_profile_heading = models.CharField(max_length=100, blank=True, default="Profile Information")
     settings_profile_subtext = models.CharField(max_length=255, blank=True, default="Update your personal details and public profile presence.")
+    settings_profile_avatar_btn_text = models.CharField(max_length=50, blank=True, default="Change Avatar")
+    settings_profile_fname_label = models.CharField(max_length=50, blank=True, default="First Name")
+    settings_profile_lname_label = models.CharField(max_length=50, blank=True, default="Last Name")
+    settings_profile_email_label = models.CharField(max_length=50, blank=True, default="Email Address")
+    settings_profile_email_hint = models.CharField(max_length=255, blank=True, default="Email address is managed by your system administrator.")
+    settings_profile_role_label = models.CharField(max_length=50, blank=True, default="Role")
     settings_profile_btn_text = models.CharField(max_length=50, blank=True, default="Save Changes")
 
     # Settings Workspace Section
     settings_workspace_heading = models.CharField(max_length=100, blank=True, default="Workspace Details")
     settings_workspace_subtext = models.CharField(max_length=255, blank=True, default="Configure your blog workspace, public name, and publishing preferences.")
+    settings_ws_brand_label = models.CharField(max_length=50, blank=True, default="Workspace / Brand Name")
+    settings_ws_domain_label = models.CharField(max_length=50, blank=True, default="Primary Domain")
     settings_workspace_domain = models.CharField(max_length=100, blank=True, default="insightcms.local")
+    settings_ws_timezone_label = models.CharField(max_length=50, blank=True, default="Timezone")
+    settings_ws_lang_label = models.CharField(max_length=50, blank=True, default="Default Publishing Language")
     settings_workspace_btn_text = models.CharField(max_length=50, blank=True, default="Save Workspace")
 
     # Settings Notifications Section
@@ -425,210 +432,78 @@ class UserDashboardPage(Page):
     # Settings Security Section
     settings_security_heading = models.CharField(max_length=100, blank=True, default="Security & Authentication")
     settings_security_subtext = models.CharField(max_length=255, blank=True, default="Manage your password, login security, and active sessions.")
+    settings_sec_curr_pass_label = models.CharField(max_length=50, blank=True, default="Current Password")
+    settings_sec_curr_pass_ph = models.CharField(max_length=50, blank=True, default="••••••••")
+    settings_sec_new_pass_label = models.CharField(max_length=50, blank=True, default="New Password")
+    settings_sec_new_pass_ph = models.CharField(max_length=50, blank=True, default="Enter new password")
+    settings_sec_conf_pass_label = models.CharField(max_length=50, blank=True, default="Confirm New Password")
+    settings_sec_conf_pass_ph = models.CharField(max_length=50, blank=True, default="Confirm new password")
     settings_security_badge_text = models.CharField(max_length=50, blank=True, default="Account Protected")
     settings_security_btn_text = models.CharField(max_length=50, blank=True, default="Update Password")
     settings_session_title = models.CharField(max_length=100, blank=True, default="Active Session")
     settings_session_desc = models.CharField(max_length=255, blank=True, default="Currently signed in from this browser.")
+    settings_sec_signout_btn_text = models.CharField(max_length=50, blank=True, default="Sign Out")
+
+    # =========================================================================
+    # DYNAMIC STREAMFIELD BODY (Shows (+) button with block choices)
+    # =========================================================================
+    body = StreamField(
+        DashboardBodyStreamBlock(),
+        use_json_field=True,
+        blank=True,
+        null=True,
+        help_text="Click (+) to add, reorder, or remove Dashboard sections (Stat Cards, Charts, Posts Table, Audience, Comments, Banner)"
+    )
 
     content_panels = Page.content_panels + [
-        MultiFieldPanel([
-            FieldPanel("brand_name"),
-            FieldPanel("welcome_heading"),
-            FieldPanel("welcome_subtext"),
-            FieldPanel("new_post_button_text"),
-            FieldPanel("new_post_button_url"),
-        ], heading="1. Header & Brand"),
-
+        FieldPanel("body", heading="1. Dashboard Modular Blocks (Click + to Add, Delete or Reorder)"),
         FieldPanel("sidebar_links", heading="2. Dynamic Sidebar Links"),
-
-        MultiFieldPanel([
-            FieldPanel("search_placeholder"),
-            FieldPanel("search_shortcut"),
-            FieldPanel("notification_count"),
-        ], heading="3. Topbar Header Settings"),
-
-        MultiFieldPanel([
-            FieldPanel("stat1_label"),
-            FieldPanel("stat1_value"),
-            FieldPanel("stat1_growth"),
-            FieldPanel("stat2_label"),
-            FieldPanel("stat2_value"),
-            FieldPanel("stat2_growth"),
-            FieldPanel("stat3_label"),
-            FieldPanel("stat3_value"),
-            FieldPanel("stat3_growth"),
-            FieldPanel("stat4_label"),
-            FieldPanel("stat4_value"),
-            FieldPanel("stat4_growth"),
-            FieldPanel("stat5_label"),
-            FieldPanel("stat5_value"),
-            FieldPanel("stat5_growth"),
-            FieldPanel("stat_caption"),
-        ], heading="4. Top 5 Stat Cards (Labels, Values & Growth)"),
-
-        MultiFieldPanel([
-            FieldPanel("views_chart_heading"),
-            FieldPanel("views_chart_subtext"),
-            FieldPanel("views_filter_1"),
-            FieldPanel("views_filter_2"),
-            FieldPanel("views_filter_3"),
-        ], heading="5. Views Overview"),
-
-        MultiFieldPanel([
-            FieldPanel("recent_posts_heading"),
-            FieldPanel("recent_posts_subtext"),
-            FieldPanel("view_all_posts_text"),
-            FieldPanel("view_all_posts_url"),
-            FieldPanel("th_post_title"),
-            FieldPanel("th_category"),
-            FieldPanel("th_status"),
-            FieldPanel("th_views"),
-            FieldPanel("th_date"),
-            FieldPanel("th_actions"),
-        ], heading="6. Recent Posts & Table Headers"),
-
-        MultiFieldPanel([
-            FieldPanel("audience_heading"),
-            FieldPanel("audience_subtext"),
-            FieldPanel("countries_heading"),
-            FieldPanel("country_1_name"),
-            FieldPanel("country_1_pct"),
-            FieldPanel("country_2_name"),
-            FieldPanel("country_2_pct"),
-            FieldPanel("country_3_name"),
-            FieldPanel("country_3_pct"),
-            FieldPanel("country_4_name"),
-            FieldPanel("country_4_pct"),
-            FieldPanel("country_5_name"),
-            FieldPanel("country_5_pct"),
-            FieldPanel("traffic_heading"),
-            FieldPanel("traffic_legend_1"),
-            FieldPanel("traffic_legend_2"),
-            FieldPanel("device_heading"),
-            FieldPanel("device_legend_1"),
-            FieldPanel("device_legend_2"),
-        ], heading="7. Audience Overview"),
-
-
-        MultiFieldPanel([
-            FieldPanel("comments_heading"),
-            FieldPanel("comments_subtext"),
-            FieldPanel("view_all_comments_text"),
-            FieldPanel("view_all_comments_url"),
-            FieldPanel("comment_1_author"),
-            FieldPanel("comment_1_time"),
-            FieldPanel("comment_1_text"),
-            FieldPanel("comment_1_post"),
-            FieldPanel("comment_2_author"),
-            FieldPanel("comment_2_time"),
-            FieldPanel("comment_2_text"),
-            FieldPanel("comment_2_post"),
-            FieldPanel("comment_3_author"),
-            FieldPanel("comment_3_time"),
-            FieldPanel("comment_3_text"),
-            FieldPanel("comment_3_post"),
-        ], heading="9. Recent Comments"),
-
-
-
-        MultiFieldPanel([
-            FieldPanel("show_upgrade_banner"),
-            FieldPanel("upgrade_banner_title"),
-            FieldPanel("upgrade_banner_text"),
-            FieldPanel("upgrade_banner_button_text"),
-            FieldPanel("upgrade_banner_button_url"),
-        ], heading="11. Bottom Upgrade Banner"),
-
-        MultiFieldPanel([
-            FieldPanel("sidebar_upgrade_title"),
-            FieldPanel("sidebar_upgrade_text"),
-            FieldPanel("sidebar_upgrade_button_text"),
-        ], heading="12. Sidebar Upgrade Card"),
-
         MultiFieldPanel([
             FieldPanel("footer_tagline"),
             FieldPanel("footer_facebook_url"),
             FieldPanel("footer_twitter_url"),
             FieldPanel("footer_instagram_url"),
             FieldPanel("footer_linkedin_url"),
-
-            # Column 1
             FieldPanel("footer_col1_heading"),
             FieldPanel("footer_col1_link1_text"),
             FieldPanel("footer_col1_link1_url"),
             FieldPanel("footer_col1_link2_text"),
             FieldPanel("footer_col1_link2_url"),
-            FieldPanel("footer_col1_link3_text"),
-            FieldPanel("footer_col1_link3_url"),
-            FieldPanel("footer_col1_link4_text"),
-            FieldPanel("footer_col1_link4_url"),
-
-            # Column 2
             FieldPanel("footer_col2_heading"),
             FieldPanel("footer_col2_link1_text"),
             FieldPanel("footer_col2_link1_url"),
             FieldPanel("footer_col2_link2_text"),
             FieldPanel("footer_col2_link2_url"),
-            FieldPanel("footer_col2_link3_text"),
-            FieldPanel("footer_col2_link3_url"),
-            FieldPanel("footer_col2_link4_text"),
-            FieldPanel("footer_col2_link4_url"),
-
-            # Column 3
-            FieldPanel("footer_col3_heading"),
-            FieldPanel("footer_col3_link1_text"),
-            FieldPanel("footer_col3_link1_url"),
-            FieldPanel("footer_col3_link2_text"),
-            FieldPanel("footer_col3_link2_url"),
-            FieldPanel("footer_col3_link3_text"),
-            FieldPanel("footer_col3_link3_url"),
-            FieldPanel("footer_col3_link4_text"),
-            FieldPanel("footer_col3_link4_url"),
-
-            # Newsletter
-            FieldPanel("newsletter_heading"),
-            FieldPanel("newsletter_subtext"),
-            FieldPanel("newsletter_placeholder"),
-        ], heading="13. Footer Content, Columns & Social Links"),
-
-        MultiFieldPanel([
             FieldPanel("copyright_text"),
-            FieldPanel("privacy_policy_text"),
-            FieldPanel("privacy_policy_url"),
-            FieldPanel("terms_service_text"),
-            FieldPanel("terms_service_url"),
-        ], heading="14. Footer Bottom & Legal Links"),
-
+        ], heading="3. Footer Settings & Social Links"),
         MultiFieldPanel([
             FieldPanel("settings_page_title"),
             FieldPanel("settings_page_subtext"),
             FieldPanel("settings_tab_1_title"),
-            FieldPanel("settings_tab_2_title"),
-            FieldPanel("settings_tab_3_title"),
             FieldPanel("settings_tab_4_title"),
+
+            # Profile Tab Fields
             FieldPanel("settings_profile_heading"),
             FieldPanel("settings_profile_subtext"),
+            FieldPanel("settings_profile_avatar_btn_text"),
+            FieldPanel("settings_profile_fname_label"),
+            FieldPanel("settings_profile_lname_label"),
+            FieldPanel("settings_profile_email_label"),
+            FieldPanel("settings_profile_email_hint"),
+            FieldPanel("settings_profile_role_label"),
             FieldPanel("settings_profile_btn_text"),
-            FieldPanel("settings_workspace_heading"),
-            FieldPanel("settings_workspace_subtext"),
-            FieldPanel("settings_workspace_domain"),
-            FieldPanel("settings_workspace_btn_text"),
-            FieldPanel("settings_notif_heading"),
-            FieldPanel("settings_notif_subtext"),
-            FieldPanel("settings_notif_1_title"),
-            FieldPanel("settings_notif_1_desc"),
-            FieldPanel("settings_notif_2_title"),
-            FieldPanel("settings_notif_2_desc"),
-            FieldPanel("settings_notif_3_title"),
-            FieldPanel("settings_notif_3_desc"),
-            FieldPanel("settings_notif_btn_text"),
+
+            # Security Tab Fields
             FieldPanel("settings_security_heading"),
             FieldPanel("settings_security_subtext"),
-            FieldPanel("settings_security_badge_text"),
+            FieldPanel("settings_sec_curr_pass_label"),
+            FieldPanel("settings_sec_curr_pass_ph"),
+            FieldPanel("settings_sec_new_pass_label"),
+            FieldPanel("settings_sec_new_pass_ph"),
+            FieldPanel("settings_sec_conf_pass_label"),
+            FieldPanel("settings_sec_conf_pass_ph"),
             FieldPanel("settings_security_btn_text"),
-            FieldPanel("settings_session_title"),
-            FieldPanel("settings_session_desc"),
-        ], heading="15. Settings Page (Dynamic)"),
+        ], heading="4. Settings Page (Profile & Security Tabs Only)"),
     ]
 
     parent_page_types = ["wagtailcore.Page", "companies.CompanyHomePage"]
@@ -637,7 +512,10 @@ class UserDashboardPage(Page):
 
     def serve(self, request):
         if not request.user.is_authenticated:
-            return redirect("/accounts/login/")
+            from Apps.accounts.models import LoginPage
+            login_page = LoginPage.objects.live().first()
+            login_url = login_page.url if login_page else '/login/'
+            return redirect(login_url)
         
         from Apps.blogs.models import BlogPage
         blogs = BlogPage.objects.all().order_by('-latest_revision_created_at')[:5]

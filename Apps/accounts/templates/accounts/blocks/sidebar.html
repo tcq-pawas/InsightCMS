@@ -9,82 +9,28 @@
 
   <!-- Dynamic Navigation Menu -->
   <nav class="bp-nav">
-    {% if page.sidebar_links %}
-      {% for block in page.sidebar_links %}
-        {% if block.value.title|lower == 'logout' %}
-          <!-- Logout: POST form use karo properly -->
+    {% for item in page.sidebar_links %}
+      {% with link=item.value %}
+        {% if link.title|lower == 'logout' %}
+          <!-- Logout: POST form -->
           <form method="post" action="{% url 'logout' %}" style="margin:0;padding:0;">
             {% csrf_token %}
             <button type="submit" class="bp-nav-item w-100 text-start border-0 bg-transparent" style="cursor:pointer;">
-              <i class="fa-solid {{ block.value.icon|default:'fa-right-from-bracket' }}"></i>
-              <span>{{ block.value.title }}</span>
+              <i class="fa-solid {{ link.icon|default:'fa-right-from-bracket' }}"></i>
+              <span>{{ link.title }}</span>
             </button>
           </form>
         {% else %}
-          <a href="{% if block.value.title|lower == 'settings' or block.value.url == '#setting' or block.value.url == '/settings/' %}/settings/{% else %}{{ block.value.url|default:'/cms/' }}{% endif %}" class="bp-nav-item {% if active_tab == 'settings' and block.value.title|lower == 'settings' %}active{% elif not active_tab and forloop.first or block.value.is_active %}active{% endif %}">
-            <i class="fa-solid {{ block.value.icon|default:'fa-file-lines' }}"></i> 
-            <span>{{ block.value.title }}</span>
-            {% if block.value.badge_text %}
-              <span class="bp-nav-badge">{{ block.value.badge_text }}</span>
+          <a href="{% if link.title|lower == 'dashboard' or link.url == '#dashboard' or link.url == '#overview' %}/dashboard/{% elif link.title|lower == 'posts' or link.url == '#posts' %}/cms/pages/{% elif link.title|lower == 'comments' or link.url == '#comments' %}/cms/{% elif link.title|lower == 'settings' or link.url == '#setting' or link.url == '/settings/' %}/settings/{% else %}{{ link.url|default:'/cms/' }}{% endif %}" class="bp-nav-item {% if active_tab == 'settings' and link.title|lower == 'settings' %}active{% elif not active_tab and link.title|lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
+            <i class="fa-solid {{ link.icon|default:'fa-file-lines' }}"></i> 
+            <span>{{ link.title }}</span>
+            {% if link.badge_text %}
+              <span class="bp-nav-badge">{{ link.badge_text }}</span>
             {% endif %}
           </a>
         {% endif %}
-      {% endfor %}
-    {% else %}
-      <!-- Fallback Default Links agar CMS me links add na kiye ho -->
-      <a href="/dashboard/" class="bp-nav-item {% if not active_tab %}active{% endif %}">
-        <i class="fa-solid fa-table-cells-large"></i> <span>Dashboard</span>
-      </a>
-      <a href="/cms/pages/" class="bp-nav-item">
-        <i class="fa-solid fa-pen-nib"></i> <span>Posts</span>
-      </a>
-      <a href="/cms/" class="bp-nav-item">
-        <i class="fa-solid fa-layer-group"></i> <span>Categories</span>
-      </a>
-      <a href="/cms/images/" class="bp-nav-item">
-        <i class="fa-regular fa-image"></i> <span>Media</span>
-      </a>
-      <a href="/cms/pages/" class="bp-nav-item">
-        <i class="fa-regular fa-file-lines"></i> <span>Pages</span>
-      </a>
-      <a href="/cms/" class="bp-nav-item">
-        <i class="fa-regular fa-comments"></i> <span>Comments</span>
-        <span class="bp-nav-badge">24</span>
-      </a>
-      <a href="/dashboard/" class="bp-nav-item">
-        <i class="fa-solid fa-chart-line"></i> <span>Analytics</span>
-      </a>
-      <a href="/cms/users/" class="bp-nav-item">
-        <i class="fa-regular fa-user"></i> <span>Subscribers</span>
-      </a>
-
-      <div class="bp-nav-section-title">PREFERENCES</div>
-      <a href="/cms/" class="bp-nav-item">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Appearance</span>
-      </a>
-      <a href="/cms/" class="bp-nav-item">
-        <i class="fa-solid fa-puzzle-piece"></i> <span>Plugins</span>
-      </a>
-      <a href="/settings/" class="bp-nav-item {% if active_tab == 'settings' %}active{% endif %}">
-        <i class="fa-solid fa-gear"></i> <span>Settings</span>
-      </a>
-      <!-- Fallback Logout -->
-      <form method="post" action="{% url 'logout' %}" style="margin:0;padding:0;">
-        {% csrf_token %}
-        <button type="submit" class="bp-nav-item w-100 text-start border-0 bg-transparent" style="cursor:pointer;">
-          <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
-        </button>
-      </form>
-    {% endif %}
+      {% endwith %}
+    {% endfor %}
   </nav>
 
-  <!-- Sidebar Upgrade Card (Dynamic Wagtail) -->
-  <div class="bp-sidebar-upgrade">
-    <div class="bp-crown-icon"><i class="fa-solid fa-crown"></i></div>
-    <div class="bp-upgrade-title">{{ page.sidebar_upgrade_title|default:"Upgrade to Pro" }}</div>
-    <div class="bp-upgrade-sub">{{ page.sidebar_upgrade_text|default:"Unlock advanced features and grow your blog faster." }}</div>
-    <a href="{{ page.sidebar_upgrade_button_url|default:'#' }}" class="bp-upgrade-btn">
-      {{ page.sidebar_upgrade_button_text|default:"Upgrade Now" }}
-    </a>
-  </div>
 </aside>
