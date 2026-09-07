@@ -9,7 +9,7 @@
 
   <!-- Dynamic Navigation Menu -->
   <nav class="bp-nav">
-    {% for item in page.sidebar_links %}
+    {% for item in sidebar_links %}
       {% with link=item.value %}
         {% if link.title|lower == 'logout' %}
           <!-- Logout: POST form -->
@@ -21,7 +21,7 @@
             </button>
           </form>
         {% else %}
-          <a href="{% if link.title|lower == 'dashboard' or link.url == '#dashboard' or link.url == '#overview' %}/dashboard/{% elif link.title|lower == 'posts' or link.url == '#posts' %}/cms/pages/{% elif link.title|lower == 'comments' or link.url == '#comments' %}/cms/{% elif link.title|lower == 'settings' or link.url == '#setting' or link.url == '/settings/' %}/settings/{% else %}{{ link.url|default:'/cms/' }}{% endif %}" class="bp-nav-item {% if active_tab == 'settings' and link.title|lower == 'settings' %}active{% elif not active_tab and link.title|lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
+          <a href="{% if link.title|lower == 'dashboard' or link.url == '#dashboard' or link.url == '#overview' %}/dashboard/{% elif link.title|lower == 'posts' or link.url == '#posts' or link.url == '/cms/pages/' %}/blog-posts/{% elif link.title|lower == 'comments' or link.url == '#comments' %}/cms/{% elif link.title|lower == 'settings' or link.url == '#setting' or link.url == '/settings/' %}/settings/{% else %}{{ link.url|default:'/cms/' }}{% endif %}" class="bp-nav-item {% if active_tab == 'settings' and link.title|lower == 'settings' %}active{% elif active_tab == 'posts' and link.title|lower == 'posts' %}active{% elif not active_tab and link.title|lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
             <i class="fa-solid {{ link.icon|default:'fa-file-lines' }}"></i> 
             <span>{{ link.title }}</span>
             {% if link.badge_text %}

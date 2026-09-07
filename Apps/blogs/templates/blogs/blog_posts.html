@@ -1,0 +1,139 @@
+{% extends "companies/base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}{{ page.page_heading|default:"Blog Posts" }} | {{ page.brand_name|default:"BlogPro" }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/blog_posts.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bp-app-wrapper">
+
+  <!-- Sidebar -->
+  {% include "accounts/blocks/sidebar.html" %}
+
+  <div class="bp-main-container">
+
+    <!-- Topbar -->
+    {% include "accounts/blocks/topbar.html" %}
+
+    <main class="bp-content-body">
+
+      <!-- Page Header -->
+      <div class="bp-page-header mb-4">
+        <div>
+          <h1 class="bp-page-title">{{ page.page_heading|default:"Blog Posts" }}</h1>
+          <p class="bp-page-sub">{{ page.page_subtext|default:"Manage all blog posts across your workspace" }}</p>
+        </div>
+        <div>
+            {% if blog_index_id %}
+            <a href="{% url 'wagtailadmin_pages:add' 'blogs' 'blogpage' blog_index_id %}" class="bp-btn-primary">
+                <i class="fa-solid fa-plus me-1"></i> {{ page.create_button_text|default:"Create Blog Post" }}
+            </a>
+            {% else %}
+            <a href="/cms/pages/" class="bp-btn-primary">
+                <i class="fa-solid fa-plus me-1"></i> {{ page.create_button_text|default:"Create Blog Post" }}
+            </a>
+            {% endif %}
+        </div>
+      </div>
+
+      <!-- Blog Posts List (Custom Card Rows as per UI design) -->
+      <div class="bp-blog-list-container">
+        {% for blog in blogs %}
+        <div class="bp-blog-card-item">
+          <!-- 1. Left Thumbnail -->
+          {% if blog.featured_image %}
+            {% image blog.featured_image fill-60x60 class="bp-blog-thumb" %}
+          {% else %}
+            <div class="bp-blog-thumb-fallback"><i class="fa-solid fa-pen-nib"></i></div>
+          {% endif %}
+
+          <!-- 2. Middle Content (Title + Meta + Short Description) -->
+          <div class="bp-blog-content">
+            <a href="{% url 'wagtailadmin_pages:edit' blog.id %}" class="bp-blog-title">
+              <span>🚀</span> {{ blog.title }}
+            </a>
+            <div class="bp-blog-meta">
+              <span>
+                {% if blog.live %}
+                  <strong class="text-success">Published</strong>
+                {% else %}
+                  <strong class="text-secondary">Draft</strong>
+                {% endif %}
+                · {{ blog.first_published_at|date:"b d"|default:blog.latest_revision_created_at|date:"b d" }}
+              </span>
+
+              {% if blog.short_description %}
+              <div class="bp-blog-short-pill" title="{{ blog.short_description }}">
+                {{ blog.short_description }}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- 3. Right Action Icons & Meta Indicators -->
+          <div class="bp-blog-actions">
+            <!-- Publish / Unpublish Toggle -->
+            <a href="{% url 'wagtailadmin_pages:edit' blog.id %}" class="bp-icon-btn" title="Edit in Wagtail CMS">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </a>
+
+            <!-- Category / Tag Icon -->
+            <span class="bp-icon-btn" title="Category: {{ blog.category.name|default:'General' }}">
+              <i class="fa-solid fa-tag"></i>
+            </span>
+
+            <!-- Delete Icon -->
+            <a href="/cms/pages/{{ blog.id }}/delete/" class="bp-icon-btn bp-icon-btn-danger" title="Delete Post">
+              <i class="fa-solid fa-trash-can"></i>
+            </a>
+
+            <!-- View Live Post Icon -->
+            {% if blog.live %}
+            <a href="{{ blog.url }}" target="_blank" class="bp-icon-btn" title="View Live Blog">
+              <i class="fa-regular fa-eye"></i>
+            </a>
+            {% else %}
+            <span class="bp-icon-btn text-muted" title="Draft (Not Published)">
+              <i class="fa-regular fa-eye-slash"></i>
+            </span>
+            {% endif %}
+
+            <!-- Author Avatar -->
+            {% if blog.author and blog.author.avatar %}
+              <img src="{{ blog.author.avatar.url }}" class="bp-author-avatar-small" title="{{ blog.author.get_full_name|default:blog.author.email }}">
+            {% else %}
+              <div class="bp-author-avatar-fallback" title="{{ blog.author.get_full_name|default:blog.author.email|default:'Admin' }}">
+                {{ blog.author.first_name|slice:":1"|default:"A" }}
+              </div>
+            {% endif %}
+
+            <!-- Share & Stats -->
+            <span class="bp-icon-btn ms-1" title="Share"><i class="fa-solid fa-share-nodes"></i></span>
+            <span class="d-flex align-items-center gap-1 font-size-12"><i class="fa-regular fa-comment"></i> 0</span>
+            <span class="d-flex align-items-center gap-1 font-size-12"><i class="fa-solid fa-chart-simple"></i> {{ blog.views_count|default:"23" }}</span>
+          </div>
+        </div>
+        {% empty %}
+        <div class="card p-5 text-center text-muted">
+          <p class="fs-5 mb-2">{{ page.empty_state_text|default:"No blog posts yet." }}</p>
+          {% if blog_index_id %}
+            <div><a href="{% url 'wagtailadmin_pages:add' 'blogs' 'blogpage' blog_index_id %}" class="btn btn-primary btn-sm">{{ page.empty_state_link_text|default:"Create your first one" }}</a></div>
+          {% else %}
+            <div><a href="/cms/pages/" class="btn btn-primary btn-sm">{{ page.empty_state_link_text|default:"Create your first one" }}</a></div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+    </main>
+
+    {% include "accounts/blocks/footer.html" %}
+  </div>
+</div>
+{% endblock %}

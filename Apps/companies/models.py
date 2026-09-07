@@ -165,6 +165,7 @@ class CompanyHomePage(Page):
         "companies.SimpleContentPage",
         "accounts.LoginPage",
         "accounts.RegisterPage",
+        "companies.CompanyBlogPostsPage",
     ]
  
     template = "companies/company_home_page.html"
@@ -191,3 +192,74 @@ class SimpleContentPage(Page):
 
     class Meta:
         verbose_name = "Simple Content Page"
+        
+
+class CompanyBlogPostsPage(Page):
+
+    page_heading = models.CharField(max_length=100, blank=True, default="Blog Posts")
+    page_subtext = models.CharField(max_length=200, blank=True, default="Manage all blog posts across your workspace")
+    create_button_text = models.CharField(max_length=50, blank=True, default="Create Blog Post")
+
+    col_title_label = models.CharField(max_length=50, blank=True, default="Title")
+    col_status_label = models.CharField(max_length=50, blank=True, default="Status")
+    col_author_label = models.CharField(max_length=50, blank=True, default="Author")
+    col_updated_label = models.CharField(max_length=50, blank=True, default="Last Updated")
+
+    empty_state_text = models.CharField(max_length=150, blank=True, default="No blog posts yet.")
+    empty_state_link_text = models.CharField(max_length=50, blank=True, default="Create your first one")
+
+    content_panels = Page.content_panels + [
+        FieldPanel("page_heading"),
+        FieldPanel("page_subtext"),
+        FieldPanel("create_button_text"),
+        FieldPanel("col_title_label"),
+        FieldPanel("col_status_label"),
+        FieldPanel("col_author_label"),
+        FieldPanel("col_updated_label"),
+        FieldPanel("empty_state_text"),
+        FieldPanel("empty_state_link_text"),
+    ]
+
+    parent_page_types = ["companies.CompanyHomePage", "wagtailcore.Page"]
+    subpage_types = []
+    template = "blogs/blog_posts.html"
+
+    def serve(self, request):
+        from django.shortcuts import redirect, render
+        from Apps.blogs.models import BlogPage, BlogIndexPage
+        from Apps.accounts.models import UserDashboardPage
+        from Apps.companies.models import CompanyMembership
+
+        if not request.user.is_authenticated:
+            return redirect("/login/")
+
+        blogs = BlogPage.objects.all().select_related('author', 'featured_image', 'category').order_by('-latest_revision_created_at')
+
+        membership = CompanyMembership.objects.filter(user=request.user).select_related('company').first()
+        blog_index_id = None
+        if membership:
+            blogs = blogs.filter(company=membership.company)
+            home = membership.company.home_pages.first()
+            if home:
+                blog_index = BlogIndexPage.objects.filter(path__startswith=home.path).first()
+                blog_index_id = blog_index.id if blog_index else None
+        else:
+            first_index = BlogIndexPage.objects.first()
+            blog_index_id = first_index.id if first_index else None
+
+        dashboard_page = UserDashboardPage.objects.live().first()
+        sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
+
+        context = self.get_context(request)
+        context.update({
+            'page': self,
+            'sidebar_links': sidebar_links,
+            'user': request.user,
+            'blogs': blogs,
+            'blog_index_id': blog_index_id,
+            'active_tab': 'posts',
+        })
+        return render(request, self.template, context)
+
+    class Meta:
+        verbose_name = "Company Blog Posts Page"

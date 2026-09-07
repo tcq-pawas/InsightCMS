@@ -1,0 +1,130 @@
+/* Blogger / CMS List Item Card Styles */
+.bp-blog-card-item {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.bp-blog-card-item:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.bp-blog-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.bp-blog-thumb-fallback {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  background-color: #f3f4f6;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.bp-blog-content {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.bp-blog-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.bp-blog-title:hover {
+  color: #2563eb;
+}
+
+.bp-blog-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.bp-blog-short-pill {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #6b7280;
+  border-radius: 20px;
+  padding: 2px 14px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 450px;
+}
+
+.bp-blog-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.bp-icon-btn {
+  color: #6b7280;
+  background: none;
+  border: none;
+  padding: 4px;
+  font-size: 15px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.15s;
+  text-decoration: none;
+}
+
+.bp-icon-btn:hover {
+  color: #111827;
+}
+
+.bp-icon-btn-danger:hover {
+  color: #ef4444;
+}
+
+.bp-author-avatar-small {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.bp-author-avatar-fallback {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #1e293b;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

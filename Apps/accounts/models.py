@@ -523,6 +523,7 @@ class UserDashboardPage(Page):
         context = self.get_context(request)
         context.update({
             'page': self,
+            'sidebar_links': self.sidebar_links,
             'user': request.user,
             'recent_blogs': blogs,
         })
