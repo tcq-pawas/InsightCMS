@@ -30,17 +30,23 @@
           <p class="bp-page-sub">{{ page.page_subtext|default:"Manage all blog posts across your workspace" }}</p>
         </div>
         <div>
-            {% if blog_index_id %}
-            <a href="{% url 'wagtailadmin_pages:add' 'blogs' 'blogpage' blog_index_id %}" class="bp-btn-primary">
+            <a href="{% url 'dashboard_blog_create' %}" class="bp-btn-primary">
                 <i class="fa-solid fa-plus me-1"></i> {{ page.create_button_text|default:"Create Blog Post" }}
             </a>
-            {% else %}
-            <a href="/cms/pages/" class="bp-btn-primary">
-                <i class="fa-solid fa-plus me-1"></i> {{ page.create_button_text|default:"Create Blog Post" }}
-            </a>
-            {% endif %}
         </div>
       </div>
+
+      <!-- Messages Alert -->
+      {% if messages %}
+        <div class="container-fluid px-0 mb-3">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show mb-2" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
 
       <!-- Blog Posts List (Custom Card Rows as per UI design) -->
       <div class="bp-blog-list-container">
@@ -55,7 +61,7 @@
 
           <!-- 2. Middle Content (Title + Meta + Short Description) -->
           <div class="bp-blog-content">
-            <a href="{% url 'wagtailadmin_pages:edit' blog.id %}" class="bp-blog-title">
+            <a href="{% url 'dashboard_blog_edit' blog.id %}" class="bp-blog-title">
               <span>🚀</span> {{ blog.title }}
             </a>
             <div class="bp-blog-meta">
@@ -78,8 +84,8 @@
 
           <!-- 3. Right Action Icons & Meta Indicators -->
           <div class="bp-blog-actions">
-            <!-- Publish / Unpublish Toggle -->
-            <a href="{% url 'wagtailadmin_pages:edit' blog.id %}" class="bp-icon-btn" title="Edit in Wagtail CMS">
+            <!-- Edit Action -->
+            <a href="{% url 'dashboard_blog_edit' blog.id %}" class="bp-icon-btn" title="Edit Blog">
               <i class="fa-solid fa-pen-to-square"></i>
             </a>
 
@@ -88,20 +94,31 @@
               <i class="fa-solid fa-tag"></i>
             </span>
 
-            <!-- Delete Icon -->
-            <a href="/cms/pages/{{ blog.id }}/delete/" class="bp-icon-btn bp-icon-btn-danger" title="Delete Post">
-              <i class="fa-solid fa-trash-can"></i>
-            </a>
+            <!-- Delete Form Action -->
+            <form method="post" action="{% url 'dashboard_blog_delete' blog.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this blog post?');">
+              {% csrf_token %}
+              <button type="submit" class="bp-icon-btn bp-icon-btn-danger border-0 bg-transparent" title="Delete Post">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </form>
 
-            <!-- View Live Post Icon -->
+            <!-- Toggle Publish / View Action -->
+            <form method="post" action="{% url 'dashboard_blog_toggle_publish' blog.id %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="bp-icon-btn border-0 bg-transparent" title="Toggle Publish Status (Publish/Unpublish)">
+                {% if blog.live %}
+                  <i class="fa-regular fa-eye text-success"></i>
+                {% else %}
+                  <i class="fa-regular fa-eye-slash text-secondary"></i>
+                {% endif %}
+              </button>
+            </form>
+
+            <!-- Live Post Link -->
             {% if blog.live %}
-            <a href="{{ blog.url }}" target="_blank" class="bp-icon-btn" title="View Live Blog">
-              <i class="fa-regular fa-eye"></i>
+            <a href="{{ blog.url }}" target="_blank" class="bp-icon-btn" title="View Live Blog Page">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </a>
-            {% else %}
-            <span class="bp-icon-btn text-muted" title="Draft (Not Published)">
-              <i class="fa-regular fa-eye-slash"></i>
-            </span>
             {% endif %}
 
             <!-- Author Avatar -->
@@ -122,11 +139,7 @@
         {% empty %}
         <div class="card p-5 text-center text-muted">
           <p class="fs-5 mb-2">{{ page.empty_state_text|default:"No blog posts yet." }}</p>
-          {% if blog_index_id %}
-            <div><a href="{% url 'wagtailadmin_pages:add' 'blogs' 'blogpage' blog_index_id %}" class="btn btn-primary btn-sm">{{ page.empty_state_link_text|default:"Create your first one" }}</a></div>
-          {% else %}
-            <div><a href="/cms/pages/" class="btn btn-primary btn-sm">{{ page.empty_state_link_text|default:"Create your first one" }}</a></div>
-          {% endif %}
+          <div><a href="{% url 'dashboard_blog_create' %}" class="btn btn-primary btn-sm">{{ page.empty_state_link_text|default:"Create your first one" }}</a></div>
         </div>
         {% endfor %}
       </div>

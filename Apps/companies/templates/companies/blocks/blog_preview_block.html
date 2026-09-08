@@ -1,40 +1,78 @@
-{% load wagtailimages_tags %}
+{% load static wagtailcore_tags wagtailimages_tags %}
 
-<section class="blog-preview-section py-5 bg-light">
-  <div class="container">
+<section class="blog-preview-section py-5">
+  <div class="container" style="max-width: 900px;">
+
+    <!-- Section Heading -->
     <div class="text-center mb-4">
       {% if value.heading %}
-        <h2>{{ value.heading }}</h2>
+        <h2 class="fw-bold">{{ value.heading }}</h2>
       {% endif %}
       {% if value.subheading %}
         <p class="text-muted">{{ value.subheading }}</p>
       {% endif %}
     </div>
-    <div class="row g-4">
+
+    <!-- Horizontal Card Row List (matching Image 2) -->
+    <div class="bp-public-blog-list">
       {% for post in posts %}
-        <div class="col-md-4">
-          <div class="card h-100 shadow-sm border-0">
-            {% if post.featured_image %}
-              {% image post.featured_image fill-600x400 class="card-img-top" alt=post.title %}
-            {% endif %}
-            <div class="card-body">
-              <h5 class="card-title">{{ post.title }}</h5>
-              <p class="card-text text-muted">{{ post.short_description }}</p>
-              {% if value.read_more_text %}
-                <a href="{{ post.url }}" class="btn btn-sm btn-outline-primary">
-                  {{ value.read_more_text }} <span class="visually-hidden">about {{ post.title }}</span>
-                </a>
+        <div class="bp-blog-card-item mb-3">
+
+          <!-- 1. Left Thumbnail -->
+          {% if post.featured_image %}
+            {% image post.featured_image fill-60x60 class="bp-blog-thumb" %}
+          {% else %}
+            <div class="bp-blog-thumb-fallback">
+              <i class="fa-solid fa-pen-nib"></i>
+            </div>
+          {% endif %}
+
+          <!-- 2. Middle: Title + Meta + Short Description Pill -->
+          <div class="bp-blog-content ms-2">
+            <a href="{{ post.url }}" class="bp-blog-title text-dark fw-bold text-decoration-none">
+              🚀 {{ post.title }}
+            </a>
+            <div class="bp-blog-meta d-flex align-items-center gap-2 mt-1">
+              <span class="text-muted small">
+                <strong class="text-success">Published</strong>
+                · {{ post.first_published_at|date:"b d, Y"|default:post.latest_revision_created_at|date:"b d, Y" }}
+              </span>
+              {% if post.short_description %}
+                <div class="bp-blog-short-pill" title="{{ post.short_description }}">
+                  {{ post.short_description|truncatechars:60 }}
+                </div>
               {% endif %}
             </div>
           </div>
+
+          <!-- 3. Right: Read More Link -->
+          <div class="bp-blog-actions ms-auto d-flex align-items-center gap-2">
+            {% if value.read_more_text %}
+              <a href="{{ post.url }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                {{ value.read_more_text }} <i class="fa-solid fa-arrow-right ms-1"></i>
+              </a>
+            {% endif %}
+          </div>
+
         </div>
       {% empty %}
         {% if value.empty_message %}
-          <div class="col-12 text-center text-muted">
+          <div class="text-center text-muted py-4">
             <p>{{ value.empty_message }}</p>
           </div>
         {% endif %}
       {% endfor %}
     </div>
+
+    <!-- View All Blogs Link -->
+    <div class="text-center mt-4">
+      <a href="/blog/" class="btn btn-outline-secondary btn-sm rounded-pill px-4">
+        View All Blog Posts <i class="fa-solid fa-arrow-right ms-1"></i>
+      </a>
+    </div>
+
   </div>
 </section>
+
+<!-- Required CSS (reuse blog_posts.css card styles) -->
+<link rel="stylesheet" href="{% static 'css/blog_posts.css' %}">

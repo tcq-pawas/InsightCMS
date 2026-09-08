@@ -1,7 +1,7 @@
 {% load wagtailimages_tags %}
 
 <header class="company-navbar">
-    <a href="#" class="company-brand d-flex align-items-center gap-2">
+    <a href="/" class="company-brand d-flex align-items-center gap-2">
         {% if page.logo %}
             {% image page.logo fill-40x40 as logo_img %}
             <img src="{{ logo_img.url }}" alt="{{ page.brand_name|default:page.title }}" class="navbar-logo-img">
@@ -13,10 +13,20 @@
 
     <nav class="company-nav-links d-flex align-items-center">
         {% for link in value.nav_links %}
-            <a href="{{ link.link_url }}">{{ link.label }}</a>
+            {% if link.label|lower == 'blogs' or link.link_url == '/blog-posts/' %}
+                <a href="/blog/">{{ link.label }}</a>
+            {% elif link.link_url|slice:":1" == '#' %}
+                <a href="/{{ link.link_url }}">{{ link.label }}</a>
+            {% else %}
+                <a href="{{ link.link_url }}">{{ link.label }}</a>
+            {% endif %}
         {% endfor %}
         {% if value.cta_text and value.cta_link %}
-            <a href="{{ value.cta_link }}" class="btn-get-started ms-4">{{ value.cta_text }}</a>
+            {% if value.cta_link|slice:":1" == '/' or value.cta_link|slice:":4" == 'http' %}
+                <a href="{{ value.cta_link }}" class="btn-get-started ms-4">{{ value.cta_text }}</a>
+            {% else %}
+                <a href="/{{ value.cta_link }}" class="btn-get-started ms-4">{{ value.cta_text }}</a>
+            {% endif %}
         {% endif %}
     </nav>
 </header>

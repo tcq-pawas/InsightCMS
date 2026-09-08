@@ -1,4 +1,76 @@
-/* Blogger / CMS List Item Card Styles */
+/* ============================================================
+   Public Company Navbar (reused on /blog/ page)
+   ============================================================ */
+.company-navbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1.1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.company-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: #0f172a;
+}
+
+.company-brand img {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.company-brand-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+}
+
+.company-nav-links {
+  display: flex;
+  align-items: center;
+}
+
+.company-nav-links a {
+  color: #475569;
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 1.75rem;
+  transition: color 0.2s;
+  font-size: 0.95rem;
+}
+
+.company-nav-links a:hover {
+  color: #2563eb;
+}
+
+.btn-get-started {
+  background: #2563eb;
+  color: #ffffff !important;
+  padding: 0.55rem 1.4rem;
+  border-radius: 50px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.btn-get-started:hover {
+  background: #1d4ed8;
+  color: #ffffff !important;
+}
+
+/* ============================================================
+   Blogger / CMS List Item Card Styles
+   ============================================================ */
+
 .bp-blog-card-item {
   background: #ffffff;
   border: 1px solid #e5e7eb;

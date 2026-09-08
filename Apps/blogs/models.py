@@ -36,6 +36,12 @@ class BlogIndexPage(Page):
         if company:
             posts = posts.filter(company=company)
         context['blogs'] = posts
+
+        # Pass parent CompanyHomePage so /blog/ shows same navbar + footer as home page
+        parent = self.get_parent()
+        if parent:
+            parent_specific = parent.specific
+            context['home_page'] = parent_specific
         return context
 
 

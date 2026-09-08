@@ -6,36 +6,50 @@
 {% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-5" style="max-width: 800px;">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/">Home</a></li>
-                    <li class="breadcrumb-item"><a href="../">Blog</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ page.title }}</li>
+        <div class="col-12">
+            <!-- Breadcrumb Navigation -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/blog/" class="text-decoration-none">Blog</a></li>
+                    <li class="breadcrumb-item active text-truncate" style="max-width: 300px;" aria-current="page">{{ page.title }}</li>
                 </ol>
             </nav>
 
-            <h1 class="fw-bold mb-3">{{ page.title }}</h1>
+            <!-- Blog Title -->
+            <h1 class="fw-bold mb-2 display-6">{{ page.title }}</h1>
             
-            {% if page.publish_date %}
-                <p class="text-muted small mb-4">Published on {{ page.publish_date|date:"F j, Y" }}</p>
+            {% if page.first_published_at or page.latest_revision_created_at %}
+                <p class="text-muted small mb-4">
+                    Published on {{ page.first_published_at|date:"F j, Y"|default:page.latest_revision_created_at|date:"F j, Y" }}
+                    {% if page.author %} · By <strong>{{ page.author.get_full_name|default:page.author.email }}</strong>{% endif %}
+                </p>
             {% endif %}
 
+            <!-- Compact Featured Image -->
             {% if page.featured_image %}
-                <div class="mb-4 rounded-3 overflow-hidden shadow-sm">
-                    {% image page.featured_image fill-1000x500 class="img-fluid w-100" %}
+                <div class="mb-4 rounded-3 overflow-hidden shadow-sm" style="max-height: 350px; text-align: center; background-color: #f8f9fa;">
+                    {% image page.featured_image fill-800x400 class="img-fluid w-100" style="max-height: 350px; object-fit: cover;" %}
                 </div>
             {% endif %}
 
-            <div class="blog-content lead fs-6 text-dark lh-lg mb-5">
+            <!-- Short Description -->
+            {% if page.short_description %}
+                <p class="lead text-secondary mb-4 font-size-18 border-start border-4 border-primary ps-3 py-1">
+                    {{ page.short_description }}
+                </p>
+            {% endif %}
+
+            <!-- Main Content Body -->
+            <div class="blog-content text-dark lh-lg mb-5 fs-6">
                 {{ page.body|richtext }}
             </div>
 
-            <hr>
-            <div class="mt-4">
-                <a href="../" class="btn btn-outline-secondary">← Back to Blog</a>
+            <hr class="my-4">
+            <div>
+                <a href="/blog/" class="btn btn-outline-secondary btn-sm rounded-pill px-4">← Back to Blog Posts</a>
             </div>
         </div>
     </div>

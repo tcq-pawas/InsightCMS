@@ -312,40 +312,12 @@ class BlogPreviewBlock(blocks.StructBlock):
     )
 
     def get_context(self, value, parent_context=None):
-        """
-        Pull the latest LIVE, PUBLIC blog posts that belong to the current
-        company only.
-
-        Two-layer scoping (both required):
-          1. Subtree  - post must live under this company's own site/page
-             tree (via its BlogIndexPage), so cross-company leakage can't
-             happen even if a page was filed in the wrong place.
-          2. Company FK - the post's `company` field must equal
-             `page.company`, as a second, independent check.
-
-        NOTE: BlogPage lives in the `blogs` app, imported lazily here to
-        avoid a circular import between `companies` and `blogs`.
-        """
         context = super().get_context(value, parent_context=parent_context)
-        page = context.get("page")
-        posts = []
+        from Apps.blogs.models import BlogPage
 
-        if page is not None and getattr(page, "company_id", None):
-            from Apps.blogs.models import BlogPage
-
-            site = page.get_site()
-            site_root = site.root_page if site else page.get_root()
-
-            posts_qs = (
-                BlogPage.objects.live()
-                .public()
-                .descendant_of(site_root)
-                .filter(company_id=page.company_id)
-                .order_by("-first_published_at")
-            )
-            posts = list(posts_qs[: value["number_of_posts"]])
-
-        context["posts"] = posts
+        number = value.get("number_of_posts", 3)
+        posts_qs = BlogPage.objects.live().public().order_by("-latest_revision_created_at")[:number]
+        context["posts"] = list(posts_qs)
         return context
 
     class Meta:
