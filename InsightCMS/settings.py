@@ -217,3 +217,8 @@ LOGGING = {
         },
     },
 }
+
+# Increase upload and request body limits for rich text images (50 MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
+

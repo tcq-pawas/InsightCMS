@@ -53,7 +53,11 @@
           {% endif %}
           <ul class="footer-links list-unstyled">
             {% for link in col.links %}
-              <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+              <li>
+                <a href="{% if link.url|slice:':1' == '#' %}/{{ link.url }}{% elif link.label|lower == 'blogs' or link.label|lower == 'blog' %}/blog/{% else %}{{ link.url }}{% endif %}">
+                  {{ link.label }}
+                </a>
+              </li>
             {% endfor %}
           </ul>
         </div>

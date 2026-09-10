@@ -21,10 +21,12 @@
 
 <div class="container py-5" style="max-width: 960px;">
 
-    <!-- Blog Page Header -->
+    <!-- Dynamic Blog Page Header from Wagtail -->
     <div class="text-center mb-5">
         <h1 class="fw-bold display-5">{{ page.title }}</h1>
-        <p class="text-muted lead">Explore our latest blog posts and articles.</p>
+        {% if page.subtitle %}
+            <p class="text-muted lead">{{ page.subtitle }}</p>
+        {% endif %}
     </div>
 
     <!-- Blog Posts List (Horizontal Row Cards) -->
@@ -57,17 +59,17 @@
             </div>
           </div>
 
-          <!-- 3. Right: Read Article -->
+          <!-- 3. Right: Read Article Button (Dynamic Text from Wagtail) -->
           <div class="bp-blog-actions ms-auto d-flex align-items-center gap-3">
             <a href="{{ blog.url }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-              Read Article <i class="fa-solid fa-arrow-right ms-1"></i>
+              {{ page.read_more_text|default:"Read Article" }} <i class="fa-solid fa-arrow-right ms-1"></i>
             </a>
           </div>
 
         </div>
         {% empty %}
         <div class="card p-5 text-center text-muted border-0 shadow-sm rounded-3">
-          <p class="fs-5 mb-0">No blog posts published yet.</p>
+          <p class="fs-5 mb-0">{{ page.empty_state_text|default:"No blog posts published yet." }}</p>
         </div>
         {% endfor %}
     </div>

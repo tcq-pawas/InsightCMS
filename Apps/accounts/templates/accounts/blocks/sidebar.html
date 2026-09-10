@@ -21,7 +21,8 @@
             </button>
           </form>
         {% else %}
-          <a href="{% if link.title|lower == 'dashboard' or link.url == '#dashboard' or link.url == '#overview' %}/dashboard/{% elif link.title|lower == 'posts' or link.url == '#posts' or link.url == '/cms/pages/' %}/blog-posts/{% elif link.title|lower == 'comments' or link.url == '#comments' %}/cms/{% elif link.title|lower == 'settings' or link.url == '#setting' or link.url == '/settings/' %}/settings/{% else %}{{ link.url|default:'/cms/' }}{% endif %}" class="bp-nav-item {% if active_tab == 'settings' and link.title|lower == 'settings' %}active{% elif active_tab == 'posts' and link.title|lower == 'posts' %}active{% elif not active_tab and link.title|lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
+          <a href="{% if link.url == '#comment' or link.url == '#comments' or link.title|lower == 'comments' %}/dashboard/#comment{% elif link.url == '#overview' or link.title|lower == 'overview' %}/dashboard/#overview{% elif link.url == '#posts' or link.title|lower == 'posts' %}/blog-posts/{% elif link.url == '#settings' or link.url == '#setting' or link.title|lower == 'settings' %}/settings/{% elif link.url == '#dashboard' or link.title|lower == 'dashboard' %}/dashboard/{% else %}{{ link.url|default:'/dashboard/' }}{% endif %}" 
+             class="bp-nav-item {% if active_tab == 'settings' and link.title|lower == 'settings' %}active{% elif active_tab == 'posts' and link.title|lower == 'posts' %}active{% elif not active_tab and link.title|lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
             <i class="fa-solid {{ link.icon|default:'fa-file-lines' }}"></i> 
             <span>{{ link.title }}</span>
             {% if link.badge_text %}

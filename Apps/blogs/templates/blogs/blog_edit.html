@@ -1,48 +1,23 @@
 {% extends "companies/base.html" %}
 {% load static wagtailimages_tags %}
 
-{% block title %}Edit Blog Post | {{ page.brand_name|default:"BlogPro" }}{% endblock %}
+{% block title %}{{ page.edit_heading|default:"Edit Blog Post" }} | {{ page.brand_name|default:"BlogPro" }}{% endblock %}
 
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<style>
-  .bp-form-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 24px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  }
-  .bp-form-label {
-    font-weight: 600;
-    font-size: 14px;
-    color: #374151;
-    margin-bottom: 6px;
-  }
-  .bp-form-control {
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    padding: 10px 14px;
-    font-size: 14px;
-  }
-  .bp-form-control:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
-</style>
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/blog_editor.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="bp-app-wrapper">
 
-  <!-- Sidebar -->
   {% include "accounts/blocks/sidebar.html" %}
 
   <div class="bp-main-container">
 
-    <!-- Topbar -->
     {% include "accounts/blocks/topbar.html" %}
 
     <main class="bp-content-body">
@@ -50,12 +25,12 @@
       <!-- Page Header -->
       <div class="bp-page-header mb-4 d-flex justify-content-between align-items-center">
         <div>
-          <h1 class="bp-page-title">Edit Blog Post</h1>
-          <p class="bp-page-sub">Update content and settings for "{{ blog.title }}"</p>
+          <h1 class="bp-page-title">{{ page.edit_heading|default:"Edit Blog Post" }}</h1>
+          <p class="bp-page-sub">{{ page.edit_subtext_prefix|default:"Update content and settings for" }} "{{ blog.title }}"</p>
         </div>
         <div>
-          <a href="/blog-posts/" class="btn btn-outline-secondary btn-sm">
-            <i class="fa-solid fa-arrow-left me-1"></i> Back to Blog Posts
+          <a href="/blog-posts/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> {{ page.back_button_text|default:"Back to Blog Posts" }}
           </a>
         </div>
       </div>
@@ -72,65 +47,188 @@
         </div>
       {% endif %}
 
-      <!-- Edit Blog Form -->
-      <div class="bp-form-card">
-        <form method="post" enctype="multipart/form-data" action="{% url 'dashboard_blog_edit' blog.id %}">
-          {% csrf_token %}
+      <!-- WordPress-style Edit Form -->
+      <form method="post" enctype="multipart/form-data" action="{% url 'dashboard_blog_edit' blog.id %}">
+        {% csrf_token %}
+        <div class="row g-4 align-items-start">
 
-          <div class="row">
-            <!-- Blog Title -->
-            <div class="col-md-12 mb-3">
-              <label for="title" class="bp-form-label">Blog Title <span class="text-danger">*</span></label>
-              <input type="text" name="title" id="title" class="form-control bp-form-control" value="{{ blog.title }}" required>
+          <!-- ── LEFT: Title + Body ── -->
+          <div class="col-lg-8">
+            <!-- Title Card -->
+            <div class="wp-main-card mb-3">
+              <input type="text" name="title" id="title"
+                     class="wp-title-input"
+                     placeholder="{{ page.field_title_placeholder|default:'Enter title here' }}"
+                     value="{{ blog.title }}"
+                     required>
             </div>
 
-            <!-- Category & Featured Image -->
-            <div class="col-md-6 mb-3">
-              <label for="category" class="bp-form-label">Category</label>
-              <select name="category" id="category" class="form-select bp-form-control">
-                <option value="">Select Category</option>
-                {% for cat in categories %}
-                  <option value="{{ cat.id }}" {% if blog.category and blog.category.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <label for="featured_image" class="bp-form-label">Featured Image</label>
-              <input type="file" name="featured_image" id="featured_image" class="form-control bp-form-control" accept="image/*">
-              {% if blog.featured_image %}
-                <small class="text-muted d-block mt-1">Current Image: {{ blog.featured_image.title }}</small>
-              {% endif %}
-            </div>
-
-            <!-- Short Description -->
-            <div class="col-md-12 mb-3">
-              <label for="short_description" class="bp-form-label">Short Description / Subtitle</label>
-              <textarea name="short_description" id="short_description" rows="2" class="form-control bp-form-control">{{ blog.short_description }}</textarea>
-            </div>
-
-            <!-- Content Body -->
-            <div class="col-md-12 mb-4">
-              <label for="body" class="bp-form-label">Content Body <span class="text-danger">*</span></label>
-              <textarea name="body" id="body" rows="10" class="form-control bp-form-control" required>{{ blog.body }}</textarea>
+            <!-- Body Card with Quill Editor -->
+            <div class="wp-main-card" style="padding:0; overflow:hidden;">
+              <div id="quill-editor"></div>
+              <input type="hidden" name="body" id="body-hidden">
+              <!-- hidden container with existing blog content -->
+              <div id="existing-body-content" style="display:none;">{{ blog.body|safe }}</div>
             </div>
           </div>
 
-          <!-- Buttons -->
-          <div class="d-flex justify-content-end gap-2 border-top pt-3">
-            <button type="submit" name="action_type" value="draft" class="btn btn-secondary px-4">
-              <i class="fa-regular fa-file me-1"></i> Save as Draft
-            </button>
-            <button type="submit" name="action_type" value="publish" class="btn btn-primary px-4">
-              <i class="fa-solid fa-paper-plane me-1"></i> Update & Publish
-            </button>
-          </div>
-        </form>
-      </div>
+          <!-- ── RIGHT: Sidebar ── -->
+          <div class="col-lg-4">
+
+            <!-- Publish Box -->
+            <div class="wp-sidebar-box">
+              <div class="wp-sidebar-box-header">
+                <i class="fa-regular fa-paper-plane me-1"></i> Publish
+              </div>
+              <div class="wp-sidebar-box-body">
+                <div class="wp-status-row">
+                  <span>Status:</span>
+                  <span>
+                    {% if blog.live %}
+                      <span class="wp-status-badge published">Published</span>
+                    {% else %}
+                      <span class="wp-status-badge draft">Draft</span>
+                    {% endif %}
+                  </span>
+                </div>
+                <div class="wp-status-row">
+                  <span>Visibility:</span>
+                  <span>Public</span>
+                </div>
+                <div class="wp-publish-actions">
+                  <button type="submit" name="action_type" value="draft"
+                          class="btn btn-sm btn-outline-secondary px-3 rounded-pill">
+                    <i class="fa-regular fa-file me-1"></i> {{ page.draft_button_text|default:"Save as Draft" }}
+                  </button>
+                  <button type="submit" name="action_type" value="publish"
+                          class="btn btn-sm btn-primary px-3 rounded-pill">
+                    <i class="fa-solid fa-paper-plane me-1"></i> {{ page.update_button_text|default:"Update & Publish" }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Featured Image Box -->
+            <div class="wp-sidebar-box">
+              <div class="wp-sidebar-box-header">
+                <i class="fa-regular fa-image me-1"></i> {{ page.field_featured_image_label|default:"Featured Image" }}
+              </div>
+              <div class="wp-sidebar-box-body">
+                {% if blog.featured_image %}
+                  {% image blog.featured_image fill-300x180 as current_img %}
+                  <img src="{{ current_img.url }}" alt="Current Image"
+                       class="img-fluid rounded mb-2" style="width:100%; object-fit:cover; max-height:140px;">
+                  <small class="text-muted d-block mb-2">Current: {{ blog.featured_image.title }}</small>
+                {% endif %}
+                <input type="file" name="featured_image" id="featured_image"
+                       class="form-control" accept="image/*">
+                <div id="image-preview-wrap" class="mt-2 d-none">
+                  <img id="image-preview" src="#" alt="New Preview"
+                       class="img-fluid rounded" style="max-height:140px; width:100%; object-fit:cover;">
+                </div>
+              </div>
+            </div>
+
+            <!-- Short Description Box -->
+            <div class="wp-sidebar-box">
+              <div class="wp-sidebar-box-header">
+                <i class="fa-solid fa-align-left me-1"></i> {{ page.field_short_desc_label|default:"Short Description" }}
+              </div>
+              <div class="wp-sidebar-box-body">
+                <textarea name="short_description" id="short_description"
+                          rows="4"
+                          class="wp-form-control"
+                          placeholder="{{ page.field_short_desc_placeholder|default:'Brief summary of your article...' }}">{{ blog.short_description }}</textarea>
+              </div>
+            </div>
+
+          </div><!-- /col-lg-4 -->
+        </div><!-- /row -->
+      </form>
 
     </main>
-
-    {% include "accounts/blocks/footer.html" %}
   </div>
 </div>
+
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
+<script>
+  // ── Initialize Quill rich text editor ──
+  var quill = new Quill('#quill-editor', {
+    theme: 'snow',
+    placeholder: '{{ page.field_body_placeholder|default:"Write your full blog post here..." }}',
+    modules: {
+      toolbar: [
+        [{ 'header': [1, 2, 3, 4, false] }, { 'font': [] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
+        [{ 'align': [] }],
+        ['blockquote', 'code-block'],
+        ['link', 'image'],
+        ['clean']
+      ],
+      imageResize: {
+        modules: ['Resize', 'DisplaySize', 'Toolbar']
+      }
+    }
+  });
+
+  // ── Pre-load existing blog content into Quill ──
+  const existingContainer = document.getElementById('existing-body-content');
+  if (existingContainer && existingContainer.innerHTML.trim().length > 0) {
+    quill.root.innerHTML = existingContainer.innerHTML;
+  }
+
+  // ── On form submit: copy Quill HTML → hidden input ──
+  const form = document.querySelector('form');
+  
+  // Track which button was clicked
+  let clickedAction = 'publish';
+  document.querySelectorAll('button[name="action_type"]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      clickedAction = this.value;
+    });
+  });
+
+  form.addEventListener('submit', function (e) {
+    const bodyHidden = document.getElementById('body-hidden');
+    const html = quill.root.innerHTML.trim();
+    const text = quill.getText().trim();
+    const hasImage = quill.root.querySelector('img') !== null;
+    
+    // allow if there is text or at least an image
+    if (text.length === 0 && !hasImage && html === '<p><br></p>') {
+      e.preventDefault();
+      alert('Please enter content for the blog post.');
+      quill.focus();
+      return;
+    }
+    
+    bodyHidden.value = html;
+
+    // ensure action_type hidden input exists and is set
+    let actionInput = form.querySelector('input[name="action_type"]');
+    if (!actionInput) {
+      actionInput = document.createElement('input');
+      actionInput.type = 'hidden';
+      actionInput.name = 'action_type';
+      form.appendChild(actionInput);
+    }
+    actionInput.value = clickedAction;
+  });
+
+  // ── Featured image live preview ──
+  document.getElementById('featured_image').addEventListener('change', function () {
+    const file = this.files[0];
+    const wrap = document.getElementById('image-preview-wrap');
+    const preview = document.getElementById('image-preview');
+    if (file) {
+      preview.src = URL.createObjectURL(file);
+      wrap.classList.remove('d-none');
+    } else {
+      wrap.classList.add('d-none');
+    }
+  });
+</script>
 {% endblock %}

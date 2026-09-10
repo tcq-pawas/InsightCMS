@@ -1,0 +1,47 @@
+﻿/* ═══════════════════════════════════════════════════════════════
+   Blog Detail Page Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+.bp-detail-header-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  margin-bottom: 1.5rem;
+}
+
+.bp-detail-image-box {
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  max-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bp-detail-image-box img {
+  max-height: 220px;
+  width: 100%;
+  object-fit: cover;
+}
+
+.blog-content {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 32px;
+  color: #334155;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.blog-content img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 16px auto;
+}

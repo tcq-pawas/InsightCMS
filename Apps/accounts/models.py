@@ -270,6 +270,8 @@ class UserDashboardPage(Page):
     th_views = models.CharField(max_length=50, blank=True, default="VIEWS")
     th_date = models.CharField(max_length=50, blank=True, default="DATE")
     th_actions = models.CharField(max_length=50, blank=True, default="ACTIONS")
+    empty_posts_text = models.CharField(max_length=100, blank=True, default="No blog posts found.")
+    empty_create_btn_text = models.CharField(max_length=50, blank=True, default="Create your first blog")
 
     # 6. Audience Overview
     audience_heading = models.CharField(max_length=150, blank=True, default="Audience Overview")
@@ -459,6 +461,20 @@ class UserDashboardPage(Page):
         FieldPanel("body", heading="1. Dashboard Modular Blocks (Click + to Add, Delete or Reorder)"),
         FieldPanel("sidebar_links", heading="2. Dynamic Sidebar Links"),
         MultiFieldPanel([
+            FieldPanel("recent_posts_heading"),
+            FieldPanel("recent_posts_subtext"),
+            FieldPanel("view_all_posts_text"),
+            FieldPanel("view_all_posts_url"),
+            FieldPanel("th_post_title"),
+            FieldPanel("th_category"),
+            FieldPanel("th_status"),
+            FieldPanel("th_views"),
+            FieldPanel("th_date"),
+            FieldPanel("th_actions"),
+            FieldPanel("empty_posts_text"),
+            FieldPanel("empty_create_btn_text"),
+        ], heading="3. Recent Posts Table Configuration"),
+        MultiFieldPanel([
             FieldPanel("footer_tagline"),
             FieldPanel("footer_facebook_url"),
             FieldPanel("footer_twitter_url"),
@@ -475,7 +491,7 @@ class UserDashboardPage(Page):
             FieldPanel("footer_col2_link2_text"),
             FieldPanel("footer_col2_link2_url"),
             FieldPanel("copyright_text"),
-        ], heading="3. Footer Settings & Social Links"),
+        ], heading="4. Footer Settings & Social Links"),
         MultiFieldPanel([
             FieldPanel("settings_page_title"),
             FieldPanel("settings_page_subtext"),

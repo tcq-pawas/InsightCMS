@@ -208,6 +208,27 @@ class CompanyBlogPostsPage(Page):
     empty_state_text = models.CharField(max_length=150, blank=True, default="No blog posts yet.")
     empty_state_link_text = models.CharField(max_length=50, blank=True, default="Create your first one")
 
+    # Create & Edit Blog Form Labels & Placeholders
+    create_heading = models.CharField(max_length=100, blank=True, default="Create Blog Post")
+    create_subtext = models.CharField(max_length=200, blank=True, default="Write and publish a new article to your blog")
+    edit_heading = models.CharField(max_length=100, blank=True, default="Edit Blog Post")
+    edit_subtext_prefix = models.CharField(max_length=100, blank=True, default="Update content and settings for")
+    draft_button_text = models.CharField(max_length=50, blank=True, default="Save as Draft")
+    publish_button_text = models.CharField(max_length=50, blank=True, default="Publish Post")
+    update_button_text = models.CharField(max_length=50, blank=True, default="Update & Publish")
+    back_button_text = models.CharField(max_length=50, blank=True, default="Back to Blog Posts")
+
+    # Inner Form Field Labels & Placeholders
+    field_title_label = models.CharField(max_length=100, blank=True, default="Blog Title")
+    field_title_placeholder = models.CharField(max_length=200, blank=True, default="e.g. 10 Tips for Better Web Performance")
+    field_category_label = models.CharField(max_length=100, blank=True, default="Category")
+    field_category_placeholder = models.CharField(max_length=100, blank=True, default="Select Category")
+    field_featured_image_label = models.CharField(max_length=100, blank=True, default="Featured Image")
+    field_short_desc_label = models.CharField(max_length=100, blank=True, default="Short Description / Subtitle")
+    field_short_desc_placeholder = models.CharField(max_length=200, blank=True, default="Brief summary of your article...")
+    field_body_label = models.CharField(max_length=100, blank=True, default="Content Body")
+    field_body_placeholder = models.CharField(max_length=200, blank=True, default="Write your full blog post here...")
+
     content_panels = Page.content_panels + [
         FieldPanel("page_heading"),
         FieldPanel("page_subtext"),
@@ -218,6 +239,23 @@ class CompanyBlogPostsPage(Page):
         FieldPanel("col_updated_label"),
         FieldPanel("empty_state_text"),
         FieldPanel("empty_state_link_text"),
+        FieldPanel("create_heading"),
+        FieldPanel("create_subtext"),
+        FieldPanel("edit_heading"),
+        FieldPanel("edit_subtext_prefix"),
+        FieldPanel("draft_button_text"),
+        FieldPanel("publish_button_text"),
+        FieldPanel("update_button_text"),
+        FieldPanel("back_button_text"),
+        FieldPanel("field_title_label"),
+        FieldPanel("field_title_placeholder"),
+        FieldPanel("field_category_label"),
+        FieldPanel("field_category_placeholder"),
+        FieldPanel("field_featured_image_label"),
+        FieldPanel("field_short_desc_label"),
+        FieldPanel("field_short_desc_placeholder"),
+        FieldPanel("field_body_label"),
+        FieldPanel("field_body_placeholder"),
     ]
 
     parent_page_types = ["companies.CompanyHomePage", "wagtailcore.Page"]
@@ -253,6 +291,7 @@ class CompanyBlogPostsPage(Page):
         context = self.get_context(request)
         context.update({
             'page': self,
+            'dashboard_page': dashboard_page,
             'sidebar_links': sidebar_links,
             'user': request.user,
             'blogs': blogs,

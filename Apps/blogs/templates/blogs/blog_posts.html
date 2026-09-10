@@ -13,17 +13,17 @@
 {% block content %}
 <div class="bp-app-wrapper">
 
-  <!-- Sidebar -->
+  <!-- Dynamic Sidebar -->
   {% include "accounts/blocks/sidebar.html" %}
 
   <div class="bp-main-container">
 
-    <!-- Topbar -->
+    <!-- Dynamic Topbar -->
     {% include "accounts/blocks/topbar.html" %}
 
     <main class="bp-content-body">
 
-      <!-- Page Header -->
+      <!-- Dynamic Page Header -->
       <div class="bp-page-header mb-4">
         <div>
           <h1 class="bp-page-title">{{ page.page_heading|default:"Blog Posts" }}</h1>
@@ -48,7 +48,7 @@
         </div>
       {% endif %}
 
-      <!-- Blog Posts List (Custom Card Rows as per UI design) -->
+      <!-- Blog Posts List -->
       <div class="bp-blog-list-container">
         {% for blog in blogs %}
         <div class="bp-blog-card-item">
@@ -71,7 +71,7 @@
                 {% else %}
                   <strong class="text-secondary">Draft</strong>
                 {% endif %}
-                · {{ blog.first_published_at|date:"b d"|default:blog.latest_revision_created_at|date:"b d" }}
+                · {{ blog.first_published_at|date:"M d, Y"|default:blog.latest_revision_created_at|date:"M d, Y" }}
               </span>
 
               {% if blog.short_description %}
@@ -90,9 +90,9 @@
             </a>
 
             <!-- Category / Tag Icon -->
-            <span class="bp-icon-btn" title="Category: {{ blog.category.name|default:'General' }}">
+            <!-- <span class="bp-icon-btn" title="Category: {{ blog.category.name|default:'General' }}">
               <i class="fa-solid fa-tag"></i>
-            </span>
+            </span> -->
 
             <!-- Delete Form Action -->
             <form method="post" action="{% url 'dashboard_blog_delete' blog.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this blog post?');">
@@ -122,18 +122,18 @@
             {% endif %}
 
             <!-- Author Avatar -->
-            {% if blog.author and blog.author.avatar %}
+            <!-- {% if blog.author and blog.author.avatar %}
               <img src="{{ blog.author.avatar.url }}" class="bp-author-avatar-small" title="{{ blog.author.get_full_name|default:blog.author.email }}">
             {% else %}
               <div class="bp-author-avatar-fallback" title="{{ blog.author.get_full_name|default:blog.author.email|default:'Admin' }}">
                 {{ blog.author.first_name|slice:":1"|default:"A" }}
               </div>
-            {% endif %}
+            {% endif %} -->
 
             <!-- Share & Stats -->
-            <span class="bp-icon-btn ms-1" title="Share"><i class="fa-solid fa-share-nodes"></i></span>
-            <span class="d-flex align-items-center gap-1 font-size-12"><i class="fa-regular fa-comment"></i> 0</span>
-            <span class="d-flex align-items-center gap-1 font-size-12"><i class="fa-solid fa-chart-simple"></i> {{ blog.views_count|default:"23" }}</span>
+            <!-- <span class="bp-icon-btn ms-1" title="Share"><i class="fa-solid fa-share-nodes"></i></span>
+            <span class="d-flex align-items-center gap-1 font-size-12"><i class="fa-regular fa-comment"></i> {{ blog.comments_count|default:"0" }}</span>
+            <span class="d-flex align-items-center gap-1 font-size-12"><i class="fa-solid fa-chart-simple"></i> {{ blog.views_count|default:"0" }}</span> -->
           </div>
         </div>
         {% empty %}
@@ -146,7 +146,7 @@
 
     </main>
 
-    {% include "accounts/blocks/footer.html" %}
+    
   </div>
 </div>
 {% endblock %}

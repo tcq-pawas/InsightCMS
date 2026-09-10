@@ -1,57 +1,116 @@
 {% extends "companies/base.html" %}
-{% load wagtailcore_tags wagtailimages_tags %}
+{% load static wagtailcore_tags wagtailimages_tags %}
 
 {% block title %}
-{{ page.title }}
+{{ page.seo_title|default:page.title }} | {{ dashboard_page.brand_name|default:"BlogPro" }}
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/blog_detail.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container py-5" style="max-width: 800px;">
-    <div class="row justify-content-center">
-        <div class="col-12">
-            <!-- Breadcrumb Navigation -->
-            <nav aria-label="breadcrumb" class="mb-3">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
-                    <li class="breadcrumb-item"><a href="/blog/" class="text-decoration-none">Blog</a></li>
-                    <li class="breadcrumb-item active text-truncate" style="max-width: 300px;" aria-current="page">{{ page.title }}</li>
-                </ol>
-            </nav>
+<div class="bp-app-wrapper">
 
-            <!-- Blog Title -->
-            <h1 class="fw-bold mb-2 display-6">{{ page.title }}</h1>
-            
-            {% if page.first_published_at or page.latest_revision_created_at %}
-                <p class="text-muted small mb-4">
-                    Published on {{ page.first_published_at|date:"F j, Y"|default:page.latest_revision_created_at|date:"F j, Y" }}
-                    {% if page.author %} · By <strong>{{ page.author.get_full_name|default:page.author.email }}</strong>{% endif %}
-                </p>
-            {% endif %}
+  <!-- Dashboard Sidebar -->
+  {% include "accounts/blocks/sidebar.html" with page=dashboard_page %}
 
-            <!-- Compact Featured Image -->
-            {% if page.featured_image %}
-                <div class="mb-4 rounded-3 overflow-hidden shadow-sm" style="max-height: 350px; text-align: center; background-color: #f8f9fa;">
-                    {% image page.featured_image fill-800x400 class="img-fluid w-100" style="max-height: 350px; object-fit: cover;" %}
-                </div>
-            {% endif %}
+  <div class="bp-main-container">
 
-            <!-- Short Description -->
-            {% if page.short_description %}
-                <p class="lead text-secondary mb-4 font-size-18 border-start border-4 border-primary ps-3 py-1">
-                    {{ page.short_description }}
-                </p>
-            {% endif %}
+    <!-- Topbar -->
+    {% include "accounts/blocks/topbar.html" with page=dashboard_page %}
 
-            <!-- Main Content Body -->
-            <div class="blog-content text-dark lh-lg mb-5 fs-6">
-                {{ page.body|richtext }}
-            </div>
+    <main class="bp-content-body">
 
-            <hr class="my-4">
-            <div>
-                <a href="/blog/" class="btn btn-outline-secondary btn-sm rounded-pill px-4">← Back to Blog Posts</a>
-            </div>
+      <!-- Breadcrumb & Back Actions -->
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/dashboard/" class="text-decoration-none text-muted">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="/blog-posts/" class="text-decoration-none text-muted">Blog Posts</a></li>
+            <li class="breadcrumb-item active text-truncate" style="max-width: 250px;" aria-current="page">{{ page.title }}</li>
+          </ol>
+        </nav>
+
+        <div class="d-flex gap-2">
+          <a href="{% url 'dashboard_blog_edit' page.id %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+            <i class="fa-solid fa-pen-to-square me-1"></i> Edit Post
+          </a>
+          <a href="/blog-posts/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Blog Posts
+          </a>
         </div>
-    </div>
+      </div>
+
+      <!-- Top Card: Left Details + Right Featured Image -->
+      <div class="bp-detail-header-card">
+        <div class="row align-items-center g-4">
+          
+          <div class="col-lg-{% if page.featured_image %}7{% else %}12{% endif %}">
+            {% if page.category %}
+              <div class="mb-2">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill">
+                  {{ page.category.name }}
+                </span>
+              </div>
+            {% endif %}
+
+            <h1 class="fw-bold mb-3 display-6" style="color: #0f172a; font-size: 28px;">{{ page.title }}</h1>
+            
+            <p class="text-muted small mb-3 d-flex align-items-center gap-2 flex-wrap">
+              <span>
+                <i class="fa-regular fa-calendar me-1"></i> 
+                Published on {{ page.first_published_at|date:"F j, Y"|default:page.latest_revision_created_at|date:"F j, Y" }}
+              </span>
+              {% if page.author %}
+                <span>·</span>
+                <span><i class="fa-regular fa-user me-1"></i> By <strong>{{ page.author.get_full_name|default:page.author.email }}</strong></span>
+              {% endif %}
+              {% if page.live %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0.5 rounded-pill">Live</span>
+              {% else %}
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-0.5 rounded-pill">Draft</span>
+              {% endif %}
+            </p>
+
+            {% if page.short_description %}
+              <p class="text-secondary mb-0 border-start border-4 border-primary ps-3 py-1 font-size-15" style="line-height: 1.6;">
+                {{ page.short_description }}
+              </p>
+            {% endif %}
+          </div>
+
+          {% if page.featured_image %}
+          <div class="col-lg-5 text-center">
+            <div class="bp-detail-image-box shadow-sm">
+              {% image page.featured_image fill-450x250 class="img-fluid" %}
+            </div>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+      <!-- Main Content Body (RichText / HTML from Quill) -->
+      <div class="blog-content mb-4 shadow-sm">
+        {{ page.body|richtext }}
+      </div>
+
+      <!-- Tags if available -->
+      {% if page.tags.all %}
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-4">
+          <span class="text-muted small fw-bold"><i class="fa-solid fa-tags me-1"></i> Tags:</span>
+          {% for tag in page.tags.all %}
+            <span class="badge bg-light text-dark border">{{ tag.name }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+    </main>
+
+  </div>
 </div>
 {% endblock %}

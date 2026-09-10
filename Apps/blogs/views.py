@@ -128,6 +128,12 @@ def dashboard_blog_create(request):
                 file=featured_image_file
             )
 
+        if not short_description:
+            # Fallback: strip HTML from body for short_description (up to 200 chars)
+            import re
+            clean_body = re.sub(r'<[^>]+>', ' ', body).strip()
+            short_description = (clean_body[:180] + '...') if clean_body else title
+
         category = BlogCategory.objects.filter(id=category_id).first() if category_id else None
 
         # Create BlogPage instance
@@ -154,7 +160,20 @@ def dashboard_blog_create(request):
         return redirect('/blog-posts/')
 
     categories = BlogCategory.objects.all()
-    return render(request, 'blogs/blog_create.html', {'categories': categories})
+    from Apps.companies.models import CompanyBlogPostsPage
+    from Apps.accounts.models import UserDashboardPage
+    blog_posts_page = CompanyBlogPostsPage.objects.live().first()
+    dashboard_page = UserDashboardPage.objects.live().first()
+    sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
+
+    return render(request, 'blogs/blog_create.html', {
+        'categories': categories,
+        'page': blog_posts_page,
+        'dashboard_page': dashboard_page,
+        'sidebar_links': sidebar_links,
+        'active_tab': 'posts',
+        'user': request.user,
+    })
 
 
 @login_required(login_url='/login/')
@@ -192,9 +211,20 @@ def dashboard_blog_edit(request, page_id):
         return redirect('/blog-posts/')
 
     categories = BlogCategory.objects.all()
+    from Apps.companies.models import CompanyBlogPostsPage
+    from Apps.accounts.models import UserDashboardPage
+    blog_posts_page = CompanyBlogPostsPage.objects.live().first()
+    dashboard_page = UserDashboardPage.objects.live().first()
+    sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
+
     return render(request, 'blogs/blog_edit.html', {
         'blog': blog_page,
-        'categories': categories
+        'categories': categories,
+        'page': blog_posts_page,
+        'dashboard_page': dashboard_page,
+        'sidebar_links': sidebar_links,
+        'active_tab': 'posts',
+        'user': request.user,
     })
 
 

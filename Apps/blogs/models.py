@@ -16,6 +16,29 @@ class BlogIndexPage(Page):
     parent_page_types = ['companies.CompanyHomePage', 'wagtailcore.Page']
     subpage_types = ['blogs.BlogPage']
 
+    subtitle = models.CharField(
+        max_length=255,
+        default="Explore our latest blog posts and articles.",
+        blank=True,
+        help_text=_("Subtitle shown under the main title on blog listing page")
+    )
+    read_more_text = models.CharField(
+        max_length=50,
+        default="Read Article",
+        help_text=_("Text for the button on each blog card")
+    )
+    empty_state_text = models.CharField(
+        max_length=255,
+        default="No blog posts published yet.",
+        help_text=_("Text shown when there are no published blogs")
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel('subtitle'),
+        FieldPanel('read_more_text'),
+        FieldPanel('empty_state_text'),
+    ]
+
     class Meta:
         verbose_name = _('Blog Index')
         verbose_name_plural = _('Blog Indices')
@@ -67,6 +90,8 @@ class BlogPage(Page):
     )
     short_description = models.CharField(
         max_length=300,
+        blank=True,
+        default='',
         verbose_name=_('Short Description')
     )
     body = RichTextField(verbose_name=_('Content'))
@@ -112,8 +137,7 @@ class BlogPage(Page):
     ]
 
     # Note: 'company' and 'status' are EXCLUDED from content_panels per rules:
-    # 1. Company is derived automatically from parent.
-    # 2. Wagtail's live/revision state is the sole publication source of truth.
+    #  Company is derived automatically from parent.
     content_panels = Page.content_panels + [
         FieldPanel('featured_image'),
         FieldPanel('short_description'),
@@ -155,6 +179,32 @@ class BlogPage(Page):
             elif hasattr(parent, 'get_company'):
                 self.company = parent.get_company()
         super().save(*args, **kwargs)
+
+    def get_context(self, request):
+        context = super().get_context(request)
+        # Pass dashboard context for dashboard-styled view
+        from Apps.accounts.models import UserDashboardPage
+        from Apps.companies.models import CompanyBlogPostsPage
+        
+        dashboard_page = UserDashboardPage.objects.live().first()
+        blog_posts_page = CompanyBlogPostsPage.objects.live().first()
+        
+        context['dashboard_page'] = dashboard_page
+        context['active_tab'] = 'posts'
+        context['user'] = request.user
+        
+        if dashboard_page and dashboard_page.sidebar_links:
+            context['sidebar_links'] = dashboard_page.sidebar_links
+        elif blog_posts_page and blog_posts_page.sidebar_links:
+            context['sidebar_links'] = blog_posts_page.sidebar_links
+            
+        # Traverse up to get CompanyHomePage
+        blog_index = self.get_parent()
+        if blog_index:
+            home = blog_index.get_parent()
+            if home and hasattr(home, 'specific'):
+                context['home_page'] = home.specific
+        return context
 
 
 class BlogCategory(models.Model):
