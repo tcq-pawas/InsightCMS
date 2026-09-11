@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from wagtail.models import Page
@@ -8,57 +9,48 @@ from Apps.common.models import BaseModel
 from Apps.common.helpers import generate_api_key
 from Apps.companies.blocks import COMPANY_HOME_PAGE_BLOCKS, NAVBAR_BLOCKS
 from Apps.companies.forms import CompanyScopedPageForm
-
+from django.conf import settings
 
 # ---------------------------------------------------------------------------
 # Company (original model — must stay here, admin.py imports it from here)
 # ---------------------------------------------------------------------------
-class Company(BaseModel):
-    """Company model representing external websites (Tenants)."""
-
-    class Status(models.TextChoices):
-        ACTIVE   = 'active',   _('Active')
-        INACTIVE = 'inactive', _('Inactive')
-
-    company_name   = models.CharField(max_length=255, verbose_name=_('Company Name'))
-    slug           = models.SlugField(max_length=255, unique=True, blank=True, null=True, verbose_name=_('Slug'))
-    domain         = models.CharField(max_length=255, blank=True, null=True, verbose_name=_('Domain'))
-    website_name   = models.CharField(max_length=255, verbose_name=_('Website Name'))
-    website_url    = models.URLField(max_length=500,  verbose_name=_('Website URL'))
-    logo           = models.ImageField(upload_to='company_logos/', blank=True, null=True, verbose_name=_('Logo'))
-    email          = models.EmailField(verbose_name=_('Email'))
-    contact_person = models.CharField(max_length=255, verbose_name=_('Contact Person'))
+class Company(models.Model):
+    id             = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    company_name   = models.CharField(max_length=255, verbose_name="Company Name")
+    website_name   = models.CharField(max_length=255, verbose_name="Website Name")
+    website_url    = models.URLField(max_length=500, verbose_name="Website URL")
+    logo           = models.ImageField(upload_to="company_logos/", blank=True, null=True, verbose_name="Logo")
+    email          = models.EmailField(verbose_name="Email")
+    contact_person = models.CharField(max_length=255, verbose_name="Contact Person")
     status         = models.CharField(
         max_length=20,
-        choices=Status.choices,
-        default=Status.ACTIVE,
-        verbose_name=_('Status'),
+        choices=[("active", "Active"), ("inactive", "Inactive")],
+        default="active",
+        verbose_name="Status",
     )
-    api_key = models.CharField(
-        max_length=64,
-        unique=True,
-        editable=False,
-        verbose_name=_('API Key'),
-    )
+    api_key        = models.CharField(max_length=64, unique=True, editable=False, verbose_name="API Key")
+    domain         = models.CharField(max_length=255, blank=True, null=True, verbose_name="Domain")
+    slug           = models.SlugField(max_length=255, unique=True, blank=True, null=True, verbose_name="Slug")
+    created_at     = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at     = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name        = _('Company')
-        verbose_name_plural = _('Companies')
-        ordering            = ['-created_at']
+        verbose_name = "Company"
+        verbose_name_plural = "Companies"
+        ordering = ["-created_at"]
 
     def __str__(self):
         return self.company_name
 
-    def save(self, *args, **kwargs):
-        if not self.api_key:
-            self.api_key = generate_api_key()
-        super().save(*args, **kwargs)
+class UserProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE
+    )
 
-    def regenerate_api_key(self):
-        """Regenerate the API key for this company."""
-        self.api_key = generate_api_key()
-        self.save()
-
+    def __str__(self):
+        return f"{self.user.email} - {self.company.company_name}"
 
 class CompanyMembership(BaseModel):
     """Connects users to a company with role scoping (manager, editor)."""

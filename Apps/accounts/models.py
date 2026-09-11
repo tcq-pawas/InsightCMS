@@ -46,16 +46,20 @@ class User(AbstractUser, BaseModel):
     
     class Role(models.TextChoices):
         SUPER_ADMIN = 'super_admin', _('Super Admin')
-        ADMIN = 'admin', _('Admin')
-        EDITOR = 'editor', _('Editor')
-        MANAGER = 'manager', _('Manager')
+        COMPANY_ADMIN = 'company_admin', _('Company Admin')
+        COMPANY_USER = 'company_user', _('Company User')
 
     username = None
     email = models.EmailField(_('email address'), unique=True)
+    
+    company_name = models.CharField(max_length=150, blank=True, default="", verbose_name=_('Company Name'))
+    website_url = models.URLField(max_length=255, blank=True, null=True, verbose_name=_('Website URL'))
+    admin_username = models.CharField(max_length=100, blank=True, default="", verbose_name=_('Admin/User Name'))
+    
     role = models.CharField(
         max_length=20,
         choices=Role.choices,
-        default=Role.EDITOR,
+        default=Role.COMPANY_USER,
         verbose_name=_('Role')
     )
     first_name = models.CharField(max_length=150, verbose_name=_('First Name'))
@@ -66,7 +70,7 @@ class User(AbstractUser, BaseModel):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'company_name', 'admin_username']
 
     class Meta:
         verbose_name = _('User')
@@ -130,6 +134,11 @@ class LoginPage(Page):
 class RegisterPage(Page):
     heading = models.CharField(max_length=120, blank=True, default="Create Your Account")
     subtext = models.CharField(max_length=200, blank=True, default="Get started with BlogPro")
+    
+    company_name_label = models.CharField(max_length=50, blank=True, default="Company Name")
+    website_url_label = models.CharField(max_length=50, blank=True, default="Website URL")
+    admin_username_label = models.CharField(max_length=50, blank=True, default="Admin/User Name")
+    
     email_label = models.CharField(max_length=50, blank=True, default="Email address")
     first_name_label = models.CharField(max_length=50, blank=True, default="First Name")
     last_name_label = models.CharField(max_length=50, blank=True, default="Last Name")
@@ -147,6 +156,9 @@ class RegisterPage(Page):
     content_panels = Page.content_panels + [
         FieldPanel("heading"),
         FieldPanel("subtext"),
+        FieldPanel("company_name_label"),
+        FieldPanel("website_url_label"),
+        FieldPanel("admin_username_label"),
         FieldPanel("email_label"),
         FieldPanel("first_name_label"),
         FieldPanel("last_name_label"),
@@ -166,10 +178,48 @@ class RegisterPage(Page):
     def serve(self, request):
         from Apps.accounts.forms import CustomUserCreationForm
         from Apps.accounts.models import LoginPage
+        from Apps.companies.models import Company, CompanyMembership
+
+        # If already logged in, go to dashboard
+        if request.user.is_authenticated:
+            return redirect('/dashboard/')
 
         form = CustomUserCreationForm(request.POST or None)
         if request.method == "POST" and form.is_valid():
-            user = form.save()
+            
+             # Step A: Create company
+            from Apps.common.helpers import generate_api_key, generate_unique_slug
+            comp_name = form.cleaned_data['company_name']
+            web_url = form.cleaned_data.get('website_url') or "https://example.com"
+            user_email = form.cleaned_data.get('email')
+            contact_p = f"{form.cleaned_data.get('first_name', '')} {form.cleaned_data.get('last_name', '')}".strip() or comp_name
+
+            company = Company.objects.create(
+                company_name=comp_name,
+                website_name=comp_name,
+                website_url=web_url,
+                email=user_email,
+                contact_person=contact_p,
+                status="active",
+                api_key=generate_api_key(32),
+                slug=generate_unique_slug(Company, comp_name, slug_field='slug'),
+            )
+            
+            # Step B: Create User
+            user = form.save(commit=False)
+            user.company_name = comp_name
+            user.website_url = web_url
+            user.role = User.Role.COMPANY_ADMIN
+            user.save()
+            
+            CompanyMembership.objects.create(
+                user=user,
+                company=company,
+                role=CompanyMembership.Role.MANAGER
+            )
+            
+             
+            
             auth_login(request, user)
             return redirect("/dashboard/")
 
@@ -458,8 +508,15 @@ class UserDashboardPage(Page):
     )
 
     content_panels = Page.content_panels + [
-        FieldPanel("body", heading="1. Dashboard Modular Blocks (Click + to Add, Delete or Reorder)"),
-        FieldPanel("sidebar_links", heading="2. Dynamic Sidebar Links"),
+        MultiFieldPanel([
+            FieldPanel("brand_name"),
+            FieldPanel("welcome_heading"),
+            FieldPanel("welcome_subtext"),
+            FieldPanel("new_post_button_text"),
+            FieldPanel("new_post_button_url"),
+        ], heading="1. Header & Action Button"),
+        FieldPanel("body", heading="2. Dashboard Modular Blocks (Click + to Add, Delete or Reorder)"),
+        FieldPanel("sidebar_links", heading="3. Dynamic Sidebar Links"),
         MultiFieldPanel([
             FieldPanel("recent_posts_heading"),
             FieldPanel("recent_posts_subtext"),

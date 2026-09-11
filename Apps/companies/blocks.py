@@ -104,15 +104,17 @@ class HeroBlock(blocks.StructBlock):
         default="Get Started",
         help_text=_("Use descriptive text (e.g. 'Start Free Trial') rather than generic text like 'Click Here', for accessibility."),
     )
-    cta_link = blocks.URLBlock(
-        required=False, label=_("Primary button link"),
+    cta_link = blocks.CharBlock(
+        required=False, max_length=255, label=_("Primary button link"),
+        help_text=_("e.g. /login/ or https://example.com"),
     )
     secondary_cta_text = blocks.CharBlock(
         required=False, max_length=50, label=_("Secondary button text"),
         default="View Dashboard",
     )
-    secondary_cta_link = blocks.URLBlock(
-        required=False, label=_("Secondary button link"),
+    secondary_cta_link = blocks.CharBlock(
+        required=False, max_length=255, label=_("Secondary button link"),
+        help_text=_("e.g. /dashboard/ or https://example.com"),
     )
     subtext = blocks.CharBlock(
         required=False, max_length=120, label=_("Subtext (below buttons)"),
@@ -333,7 +335,7 @@ class ContactCTABlock(blocks.StructBlock):
     heading = blocks.CharBlock(required=False, max_length=120, default="Let's talk")
     description = blocks.TextBlock(required=False)
     button_text = blocks.CharBlock(required=False, max_length=50, default="Contact Us")
-    button_link = blocks.URLBlock(required=False)
+    button_link = blocks.CharBlock(required=False, max_length=255, help_text=_("e.g. /login/ or https://example.com"))
     phone = blocks.CharBlock(required=False, max_length=30)
     email = blocks.EmailBlock(required=False)
 
@@ -358,7 +360,7 @@ class SocialLinkBlock(blocks.StructBlock):
         ],
         default="facebook",
     )
-    url = blocks.URLBlock(required=True)
+    url = blocks.CharBlock(required=True, max_length=255)
 
     class Meta:
         icon = "link"

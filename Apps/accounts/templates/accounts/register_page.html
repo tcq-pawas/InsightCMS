@@ -35,6 +35,24 @@
           {% endif %}
         </div>
 
+        <div class="auth-field full-width">
+          <label for="{{ form.company_name.id_for_label }}">{{ page.company_name_label }}</label>
+          {{ form.company_name }}
+          {{ form.company_name.errors }}    
+        </div>
+
+        <div class="auth-field">
+          <label for="{{ form.website_url.id_for_label }}">{{ page.website_url_label }}</label>
+          {{ form.website_url }}
+          {{ form.website_url.errors }}
+        </div>
+
+        <div class="auth-field">
+          <label for="{{ form.admin_username.id_for_label }}">{{ page.admin_username_label }}</label>
+          {{ form.admin_username }}
+          {{ form.admin_username.errors }}
+        </div>
+
         <div class="auth-field">
           <label for="{{ form.first_name.id_for_label }}">{{ page.first_name_label }}</label>
           {{ form.first_name }}
@@ -47,22 +65,25 @@
           {{ form.last_name.errors }}
         </div>
 
-        <div class="auth-field">
-          <label for="{{ form.role.id_for_label }}">{{ page.role_label }}</label>
-          {{ form.role }}
-          {{ form.role.errors }}
-        </div>
 
         <div class="auth-field">
           <label for="{{ form.password1.id_for_label }}">{{ page.password_label }}</label>
           {{ form.password1 }}
-          {{ form.password1.errors }}
+          {% if form.password1.errors %}
+            <div class="auth-field-error">
+              {% for error in form.password1.errors %}<span>⚠️ {{ error }}</span>{% endfor %}
+            </div>
+          {% endif %}
         </div>
 
-        <div class="auth-field full-width">
+        <div class="auth-field">
           <label for="{{ form.password2.id_for_label }}">{{ page.confirm_password_label }}</label>
           {{ form.password2 }}
-          {{ form.password2.errors }}
+          {% if form.password2.errors %}
+            <div class="auth-field-error">
+              {% for error in form.password2.errors %}<span>⚠️ {{ error }}</span>{% endfor %}
+            </div>
+          {% endif %}
         </div>
       </div>
 
