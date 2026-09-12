@@ -114,11 +114,25 @@ class LoginPage(Page):
     def serve(self, request):
         from Apps.accounts.forms import EmailLoginForm
         from Apps.accounts.models import RegisterPage
+        from Apps.companies.models import UserProfile
+
+        # Agar user already logged in hai toh direct dashboard bhej do
+        if request.user.is_authenticated:
+            return redirect("/dashboard/")
 
         form = EmailLoginForm(request, data=request.POST or None)
         if request.method == "POST" and form.is_valid():
+            # 1. Check credentials & authenticate
             user = form.get_user()
             auth_login(request, user)
+
+            # 2. Find user's company (for session / verification)
+            profile = UserProfile.objects.filter(user=user).select_related('company').first()
+            if profile and profile.company:
+                request.session['active_company_id'] = str(profile.company.id)
+                request.session['active_company_name'] = profile.company.company_name
+
+            # 3. Open dashboard of that company
             return redirect("/dashboard/")
 
         context = self.get_context(request)
@@ -178,7 +192,7 @@ class RegisterPage(Page):
     def serve(self, request):
         from Apps.accounts.forms import CustomUserCreationForm
         from Apps.accounts.models import LoginPage
-        from Apps.companies.models import Company, CompanyMembership
+        from Apps.companies.models import Company, CompanyMembership, UserProfile
 
         # If already logged in, go to dashboard
         if request.user.is_authenticated:
@@ -186,40 +200,46 @@ class RegisterPage(Page):
 
         form = CustomUserCreationForm(request.POST or None)
         if request.method == "POST" and form.is_valid():
-            
-             # Step A: Create company
+            from django.db import transaction
             from Apps.common.helpers import generate_api_key, generate_unique_slug
-            comp_name = form.cleaned_data['company_name']
-            web_url = form.cleaned_data.get('website_url') or "https://example.com"
-            user_email = form.cleaned_data.get('email')
-            contact_p = f"{form.cleaned_data.get('first_name', '')} {form.cleaned_data.get('last_name', '')}".strip() or comp_name
 
-            company = Company.objects.create(
-                company_name=comp_name,
-                website_name=comp_name,
-                website_url=web_url,
-                email=user_email,
-                contact_person=contact_p,
-                status="active",
-                api_key=generate_api_key(32),
-                slug=generate_unique_slug(Company, comp_name, slug_field='slug'),
-            )
-            
-            # Step B: Create User
-            user = form.save(commit=False)
-            user.company_name = comp_name
-            user.website_url = web_url
-            user.role = User.Role.COMPANY_ADMIN
-            user.save()
-            
-            CompanyMembership.objects.create(
-                user=user,
-                company=company,
-                role=CompanyMembership.Role.MANAGER
-            )
-            
-             
-            
+            with transaction.atomic():
+                # Step A: Create company
+                comp_name = form.cleaned_data['company_name']
+                web_url = form.cleaned_data.get('website_url') or "https://example.com"
+                user_email = form.cleaned_data.get('email')
+                contact_p = f"{form.cleaned_data.get('first_name', '')} {form.cleaned_data.get('last_name', '')}".strip() or comp_name
+
+                company = Company.objects.create(
+                    company_name=comp_name,
+                    website_name=comp_name,
+                    website_url=web_url,
+                    email=user_email,
+                    contact_person=contact_p,
+                    status="active",
+                    api_key=generate_api_key(32),
+                    slug=generate_unique_slug(Company, comp_name, slug_field='slug'),
+                )
+                
+                # Step B: Create User
+                user = form.save(commit=False)
+                user.company_name = comp_name
+                user.website_url = web_url
+                user.role = User.Role.COMPANY_ADMIN
+                user.is_staff = True  # Allows access to Wagtail CMS admin panel
+                user.save()
+                
+                # Step C: Connect user to company (via CompanyMembership and UserProfile)
+                CompanyMembership.objects.create(
+                    user=user,
+                    company=company,
+                    role=CompanyMembership.Role.MANAGER
+                )
+                UserProfile.objects.get_or_create(
+                    user=user,
+                    defaults={'company': company}
+                )
+                
             auth_login(request, user)
             return redirect("/dashboard/")
 

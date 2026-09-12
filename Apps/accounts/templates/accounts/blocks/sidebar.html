@@ -2,9 +2,9 @@
   <!-- Brand Logo -->
   <div class="bp-brand">
     <div class="bp-brand-icon">
-      <span class="bp-brand-letter">{{ page.brand_name|slice:":1"|default:"B" }}</span>
+      <span class="bp-brand-letter">{% if company %}{{ company.company_name|slice:":1" }}{% elif page.brand_name %}{{ page.brand_name|slice:":1" }}{% else %}B{% endif %}</span>
     </div>
-    <span class="bp-brand-name">{{ page.brand_name|default:"BlogPro" }}</span>
+    <span class="bp-brand-name">{% if company %}{{ company.company_name }}{% elif page.brand_name %}{{ page.brand_name }}{% else %}BlogPro{% endif %}</span>
   </div>
 
   <!-- Dynamic Navigation Menu -->

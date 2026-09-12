@@ -104,9 +104,20 @@ def company_detail(request):
 
 
 
+def _get_request_company(user):
+    """Helper to safely get company linked to user."""
+    profile = getattr(user, 'userprofile', None)
+    if profile and profile.company:
+        return profile.company
+    membership = user.company_memberships.first()
+    return membership.company if membership else None
+
+
 @login_required(login_url='/login/')
 def dashboard_blog_create(request):
-    """Create a new BlogPage from custom Dashboard."""
+    """Create a new BlogPage scoped to logged-in user's Company."""
+    company = _get_request_company(request.user)
+
     if request.method == 'POST':
         title = request.POST.get('title')
         short_description = request.POST.get('short_description', '')
@@ -115,7 +126,15 @@ def dashboard_blog_create(request):
         action_type = request.POST.get('action_type', 'publish')  # 'publish' or 'draft'
         featured_image_file = request.FILES.get('featured_image')
 
-        blog_index = BlogIndexPage.objects.first()
+        # Company-specific BlogIndexPage first, else fallback to first index
+        blog_index = None
+        if company:
+            home = company.home_pages.first()
+            if home:
+                blog_index = BlogIndexPage.objects.filter(path__startswith=home.path).first()
+        if not blog_index:
+            blog_index = BlogIndexPage.objects.first()
+
         if not blog_index:
             messages.error(request, "Blog Index Page not found in Wagtail!")
             return redirect('/blog-posts/')
@@ -129,21 +148,26 @@ def dashboard_blog_create(request):
             )
 
         if not short_description:
-            # Fallback: strip HTML from body for short_description (up to 200 chars)
             import re
             clean_body = re.sub(r'<[^>]+>', ' ', body).strip()
             short_description = (clean_body[:180] + '...') if clean_body else title
 
-        category = BlogCategory.objects.filter(id=category_id).first() if category_id else None
+        category = None
+        if category_id:
+            cat_qs = BlogCategory.objects.all()
+            if company:
+                cat_qs = cat_qs.filter(company=company)
+            category = cat_qs.filter(id=category_id).first()
 
-        # Create BlogPage instance
+        # Create BlogPage instance strictly scoped to company
         blog_page = BlogPage(
             title=title,
             short_description=short_description,
             body=body,
             category=category,
             featured_image=wagtail_image,
-            author=request.user
+            author=request.user,
+            company=company
         )
 
         # Add to Wagtail page tree
@@ -160,6 +184,9 @@ def dashboard_blog_create(request):
         return redirect('/blog-posts/')
 
     categories = BlogCategory.objects.all()
+    if company:
+        categories = categories.filter(company=company)
+
     from Apps.companies.models import CompanyBlogPostsPage
     from Apps.accounts.models import UserDashboardPage
     blog_posts_page = CompanyBlogPostsPage.objects.live().first()
@@ -173,13 +200,20 @@ def dashboard_blog_create(request):
         'sidebar_links': sidebar_links,
         'active_tab': 'posts',
         'user': request.user,
+        'company': company,
     })
 
 
 @login_required(login_url='/login/')
 def dashboard_blog_edit(request, page_id):
-    """Edit an existing BlogPage from custom Dashboard."""
-    blog_page = get_object_or_404(BlogPage, id=page_id)
+    """Edit an existing BlogPage - strictly isolated to logged-in user's company."""
+    company = _get_request_company(request.user)
+    
+    # Restrict lookup to own company (superusers bypass)
+    if request.user.is_superuser:
+        blog_page = get_object_or_404(BlogPage, id=page_id)
+    else:
+        blog_page = get_object_or_404(BlogPage, id=page_id, company=company)
 
     if request.method == 'POST':
         blog_page.title = request.POST.get('title', blog_page.title)
@@ -188,7 +222,10 @@ def dashboard_blog_edit(request, page_id):
         
         category_id = request.POST.get('category')
         if category_id:
-            blog_page.category = BlogCategory.objects.filter(id=category_id).first()
+            cat_qs = BlogCategory.objects.all()
+            if company:
+                cat_qs = cat_qs.filter(company=company)
+            blog_page.category = cat_qs.filter(id=category_id).first()
 
         featured_image_file = request.FILES.get('featured_image')
         if featured_image_file:
@@ -211,6 +248,9 @@ def dashboard_blog_edit(request, page_id):
         return redirect('/blog-posts/')
 
     categories = BlogCategory.objects.all()
+    if company:
+        categories = categories.filter(company=company)
+
     from Apps.companies.models import CompanyBlogPostsPage
     from Apps.accounts.models import UserDashboardPage
     blog_posts_page = CompanyBlogPostsPage.objects.live().first()
@@ -225,14 +265,20 @@ def dashboard_blog_edit(request, page_id):
         'sidebar_links': sidebar_links,
         'active_tab': 'posts',
         'user': request.user,
+        'company': company,
     })
 
 
 @login_required(login_url='/login/')
 def dashboard_blog_toggle_publish(request, page_id):
-    """Toggle Publish/Unpublish status of a BlogPage."""
+    """Toggle Publish/Unpublish status - restricted to own company."""
     if request.method == 'POST':
-        blog_page = get_object_or_404(BlogPage, id=page_id)
+        company = _get_request_company(request.user)
+        if request.user.is_superuser:
+            blog_page = get_object_or_404(BlogPage, id=page_id)
+        else:
+            blog_page = get_object_or_404(BlogPage, id=page_id, company=company)
+
         if blog_page.live:
             blog_page.unpublish()
             messages.success(request, f"'{blog_page.title}' is now Unpublished (Draft).")
@@ -246,9 +292,14 @@ def dashboard_blog_toggle_publish(request, page_id):
 
 @login_required(login_url='/login/')
 def dashboard_blog_delete(request, page_id):
-    """Delete a BlogPage from custom Dashboard."""
+    """Delete a BlogPage - strictly restricted to own company."""
     if request.method == 'POST':
-        blog_page = get_object_or_404(BlogPage, id=page_id)
+        company = _get_request_company(request.user)
+        if request.user.is_superuser:
+            blog_page = get_object_or_404(BlogPage, id=page_id)
+        else:
+            blog_page = get_object_or_404(BlogPage, id=page_id, company=company)
+
         title = blog_page.title
         blog_page.delete()
         messages.success(request, f"Blog '{title}' deleted successfully!")

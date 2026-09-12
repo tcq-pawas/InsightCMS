@@ -246,7 +246,10 @@
         </button>
         <button class="bp-settings-tab" onclick="switchTab('security', this)">
           <i class="fa-solid fa-shield-halved"></i> {{ page.settings_tab_4_title|default:"Security" }}
-        </button> 
+        </button>
+        <button class="bp-settings-tab" onclick="switchTab('team', this)">
+          <i class="fa-solid fa-users"></i> Team Members
+        </button>
       </div>
 
       <!-- ==========================================
@@ -356,6 +359,97 @@
         </div>
       </div>
 
+      <!-- ==========================================
+           3. TEAM MEMBERS SECTION (Company User Management)
+           ========================================== -->
+      <div id="section-team" class="settings-tab-pane d-none">
+        {% if user.role == 'company_admin' or user.is_superuser %}
+        <!-- Add New Member Card (Only visible to Company Admins) -->
+        <div class="bp-settings-card">
+          <div class="bp-settings-section-header d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="bp-settings-title"><i class="fa-solid fa-user-plus text-primary"></i> Add New Team Member</h2>
+              <p class="bp-settings-sub">Create a new Company User (Writer/Editor) for {{ company.company_name|default:"your company" }}.</p>
+            </div>
+          </div>
+
+          <form method="post" action="{% url 'settings' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action_type" value="add_team_member">
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="bp-form-label">Email Address *</label>
+                <input type="email" name="member_email" class="bp-form-control" required placeholder="writer@company.com">
+              </div>
+
+              <div class="col-md-6">
+                <label class="bp-form-label">Temporary Password *</label>
+                <input type="password" name="member_password" class="bp-form-control" required placeholder="Minimum 6 characters">
+              </div>
+
+              <div class="col-md-6">
+                <label class="bp-form-label">First Name</label>
+                <input type="text" name="member_first_name" class="bp-form-control" placeholder="e.g. Rahul">
+              </div>
+
+              <div class="col-md-6">
+                <label class="bp-form-label">Last Name</label>
+                <input type="text" name="member_last_name" class="bp-form-control" placeholder="e.g. Sharma">
+              </div>
+
+              <div class="col-12 mt-3">
+                <button type="submit" class="bp-btn-save">
+                  <i class="fa-solid fa-plus me-1"></i> Add Company User
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+
+        <!-- Team Members List Card -->
+        <div class="bp-settings-card">
+          <div class="bp-settings-section-header">
+            <h2 class="bp-settings-title"><i class="fa-solid fa-users text-primary"></i> Current Team Members</h2>
+            <p class="bp-settings-sub">People with access to {{ company.company_name|default:"your company" }}'s blogs.</p>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>User</th>
+                  <th>Role</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in team_members %}
+                  <tr>
+                    <td>
+                      <strong>{{ item.user.get_full_name|default:item.user.email }}</strong>
+                    </td>
+                    <td>
+                      <span class="badge {% if item.user.role == 'company_admin' %}bg-primary{% else %}bg-secondary{% endif %}">
+                        {{ item.user.get_role_display }}
+                      </span>
+                    </td>
+                    <td class="text-muted">{{ item.user.email }}</td>
+                    <td><span class="text-success"><i class="fa-solid fa-circle-check"></i> Active</span></td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="4" class="text-center text-muted py-3">No members found.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </main>
 
 
@@ -388,7 +482,7 @@
   // Support direct hash links (e.g. /settings/#security)
   window.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash.replace('#', '');
-    if (['profile', 'workspace', 'notifications', 'security'].includes(hash)) {
+    if (['profile', 'workspace', 'notifications', 'security', 'team'].includes(hash)) {
       const tabBtn = document.querySelector(`.bp-settings-tab[onclick*="${hash}"]`);
       if (tabBtn) {
         switchTab(hash, tabBtn);
