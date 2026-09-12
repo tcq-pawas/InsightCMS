@@ -459,65 +459,8 @@ class UserDashboardPage(Page):
     terms_service_text = models.CharField(max_length=100, blank=True, default="Terms of Service ›")
     terms_service_url = models.CharField(max_length=255, blank=True, default="#")
 
-    # 10. Settings Page Content (Fully Dynamic Wagtail)
-    settings_page_title = models.CharField(max_length=100, blank=True, default="Settings")
-    settings_page_subtext = models.CharField(max_length=255, blank=True, default="Manage your account preferences, workspace, and security settings.")
-
-    # Settings Dynamic Tab Labels
-    settings_tab_1_title = models.CharField(max_length=50, blank=True, default="Profile")
-    settings_tab_2_title = models.CharField(max_length=50, blank=True, default="Workspace")
-    settings_tab_3_title = models.CharField(max_length=50, blank=True, default="Notifications")
-    settings_tab_4_title = models.CharField(max_length=50, blank=True, default="Security")
-
-    # Settings Profile Section
-    settings_profile_heading = models.CharField(max_length=100, blank=True, default="Profile Information")
-    settings_profile_subtext = models.CharField(max_length=255, blank=True, default="Update your personal details and public profile presence.")
-    settings_profile_avatar_btn_text = models.CharField(max_length=50, blank=True, default="Change Avatar")
-    settings_profile_fname_label = models.CharField(max_length=50, blank=True, default="First Name")
-    settings_profile_lname_label = models.CharField(max_length=50, blank=True, default="Last Name")
-    settings_profile_email_label = models.CharField(max_length=50, blank=True, default="Email Address")
-    settings_profile_email_hint = models.CharField(max_length=255, blank=True, default="Email address is managed by your system administrator.")
-    settings_profile_role_label = models.CharField(max_length=50, blank=True, default="Role")
-    settings_profile_btn_text = models.CharField(max_length=50, blank=True, default="Save Changes")
-
-    # Settings Workspace Section
-    settings_workspace_heading = models.CharField(max_length=100, blank=True, default="Workspace Details")
-    settings_workspace_subtext = models.CharField(max_length=255, blank=True, default="Configure your blog workspace, public name, and publishing preferences.")
-    settings_ws_brand_label = models.CharField(max_length=50, blank=True, default="Workspace / Brand Name")
-    settings_ws_domain_label = models.CharField(max_length=50, blank=True, default="Primary Domain")
-    settings_workspace_domain = models.CharField(max_length=100, blank=True, default="insightcms.local")
-    settings_ws_timezone_label = models.CharField(max_length=50, blank=True, default="Timezone")
-    settings_ws_lang_label = models.CharField(max_length=50, blank=True, default="Default Publishing Language")
-    settings_workspace_btn_text = models.CharField(max_length=50, blank=True, default="Save Workspace")
-
-    # Settings Notifications Section
-    settings_notif_heading = models.CharField(max_length=100, blank=True, default="Notification Preferences")
-    settings_notif_subtext = models.CharField(max_length=255, blank=True, default="Choose when and how you want to be notified about blog activities.")
-    settings_notif_1_title = models.CharField(max_length=150, blank=True, default="New Comments & Reader Interactions")
-    settings_notif_1_desc = models.CharField(max_length=255, blank=True, default="Get notified immediately whenever a reader leaves a comment on your posts.")
-    settings_notif_2_title = models.CharField(max_length=150, blank=True, default="Weekly Analytics Digest")
-    settings_notif_2_desc = models.CharField(max_length=255, blank=True, default="Receive a weekly summary of your blog's visitors, top posts, and subscriber growth.")
-    settings_notif_3_title = models.CharField(max_length=150, blank=True, default="System & Security Alerts")
-    settings_notif_3_desc = models.CharField(max_length=255, blank=True, default="Important updates about your account security and CMS updates.")
-    settings_notif_btn_text = models.CharField(max_length=50, blank=True, default="Save Preferences")
-
-    # Settings Security Section
-    settings_security_heading = models.CharField(max_length=100, blank=True, default="Security & Authentication")
-    settings_security_subtext = models.CharField(max_length=255, blank=True, default="Manage your password, login security, and active sessions.")
-    settings_sec_curr_pass_label = models.CharField(max_length=50, blank=True, default="Current Password")
-    settings_sec_curr_pass_ph = models.CharField(max_length=50, blank=True, default="••••••••")
-    settings_sec_new_pass_label = models.CharField(max_length=50, blank=True, default="New Password")
-    settings_sec_new_pass_ph = models.CharField(max_length=50, blank=True, default="Enter new password")
-    settings_sec_conf_pass_label = models.CharField(max_length=50, blank=True, default="Confirm New Password")
-    settings_sec_conf_pass_ph = models.CharField(max_length=50, blank=True, default="Confirm new password")
-    settings_security_badge_text = models.CharField(max_length=50, blank=True, default="Account Protected")
-    settings_security_btn_text = models.CharField(max_length=50, blank=True, default="Update Password")
-    settings_session_title = models.CharField(max_length=100, blank=True, default="Active Session")
-    settings_session_desc = models.CharField(max_length=255, blank=True, default="Currently signed in from this browser.")
-    settings_sec_signout_btn_text = models.CharField(max_length=50, blank=True, default="Sign Out")
-
     # =========================================================================
-    # DYNAMIC STREAMFIELD BODY (Shows (+) button with block choices)
+    #  STREAMFIELD BODY (Shows (+) button with block choices)
     # =========================================================================
     body = StreamField(
         DashboardBodyStreamBlock(),
@@ -569,35 +512,8 @@ class UserDashboardPage(Page):
             FieldPanel("footer_col2_link2_url"),
             FieldPanel("copyright_text"),
         ], heading="4. Footer Settings & Social Links"),
-        MultiFieldPanel([
-            FieldPanel("settings_page_title"),
-            FieldPanel("settings_page_subtext"),
-            FieldPanel("settings_tab_1_title"),
-            FieldPanel("settings_tab_4_title"),
-
-            # Profile Tab Fields
-            FieldPanel("settings_profile_heading"),
-            FieldPanel("settings_profile_subtext"),
-            FieldPanel("settings_profile_avatar_btn_text"),
-            FieldPanel("settings_profile_fname_label"),
-            FieldPanel("settings_profile_lname_label"),
-            FieldPanel("settings_profile_email_label"),
-            FieldPanel("settings_profile_email_hint"),
-            FieldPanel("settings_profile_role_label"),
-            FieldPanel("settings_profile_btn_text"),
-
-            # Security Tab Fields
-            FieldPanel("settings_security_heading"),
-            FieldPanel("settings_security_subtext"),
-            FieldPanel("settings_sec_curr_pass_label"),
-            FieldPanel("settings_sec_curr_pass_ph"),
-            FieldPanel("settings_sec_new_pass_label"),
-            FieldPanel("settings_sec_new_pass_ph"),
-            FieldPanel("settings_sec_conf_pass_label"),
-            FieldPanel("settings_sec_conf_pass_ph"),
-            FieldPanel("settings_security_btn_text"),
-        ], heading="4. Settings Page (Profile & Security Tabs Only)"),
     ]
+        
 
     parent_page_types = ["wagtailcore.Page", "companies.CompanyHomePage"]
     subpage_types = []
@@ -624,3 +540,165 @@ class UserDashboardPage(Page):
 
     class Meta:
         verbose_name = "User Dashboard Page"
+        
+        
+# =========================================================================
+# SettingsPage — CMS-editable Settings page (Profile, Security, Team)
+# =========================================================================
+class SettingsPage(Page):
+    """Wagtail CMS-managed Settings Page — labels editable from CMS."""
+
+    settings_page_title = models.CharField(max_length=100, blank=True, default="Settings")
+    settings_page_subtext = models.CharField(max_length=255, blank=True, default="Manage your account preferences, workspace, and security settings.")
+
+    settings_tab_1_title = models.CharField(max_length=50, blank=True, default="Profile")
+    settings_tab_4_title = models.CharField(max_length=50, blank=True, default="Security")
+    settings_tab_team_title = models.CharField(max_length=50, blank=True, default="Team Members")
+
+    settings_profile_heading = models.CharField(max_length=100, blank=True, default="Profile Information")
+    settings_profile_subtext = models.CharField(max_length=255, blank=True, default="Update your personal details and public profile presence.")
+    settings_profile_avatar_btn_text = models.CharField(max_length=50, blank=True, default="Change Avatar")
+    settings_profile_fname_label = models.CharField(max_length=50, blank=True, default="First Name")
+    settings_profile_lname_label = models.CharField(max_length=50, blank=True, default="Last Name")
+    settings_profile_email_label = models.CharField(max_length=50, blank=True, default="Email Address")
+    settings_profile_email_hint = models.CharField(max_length=255, blank=True, default="Email address is managed by your system administrator.")
+    settings_profile_role_label = models.CharField(max_length=50, blank=True, default="Role")
+    settings_profile_btn_text = models.CharField(max_length=50, blank=True, default="Save Changes")
+
+    settings_security_heading = models.CharField(max_length=100, blank=True, default="Security & Authentication")
+    settings_security_subtext = models.CharField(max_length=255, blank=True, default="Manage your password, login security, and active sessions.")
+    settings_sec_curr_pass_label = models.CharField(max_length=50, blank=True, default="Current Password")
+    settings_sec_curr_pass_ph = models.CharField(max_length=50, blank=True, default="••••••••")
+    settings_sec_new_pass_label = models.CharField(max_length=50, blank=True, default="New Password")
+    settings_sec_new_pass_ph = models.CharField(max_length=50, blank=True, default="Enter new password")
+    settings_sec_conf_pass_label = models.CharField(max_length=50, blank=True, default="Confirm New Password")
+    settings_sec_conf_pass_ph = models.CharField(max_length=50, blank=True, default="Confirm new password")
+    settings_security_badge_text = models.CharField(max_length=50, blank=True, default="Account Protected")
+    settings_security_btn_text = models.CharField(max_length=50, blank=True, default="Update Password")
+    settings_session_title = models.CharField(max_length=100, blank=True, default="Active Session")
+    settings_session_desc = models.CharField(max_length=255, blank=True, default="Currently signed in from this browser.")
+    settings_sec_signout_btn_text = models.CharField(max_length=50, blank=True, default="Sign Out")
+
+    team_add_heading = models.CharField(max_length=100, blank=True, default="Add New Team Member")
+    team_add_subtext = models.CharField(max_length=255, blank=True, default="Create a new Company User (Writer/Editor) for your company.")
+    team_list_heading = models.CharField(max_length=100, blank=True, default="Current Team Members")
+    team_list_subtext = models.CharField(max_length=255, blank=True, default="People with access to your company's blogs.")
+    team_add_btn_text = models.CharField(max_length=50, blank=True, default="Add Company User")
+
+    content_panels = Page.content_panels + [
+        MultiFieldPanel([
+            FieldPanel("settings_page_title"),
+            FieldPanel("settings_page_subtext"),
+            FieldPanel("settings_tab_1_title"),
+            FieldPanel("settings_tab_4_title"),
+            FieldPanel("settings_tab_team_title"),
+        ], heading="Page Header & Tabs"),
+        MultiFieldPanel([
+            FieldPanel("settings_profile_heading"),
+            FieldPanel("settings_profile_subtext"),
+            FieldPanel("settings_profile_avatar_btn_text"),
+            FieldPanel("settings_profile_fname_label"),
+            FieldPanel("settings_profile_lname_label"),
+            FieldPanel("settings_profile_email_label"),
+            FieldPanel("settings_profile_email_hint"),
+            FieldPanel("settings_profile_role_label"),
+            FieldPanel("settings_profile_btn_text"),
+        ], heading="Profile Section"),
+        MultiFieldPanel([
+            FieldPanel("settings_security_heading"),
+            FieldPanel("settings_security_subtext"),
+            FieldPanel("settings_sec_curr_pass_label"),
+            FieldPanel("settings_sec_curr_pass_ph"),
+            FieldPanel("settings_sec_new_pass_label"),
+            FieldPanel("settings_sec_new_pass_ph"),
+            FieldPanel("settings_sec_conf_pass_label"),
+            FieldPanel("settings_sec_conf_pass_ph"),
+            FieldPanel("settings_security_badge_text"),
+            FieldPanel("settings_security_btn_text"),
+            FieldPanel("settings_session_title"),
+            FieldPanel("settings_session_desc"),
+            FieldPanel("settings_sec_signout_btn_text"),
+        ], heading="Security Section"),
+        MultiFieldPanel([
+            FieldPanel("team_add_heading"),
+            FieldPanel("team_add_subtext"),
+            FieldPanel("team_add_btn_text"),
+            FieldPanel("team_list_heading"),
+            FieldPanel("team_list_subtext"),
+        ], heading="Team Members Section"),
+    ]
+
+    parent_page_types = ["wagtailcore.Page", "companies.CompanyHomePage"]
+    subpage_types = []
+    template = "accounts/settings.html"
+
+    def serve(self, request):
+        from django.contrib.auth import get_user_model
+        from django.contrib import messages
+        from Apps.companies.models import CompanyMembership
+
+        if not request.user.is_authenticated:
+            login_page = LoginPage.objects.live().first()
+            return redirect(login_page.url if login_page else '/login/')
+
+        User = get_user_model()
+
+        membership = CompanyMembership.objects.filter(user=request.user).select_related('company').first()
+        company = membership.company if membership else None
+
+        if request.method == "POST" and request.POST.get("action_type") == "add_team_member":
+            if not company:
+                messages.error(request, "No company found for your account.")
+                return redirect(request.path + "#team")
+
+            if request.user.role != User.Role.COMPANY_ADMIN and not request.user.is_superuser:
+                messages.error(request, "You don't have permission to add team members.")
+                return redirect(request.path + "#team")
+
+            email = request.POST.get("member_email", "").strip().lower()
+            password = request.POST.get("member_password", "")
+            first_name = request.POST.get("member_first_name", "").strip()
+            last_name = request.POST.get("member_last_name", "").strip()
+
+            if not email or not password:
+                messages.error(request, "Email and password are required.")
+                return redirect(request.path + "#team")
+
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "A user with this email already exists.")
+                return redirect(request.path + "#team")
+
+            new_user = User.objects.create_user(
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                role=User.Role.COMPANY_USER,
+                is_staff=True,
+                company_name=company.name if hasattr(company, 'name') else "",
+            )
+
+            CompanyMembership.objects.create(
+                user=new_user,
+                company=company,
+                role=CompanyMembership.Role.EDITOR
+            )
+
+            messages.success(request, f"Team member {email} added successfully.")
+            return redirect(request.path + "#team")
+
+        team_members = []
+        if company:
+            team_members = CompanyMembership.objects.filter(company=company).select_related('user')
+
+        context = self.get_context(request)
+        context.update({
+            'page': self,
+            'user': request.user,
+            'company': company,
+            'team_members': team_members,
+        })
+        return render(request, self.template, context)
+
+    class Meta:
+        verbose_name = "Settings Page"

@@ -157,6 +157,7 @@ class CompanyHomePage(Page):
         "companies.SimpleContentPage",
         "accounts.LoginPage",
         "accounts.RegisterPage",
+        "accounts.SettingsPage", 
         "companies.CompanyBlogPostsPage",
     ]
  
