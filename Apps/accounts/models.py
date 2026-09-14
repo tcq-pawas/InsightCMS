@@ -581,9 +581,24 @@ class SettingsPage(Page):
 
     team_add_heading = models.CharField(max_length=100, blank=True, default="Add New Team Member")
     team_add_subtext = models.CharField(max_length=255, blank=True, default="Create a new Company User (Writer/Editor) for your company.")
+    team_email_label = models.CharField(max_length=50, blank=True, default="Email Address *")
+    team_email_ph = models.CharField(max_length=100, blank=True, default="writer@company.com")
+    team_password_label = models.CharField(max_length=50, blank=True, default="Temporary Password *")
+    team_password_ph = models.CharField(max_length=100, blank=True, default="Minimum 6 characters")
+    team_fname_label = models.CharField(max_length=50, blank=True, default="First Name")
+    team_fname_ph = models.CharField(max_length=100, blank=True, default="e.g. Rahul")
+    team_lname_label = models.CharField(max_length=50, blank=True, default="Last Name")
+    team_lname_ph = models.CharField(max_length=100, blank=True, default="e.g. Sharma")
+    team_add_btn_text = models.CharField(max_length=50, blank=True, default="Add Company User")
+
     team_list_heading = models.CharField(max_length=100, blank=True, default="Current Team Members")
     team_list_subtext = models.CharField(max_length=255, blank=True, default="People with access to your company's blogs.")
-    team_add_btn_text = models.CharField(max_length=50, blank=True, default="Add Company User")
+    team_th_user = models.CharField(max_length=50, blank=True, default="User")
+    team_th_role = models.CharField(max_length=50, blank=True, default="Role")
+    team_th_email = models.CharField(max_length=50, blank=True, default="Email")
+    team_th_status = models.CharField(max_length=50, blank=True, default="Status")
+    team_status_active_text = models.CharField(max_length=50, blank=True, default="Active")
+    team_empty_text = models.CharField(max_length=100, blank=True, default="No members found.")
 
     content_panels = Page.content_panels + [
         MultiFieldPanel([
@@ -622,9 +637,23 @@ class SettingsPage(Page):
         MultiFieldPanel([
             FieldPanel("team_add_heading"),
             FieldPanel("team_add_subtext"),
+            FieldPanel("team_email_label"),
+            FieldPanel("team_email_ph"),
+            FieldPanel("team_password_label"),
+            FieldPanel("team_password_ph"),
+            FieldPanel("team_fname_label"),
+            FieldPanel("team_fname_ph"),
+            FieldPanel("team_lname_label"),
+            FieldPanel("team_lname_ph"),
             FieldPanel("team_add_btn_text"),
             FieldPanel("team_list_heading"),
             FieldPanel("team_list_subtext"),
+            FieldPanel("team_th_user"),
+            FieldPanel("team_th_role"),
+            FieldPanel("team_th_email"),
+            FieldPanel("team_th_status"),
+            FieldPanel("team_status_active_text"),
+            FieldPanel("team_empty_text"),
         ], heading="Team Members Section"),
     ]
 

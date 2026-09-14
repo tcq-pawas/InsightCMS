@@ -47,8 +47,13 @@ def logout_view(request):
 def settings_view(request):
     if not request.user.is_authenticated:
         return redirect(get_login_url())
+
+    from Apps.accounts.models import SettingsPage
+    settings_page = SettingsPage.objects.live().first()
     dashboard_page = UserDashboardPage.objects.live().first()
-    context = dashboard_page.get_context(request) if dashboard_page else {}
+
+    page_obj = settings_page if settings_page else dashboard_page
+    context = page_obj.get_context(request) if page_obj else {}
     
     if request.method == 'POST':
         from django.contrib import messages
@@ -156,7 +161,7 @@ def settings_view(request):
 
     sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
     context.update({
-        'page': dashboard_page,
+        'page': page_obj,
         'sidebar_links': sidebar_links,
         'user': request.user,
         'company': company,

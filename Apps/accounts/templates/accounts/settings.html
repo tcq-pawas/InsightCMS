@@ -185,6 +185,31 @@
             <p class="bp-settings-sub">{{ page.settings_security_subtext|default:"Manage your password, login security, and active sessions." }}</p>
           </div>
 
+          <form method="post" action="{% url 'settings' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action_type" value="update_password">
+
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="bp-form-label">{{ page.settings_sec_curr_pass_label|default:"Current Password" }}</label>
+                <input type="password" name="old_password" class="bp-form-control" required placeholder="{{ page.settings_sec_curr_pass_ph|default:'••••••••' }}">
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">{{ page.settings_sec_new_pass_label|default:"New Password" }}</label>
+                <input type="password" name="new_password1" class="bp-form-control" required placeholder="{{ page.settings_sec_new_pass_ph|default:'Enter new password' }}">
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">{{ page.settings_sec_conf_pass_label|default:"Confirm New Password" }}</label>
+                <input type="password" name="new_password2" class="bp-form-control" required placeholder="{{ page.settings_sec_conf_pass_ph|default:'Confirm new password' }}">
+              </div>
+              <div class="col-12 mt-3">
+                <button type="submit" class="bp-btn-save">
+                  <i class="fa-solid fa-key me-1"></i> {{ page.settings_security_btn_text|default:"Update Password" }}
+                </button>
+              </div>
+            </div>
+          </form>
+
           <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
             <div>
               <span class="bp-badge-status bp-badge-success"><i class="fa-solid fa-circle-check"></i> {{ page.settings_security_badge_text|default:"Account Protected" }}</span>
@@ -212,29 +237,29 @@
         <div class="bp-settings-card">
           <div class="bp-settings-section-header">
             <h2 class="bp-settings-title"><i class="fa-solid fa-user-plus text-primary"></i> {{ page.team_add_heading|default:"Add New Team Member" }}</h2>
-            <p class="bp-settings-sub">{{ page.team_add_subtext|default:"Create a new Company User for" }} {{ company.name|default:"your company" }}.</p>
+            <p class="bp-settings-sub">{{ page.team_add_subtext|default:"Create a new Company User for your company." }}</p>
           </div>
 
-          <form method="post" action="{{ page.url }}">
+          <form method="post" action="{% url 'settings' %}">
             {% csrf_token %}
             <input type="hidden" name="action_type" value="add_team_member">
 
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="bp-form-label">Email Address *</label>
-                <input type="email" name="member_email" class="bp-form-control" required placeholder="writer@company.com">
+                <label class="bp-form-label">{{ page.team_email_label|default:"Email Address *" }}</label>
+                <input type="email" name="member_email" class="bp-form-control" required placeholder="{{ page.team_email_ph|default:'writer@company.com' }}">
               </div>
               <div class="col-md-6">
-                <label class="bp-form-label">Temporary Password *</label>
-                <input type="password" name="member_password" class="bp-form-control" required placeholder="Minimum 6 characters">
+                <label class="bp-form-label">{{ page.team_password_label|default:"Temporary Password *" }}</label>
+                <input type="password" name="member_password" class="bp-form-control" required placeholder="{{ page.team_password_ph|default:'Minimum 6 characters' }}">
               </div>
               <div class="col-md-6">
-                <label class="bp-form-label">First Name</label>
-                <input type="text" name="member_first_name" class="bp-form-control" placeholder="e.g. Rahul">
+                <label class="bp-form-label">{{ page.team_fname_label|default:"First Name" }}</label>
+                <input type="text" name="member_first_name" class="bp-form-control" placeholder="{{ page.team_fname_ph|default:'e.g. Rahul' }}">
               </div>
               <div class="col-md-6">
-                <label class="bp-form-label">Last Name</label>
-                <input type="text" name="member_last_name" class="bp-form-control" placeholder="e.g. Sharma">
+                <label class="bp-form-label">{{ page.team_lname_label|default:"Last Name" }}</label>
+                <input type="text" name="member_last_name" class="bp-form-control" placeholder="{{ page.team_lname_ph|default:'e.g. Sharma' }}">
               </div>
               <div class="col-12 mt-3">
                 <button type="submit" class="bp-btn-save">
@@ -249,17 +274,17 @@
         <div class="bp-settings-card">
           <div class="bp-settings-section-header">
             <h2 class="bp-settings-title"><i class="fa-solid fa-users text-primary"></i> {{ page.team_list_heading|default:"Current Team Members" }}</h2>
-            <p class="bp-settings-sub">{{ page.team_list_subtext|default:"People with access to" }} {{ company.name|default:"your company" }}'s blogs.</p>
+            <p class="bp-settings-sub">{{ page.team_list_subtext|default:"People with access to your company's blogs." }}</p>
           </div>
 
           <div class="table-responsive">
             <table class="table align-middle">
               <thead class="table-light">
                 <tr>
-                  <th>User</th>
-                  <th>Role</th>
-                  <th>Email</th>
-                  <th>Status</th>
+                  <th>{{ page.team_th_user }}</th>
+                  <th>{{ page.team_th_role }}</th>
+                  <th>{{ page.team_th_email }}</th>
+                  <th>{{ page.team_th_status }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -272,11 +297,11 @@
                       </span>
                     </td>
                     <td class="text-muted">{{ item.user.email }}</td>
-                    <td><span class="text-success"><i class="fa-solid fa-circle-check"></i> Active</span></td>
+                    <td><span class="text-success"><i class="fa-solid fa-circle-check"></i> {{ page.team_status_active_text|default:"Active" }}</span></td>
                   </tr>
                 {% empty %}
                   <tr>
-                    <td colspan="4" class="text-center text-muted py-3">No members found.</td>
+                    <td colspan="4" class="text-center text-muted py-3">{{ page.team_empty_text|default:"No members found." }}</td>
                   </tr>
                 {% endfor %}
               </tbody>
