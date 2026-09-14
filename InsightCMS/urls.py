@@ -10,6 +10,14 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from Apps.accounts.views import user_dashboard_view, logout_view, settings_view, forgot_password_view
 
 
+# Restrict Django global admin (/admin/) exclusively to platform Super Admins
+admin.site.has_permission = lambda request: (
+    request.user.is_active and (
+        request.user.is_superuser or 
+        getattr(request.user, 'role', None) == 'super_admin'
+    )
+)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('cms/', include(wagtailadmin_urls)),
