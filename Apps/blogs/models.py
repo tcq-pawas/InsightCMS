@@ -5,7 +5,6 @@ from wagtail.fields import RichTextField
 from wagtail.admin.panels import FieldPanel
 from wagtail.search import index
 from .forms import BlogPageForm
-from wagtail.admin.panels import PublishingPanel
 
 from Apps.accounts.models import User
 
@@ -149,9 +148,7 @@ class BlogPage(Page):
         FieldPanel('publish_date'),
     ]
     
-    settings_panels = Page.settings_panels + [
-        PublishingPanel(),
-    ]    
+    settings_panels = Page.settings_panels
     
     base_form_class = BlogPageForm
 

@@ -8,6 +8,12 @@ from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from Apps.accounts.views import user_dashboard_view, logout_view, settings_view, forgot_password_view
+from Apps.blogs.views import (
+    dashboard_blog_create,
+    dashboard_blog_edit,
+    dashboard_blog_toggle_publish,
+    dashboard_blog_delete,
+)
 
 
 # Restrict Django global admin (/admin/) exclusively to platform Super Admins
@@ -21,14 +27,19 @@ admin.site.has_permission = lambda request: (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('cms/', include(wagtailadmin_urls)),
-    path('dashboard/', user_dashboard_view, name='dashboard'),
+    path('dashboard/', include([
+        path('', user_dashboard_view, name='dashboard'),
+        path('settings/', settings_view, name='dashboard_settings'),
+        path('blogs/create/', dashboard_blog_create, name='dashboard_blog_create'),
+        path('blogs/<int:page_id>/edit/', dashboard_blog_edit, name='dashboard_blog_edit'),
+        path('blogs/<int:page_id>/toggle-publish/', dashboard_blog_toggle_publish, name='dashboard_blog_toggle_publish'),
+        path('blogs/<int:page_id>/delete/', dashboard_blog_delete, name='dashboard_blog_delete'),
+    ])),
     path('settings/', settings_view, name='settings'),
-    path('dashboard/settings/', settings_view, name='dashboard_settings'),
     path('logout/', logout_view, name='logout'),
     path('password-reset/', forgot_password_view, name='password_reset'),
     path('documents/', include(wagtaildocs_urls)),
     path("api/v1/", include("Apps.blogs.urls")),
-    path('', include('Apps.blogs.urls')),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path('', include(wagtail_urls)),  

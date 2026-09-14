@@ -18,7 +18,7 @@ class CompanyAPIKeyAuthentication(BaseAuthentication):
         try:
             company = Company.objects.get(
                 api_key=api_key,
-                status=Company.Status.ACTIVE,
+                status="active",
             )
         except Company.DoesNotExist:
             raise AuthenticationFailed("Invalid or inactive API key")

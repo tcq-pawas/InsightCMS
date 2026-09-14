@@ -70,6 +70,7 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "InsightCMS Blog API",
     "DESCRIPTION": "Company-scoped blog API for external websites",
     "VERSION": "1.0.0",
+    "SCHEMA_PATH_PREFIX": r"/api/v1/",
 }
 
 ROOT_URLCONF = 'InsightCMS.urls'
