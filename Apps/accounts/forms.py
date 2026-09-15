@@ -52,4 +52,4 @@ class CustomUserChangeForm(UserChangeForm):
 
 
 class EmailLoginForm(AuthenticationForm):
-    username = forms.EmailField(label='Email')
+    username = forms.EmailField(label='Email')

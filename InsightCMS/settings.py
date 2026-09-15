@@ -54,6 +54,9 @@ INSTALLED_APPS = [
     
 ]
 
+WAGTAIL_USER_EDIT_FORM = "Apps.accounts.forms.WagtailUserEditForm"
+WAGTAIL_USER_CREATION_FORM = "Apps.accounts.forms.WagtailUserCreationForm"
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -70,7 +73,7 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "InsightCMS Blog API",
     "DESCRIPTION": "Company-scoped blog API for external websites",
     "VERSION": "1.0.0",
-    "SCHEMA_PATH_PREFIX": r"/api/v1/",
+    "SCHEMA_PATH_PREFIX": r"/api/v1",
 }
 
 ROOT_URLCONF = 'InsightCMS.urls'

@@ -32,7 +32,8 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('role', User.Role.SUPER_ADMIN)
-
+        extra_fields.setdefault('is_approved', True) 
+        
         if extra_fields.get('is_staff') is not True:
             raise ValueError(_('Superuser must have is_staff=True.'))
         if extra_fields.get('is_superuser') is not True:
@@ -66,7 +67,8 @@ class User(AbstractUser, BaseModel):
     last_name = models.CharField(max_length=150, verbose_name=_('Last Name'))
     phone = models.CharField(max_length=20, blank=True, null=True, verbose_name=_('Phone'))
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name=_('Avatar'))
-    
+    is_approved = models.BooleanField(default=False, verbose_name=_('Approved by Super Admin'))
+     
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -116,7 +118,7 @@ class LoginPage(Page):
         from Apps.accounts.models import RegisterPage
         from Apps.companies.models import UserProfile
 
-        # Agar user already logged in hai toh direct dashboard bhej do
+        # If user is already logged in render to dashboard
         if request.user.is_authenticated:
             return redirect("/dashboard/")
 
@@ -124,6 +126,17 @@ class LoginPage(Page):
         if request.method == "POST" and form.is_valid():
             # 1. Check credentials & authenticate
             user = form.get_user()
+            
+            if not user.is_superuser and not user.is_approved:
+                from django.contrib import messages
+                messages.error(request, "Your account is pending Super Admin approval. Please wait for confirmation.")
+                context = self.get_context(request)
+                context["form"] = form
+                from Apps.accounts.models import RegisterPage
+                register_page = RegisterPage.objects.live().first()
+                context["register_url"] = register_page.url if register_page else "/register/"
+                return render(request, self.template, context)
+            
             auth_login(request, user)
 
             # 2. Find user's company (for session / verification)
@@ -227,6 +240,8 @@ class RegisterPage(Page):
                 user.website_url = web_url
                 user.role = User.Role.COMPANY_ADMIN
                 user.is_staff = True  # Allows access to Wagtail CMS admin panel
+                user.is_active = True
+                user.is_approved = False # Dashboard not opens without approval
                 user.save()
                 
                 # Step C: Connect user to company (via CompanyMembership and UserProfile)
@@ -240,8 +255,13 @@ class RegisterPage(Page):
                     defaults={'company': company}
                 )
                 
-            auth_login(request, user)
-            return redirect("/dashboard/")
+            # auth_login(request, user)
+            # return redirect("/dashboard/")
+            
+            from django.contrib import messages
+            messages.success(request, "Registration successful! Your account is pending Super Admin approval. You'll be able to login once approved.")
+            login_page = LoginPage.objects.live().first()
+            return redirect(login_page.url if login_page else '/login/')
 
         context = self.get_context(request)
         context["form"] = form

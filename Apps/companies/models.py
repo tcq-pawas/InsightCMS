@@ -28,6 +28,19 @@ class Company(models.Model):
         default="active",
         verbose_name="Status",
     )
+    
+    class ApprovalStatus(models.TextChoices):
+        PENDING  = 'pending',  _('Pending')
+        APPROVED = 'approved', _('Approved')
+        REJECTED = 'rejected', _('Rejected')
+
+    approval_status = models.CharField(
+        max_length=20,
+        choices=ApprovalStatus.choices,
+        default=ApprovalStatus.PENDING,
+        verbose_name="Approval Status",
+    )
+    
     api_key        = models.CharField(max_length=64, unique=True, editable=False, verbose_name="API Key")
     domain         = models.CharField(max_length=255, blank=True, null=True, verbose_name="Domain")
     slug           = models.SlugField(max_length=255, unique=True, blank=True, null=True, verbose_name="Slug")

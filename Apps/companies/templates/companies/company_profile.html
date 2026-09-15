@@ -1,0 +1,201 @@
+{% extends "wagtailadmin/base.html" %}
+{% load i18n %}
+
+{% block titletag %}{{ company.company_name }}{% endblock %}
+
+{% block content %}
+<style>
+
+    .company-profile-card {
+        max-width: 700px;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .company-profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .company-profile-identity {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .company-profile-logo {
+        width: 56px;
+        height: 56px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 1px solid #eee;
+    }
+
+    .company-profile-logo-placeholder {
+        width: 56px;
+        height: 56px;
+        border-radius: 8px;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #999;
+        font-size: 20px;
+    }
+
+    .company-profile-website-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #262626;
+    }
+
+    .company-profile-website-url {
+        font-size: 13px;
+        color: #007d7e;
+        text-decoration: none;
+    }
+
+    .company-approval-badge {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .company-approval-badge.approved {
+        background: #e6f4ea;
+        color: #1e7e34;
+    }
+
+    .company-approval-badge.pending {
+        background: #fff8e1;
+        color: #b8860b;
+    }
+
+    .company-approval-badge.rejected {
+        background: #fdecea;
+        color: #c0392b;
+    }
+
+    .company-profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px 32px;
+    }
+
+    .company-profile-field-label {
+        font-size: 12px;
+        color: #8c8c8c;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .company-profile-field-value {
+        font-size: 14px;
+        color: #262626;
+    }
+
+    .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+    }
+
+    .status-dot.active {
+        background: #2ecc71;
+    }
+
+    .status-dot.inactive {
+        background: #bbb;
+    }
+
+    .company-profile-actions {
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .company-profile-edit-btn {
+        display: inline-block;
+        padding: 10px 24px;
+        background: #007d7e;
+        color: #fff;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+    }
+</style>
+
+<div class="company-profile-wrapper">
+    <!-- <h1>{{ company.company_name }}</h1> -->
+
+    <div class="company-profile-card">
+
+        <div class="company-profile-header">
+            <div class="company-profile-identity">
+                {% if company.logo %}
+                    <img src="{{ company.logo.url }}" class="company-profile-logo">
+                {% else %}
+                    <div class="company-profile-logo-placeholder">
+                        {{ company.company_name|slice:":1" }}
+                    </div>
+                {% endif %}
+                <div>
+                    <div class="company-profile-website-name">{{ company.website_name }}</div>
+                    <a href="{{ company.website_url }}" target="_blank" class="company-profile-website-url">{{ company.website_url }}</a>
+                </div>
+            </div>
+
+            <span class="company-approval-badge {{ company.approval_status }}">
+                {{ company.get_approval_status_display }}
+            </span>
+        </div>
+
+        <div class="company-profile-grid">
+            <div>
+                <div class="company-profile-field-label">Email</div>
+                <div class="company-profile-field-value">{{ company.email }}</div>
+            </div>
+            <div>
+                <div class="company-profile-field-label">Contact Person</div>
+                <div class="company-profile-field-value">{{ company.contact_person }}</div>
+            </div>
+            <div>
+                <div class="company-profile-field-label">Status</div>
+                <div class="company-profile-field-value">
+                    <span class="status-dot {{ company.status }}"></span>
+                    {{ company.get_status_display }}
+                </div>
+            </div>
+            <div>
+                <div class="company-profile-field-label">Domain</div>
+                <div class="company-profile-field-value">{{ company.domain|default:"—" }}</div>
+            </div>
+            <div>
+                <div class="company-profile-field-label">Slug</div>
+                <div class="company-profile-field-value">{{ company.slug }}</div>
+            </div>
+            <div>
+                <div class="company-profile-field-label">Created</div>
+                <div class="company-profile-field-value">{{ company.created_at|date:"d M Y, g:i a" }}</div>
+            </div>
+        </div>
+
+       
+    </div>
+</div>
+{% endblock %}

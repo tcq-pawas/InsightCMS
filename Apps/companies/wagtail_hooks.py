@@ -47,22 +47,15 @@ def filter_explorer_by_company(parent_page, pages, request):
 
     from django.db.models import Q
 
-    # Users can see:
-    # 1. Any pages that start with their allowed paths (i.e. their own pages & children)
-    # 2. Ancestor pages of their allowed paths (so they can navigate down from Root to their pages)
-    # BUT they should NOT see sibling company home pages at the Welcome site level.
     query = Q()
     for path in allowed_paths:
         query |= Q(path__startswith=path)
-        # Also allow ancestors so they can navigate down from Root / Welcome page
         ancestors_paths = [path[:i] for i in range(4, len(path) + 1, 4) if path[:i]]
         for ap in ancestors_paths:
             query |= Q(path=ap)
 
-    # Filter out other CompanyHomePages that are not in the allowed list
     filtered_pages = pages.filter(query)
-    
-    # Exclude other CompanyHomePages specifically if we are listing pages at the root/welcome level
+
     all_other_home_pages = CompanyHomePage.objects.exclude(company_id__in=company_ids)
     other_home_page_ids = [hp.id for hp in all_other_home_pages]
     if other_home_page_ids:
@@ -73,11 +66,6 @@ def filter_explorer_by_company(parent_page, pages, request):
 
 @hooks.register("construct_page_listing_buttons")
 def hide_buttons_for_other_companies(buttons, page, *args, **kwargs):
-    """
-    Defence-in-depth for the listing UI: if for any reason a page from
-    another company briefly appears (e.g. via search), don't offer
-    action buttons for it unless the user is actually permitted.
-    """
     context = kwargs.get("context")
     if not context and len(args) > 1 and isinstance(args[-1], dict):
         context = args[-1]
@@ -96,20 +84,12 @@ def hide_buttons_for_other_companies(buttons, page, *args, **kwargs):
     allowed_paths = [hp.path for hp in allowed_home_pages]
 
     if not any(page.path.startswith(p) for p in allowed_paths):
-        return []  # no action buttons at all for out-of-scope pages
+        return []
     return buttons
 
 
 @hooks.register("before_edit_page")
 def block_cross_company_edit(request, page):
-    """
-    Server-side guard: even if someone edits the URL directly to try to
-    open another company's page for editing, deny it outright rather
-    than silently rendering it.
-
-    Returning an HttpResponse from this hook short-circuits the normal
-    edit view.
-    """
     if request.user.is_superuser:
         return None
 
@@ -136,21 +116,7 @@ def block_cross_company_delete(request, page):
     return block_cross_company_edit(request, page)
 
 
-# ---------------------------------------------------------------------------
-# NOTE on restricting the "Company" field dropdown:
-#
-# Wagtail hooks don't give clean access to the in-progress edit form, so
-# the Company field restriction is implemented as a custom form class
-# (CompanyScopedPageForm) attached directly to CompanyHomePage /
-# BlogPage via `base_form_class`. See Apps/companies/forms.py.
-# ---------------------------------------------------------------------------
-
-
 def _company_ids_of_page(page):
-    """
-    Walk up from any page to find which company(ies) it belongs to,
-    by locating the nearest CompanyHomePage ancestor.
-    """
     from Apps.companies.models import CompanyHomePage
 
     ancestor_home = (
@@ -166,11 +132,6 @@ def _company_ids_of_page(page):
 
 @hooks.register("before_move_page")
 def block_cross_company_move(request, page, destination):
-    """
-    Prevents moving a page (e.g. a BlogPage or BlogIndexPage) out of its
-    own company's subtree into another company's subtree — even for
-    users who otherwise have edit rights on both ends individually.
-    """
     if request.user.is_superuser:
         return None
 
@@ -188,27 +149,14 @@ def block_cross_company_move(request, page, destination):
 
 @hooks.register("before_copy_page")
 def block_cross_company_copy(request, page):
-    """
-    The Move/Copy destination picker uses Wagtail's page chooser, which
-    is restricted separately below (restrict_page_chooser_by_company).
-    Restricting the chooser itself is the primary defence — a user
-    simply never sees another company's pages as valid destinations.
-    """
     return None
 
 
 @hooks.register("construct_page_chooser_queryset")
 def restrict_page_chooser_by_company(pages, request):
-    """
-    Restricts the page chooser used by Move / Copy / "choose a parent
-    page" dialogs so a non-superuser only ever sees pages within their
-    own company's subtree(s) as valid destinations. This is what
-    actually prevents moving or copying a post into another company —
-    the other company's pages are simply never offered as a choice.
-    """
     company_ids = _user_company_ids(request.user)
     if company_ids is None:
-        return pages  # superuser — unrestricted
+        return pages
 
     from Apps.companies.models import CompanyHomePage
     from django.db.models import Q
@@ -231,3 +179,161 @@ def add_company_workspace_panel(request, panels):
 
     panels.append(CompanyWorkspacePanel())
     return panels
+
+
+# ---------------------------------------------------------------------------
+# Company Snippet — Settings menu, profile view, approval status
+# ---------------------------------------------------------------------------
+from django.urls import reverse
+from wagtail.snippets.models import register_snippet
+from wagtail.snippets.views.snippets import SnippetViewSet, InspectView, IndexView
+from wagtail.admin.panels import FieldPanel
+from Apps.companies.models import Company, CompanyMembership
+
+
+class CompanyInspectView(InspectView):
+    """
+    Read-only profile card. This is Wagtail's built-in 'Inspect' view —
+    perfect for showing details without allowing edits directly.
+    """
+    template_name = "companies/company_profile.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["company"] = self.object
+        context["edit_url"] = reverse(
+            self.edit_url_name, args=[self.object.pk]
+        )
+        return context
+
+
+class CompanyIndexView(IndexView):
+    """
+    Makes clicking a row in the Companies list open the Inspect
+    (profile) view instead of the default Edit form.
+    """
+    def get_edit_url(self, instance):
+        return reverse(
+            self.inspect_url_name, args=[instance.pk]
+        )
+        
+
+class CompanyViewSet(SnippetViewSet):
+    model = Company
+    icon = "site"
+    menu_label = "Companies"
+    menu_name = "companies"
+    menu_order = 100
+    add_to_settings_menu = True
+    list_display = ["company_name", "website_name", "status", "approval_status", "created_at"]
+    search_fields = ["company_name", "email", "website_name"]
+    inspect_view_enabled = True
+    inspect_view_class = CompanyInspectView
+    index_view_class = CompanyIndexView
+    list_export = []
+
+    panels = [
+        FieldPanel("company_name"),
+        FieldPanel("website_name"),
+        FieldPanel("website_url"),
+        FieldPanel("logo"),
+        FieldPanel("email"),
+        FieldPanel("contact_person"),
+        FieldPanel("status"),
+        FieldPanel("approval_status"),
+        FieldPanel("domain"),
+        FieldPanel("slug"),
+        FieldPanel("api_key", read_only=True),
+    ]
+
+    def get_queryset(self, request):
+        """
+        Superadmin sees ALL companies.
+        Non-superusers only see companies they belong to.
+        """
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        company_ids = CompanyMembership.objects.filter(
+            user=request.user
+        ).values_list("company_id", flat=True)
+        return qs.filter(id__in=company_ids)
+
+
+register_snippet(CompanyViewSet)
+
+from django.views.generic import ListView
+from wagtail.admin.menu import MenuItem
+from wagtail.admin.ui.tables import Table, Column
+from django.urls import path
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+
+
+
+class PendingCompaniesView(ListView):
+    """
+    Lists only companies whose approval_status is 'pending'.
+    """
+    model = Company
+    template_name = "companies/pending_companies.html"
+    context_object_name = "companies"
+
+    def get_queryset(self):
+        return Company.objects.filter(approval_status="pending").order_by("-created_at")
+
+    def post(self, request, *args, **kwargs):
+        company_id = request.POST.get("company_id")
+        action = request.POST.get("action")
+
+        company = Company.objects.get(pk=company_id)
+        if action == "approve":
+            company.approval_status = "approved"
+            company.save()
+            
+            # Also approve the users linked to this company
+            from Apps.companies.models import CompanyMembership
+            member_user_ids = CompanyMembership.objects.filter(
+                company=company
+            ).values_list("user_id", flat=True)
+
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            User.objects.filter(id__in=member_user_ids).update(is_approved=True)
+            
+        elif action == "reject":
+            company.approval_status = "rejected"
+            company.save()
+            
+            # Also reject (keep unapproved) the users linked to this company
+            from Apps.companies.models import CompanyMembership
+            member_user_ids = CompanyMembership.objects.filter(
+                company=company
+            ).values_list("user_id", flat=True)
+
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            User.objects.filter(id__in=member_user_ids).update(is_approved=False)
+
+        return HttpResponseRedirect(reverse("pending_companies"))
+
+@hooks.register("register_admin_urls")
+def register_pending_companies_url():
+    return [
+        path(
+            "companies/pending/",
+            PendingCompaniesView.as_view(),
+            name="pending_companies",
+        ),
+    ]
+
+
+@hooks.register("register_admin_menu_item")
+def register_pending_companies_menu_item():
+    return MenuItem(
+        "Pending Verification",
+        reverse("pending_companies"),
+        icon_name="warning",
+        order=200,
+    )

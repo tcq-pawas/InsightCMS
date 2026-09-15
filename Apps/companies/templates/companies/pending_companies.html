@@ -1,0 +1,271 @@
+{% extends "wagtailadmin/base.html" %}
+{% load i18n %}
+
+{% block titletag %}Pending Verification{% endblock %}
+
+{% block content %}
+<style>
+    .pending-companies-wrapper {
+        padding-top: 24px;
+        padding-left: 20px;
+        margin-top: 30px !important;
+    }
+
+    .pending-companies-wrapper h1 {
+        margin-bottom: 20px;
+        color: #262626;
+    }
+
+    .pending-company-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 16px 24px;
+        margin-bottom: 12px;
+        max-width: 750px;
+    }
+
+    .pending-company-info {
+        flex: 1;
+    }
+
+    .pending-company-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #262626;
+    }
+
+    .pending-company-name a {
+        color: #262626;
+        text-decoration: none;
+    }
+
+    .pending-company-meta {
+        font-size: 13px;
+        color: #8c8c8c;
+        margin-top: 2px;
+    }
+
+    .empty-state {
+        color: #8c8c8c;
+        font-size: 14px;
+    }
+
+    /* --- Status Toggle Group --- */
+    .status-toggle-group {
+        display: inline-flex;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid #e0e0e0;
+    }
+
+    .status-toggle-btn {
+        padding: 7px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        border: none;
+        cursor: pointer;
+        background: #fff;
+        color: #8c8c8c;
+        border-right: 1px solid #e0e0e0;
+    }
+
+    .status-toggle-btn:last-child {
+        border-right: none;
+    }
+
+    .status-toggle-btn.active.approved {
+        background: #e6f4ea;
+        color: #1e7e34;
+    }
+
+    .status-toggle-btn.active.pending {
+        background: #fff8e1;
+        color: #b8860b;
+    }
+
+    .status-toggle-btn.active.rejected {
+        background: #fdecea;
+        color: #c0392b;
+    }
+
+    .status-toggle-btn:hover:not(.active) {
+        background: #f5f5f5;
+    }
+
+    /* --- Custom Modal --- */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 8px;
+        padding: 28px;
+        max-width: 380px;
+        width: 90%;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    .modal-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #262626;
+        margin-bottom: 8px;
+    }
+
+    .modal-message {
+        font-size: 14px;
+        color: #595959;
+        margin-bottom: 24px;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .modal-btn {
+        padding: 8px 20px;
+        border-radius: 5px;
+        font-size: 14px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+    }
+
+    .modal-btn-cancel {
+        background: #f0f0f0;
+        color: #595959;
+    }
+
+    .modal-btn-confirm {
+        color: #fff;
+    }
+
+    .modal-btn-confirm.approve {
+        background: #1e7e34;
+    }
+
+    .modal-btn-confirm.reject {
+        background: #c0392b;
+    }
+</style>
+
+<div class="pending-companies-wrapper">
+    <h1>Pending Verification</h1>
+
+    {% if companies %}
+        {% for company in companies %}
+            <div class="pending-company-row">
+                <div class="pending-company-info">
+                    <div class="pending-company-name">
+                        <a href="{% url 'wagtailsnippets_companies_company:inspect' company.pk %}">{{ company.company_name }}</a>
+                    </div>
+                    <div class="pending-company-meta">{{ company.email }} &middot; Created {{ company.created_at|date:"d M Y" }}</div>
+                </div>
+
+                <form method="post" class="status-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="company_id" value="{{ company.pk }}">
+                    <input type="hidden" name="action" class="action-input">
+                    <div class="status-toggle-group" data-company-name="{{ company.company_name }}">
+                        <button type="button" class="status-toggle-btn" data-value="approve">Approved</button>
+                        <button type="button" class="status-toggle-btn active pending" data-value="pending">Pending</button>
+                        <button type="button" class="status-toggle-btn" data-value="reject">Reject</button>
+                    </div>
+                </form>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="empty-state">No companies waiting for verification. 🎉</p>
+    {% endif %}
+</div>
+
+<!-- Custom Confirmation Modal -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal-box">
+        <div class="modal-title" id="modalTitle">Confirm Action</div>
+        <div class="modal-message" id="modalMessage">Are you sure?</div>
+        <div class="modal-actions">
+            <button class="modal-btn modal-btn-cancel" id="modalCancelBtn">Cancel</button>
+            <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn">Yes, Confirm</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var activeGroup = null;
+    var pendingValue = null;
+
+    document.querySelectorAll('.status-toggle-group').forEach(function(group) {
+        group.querySelectorAll('.status-toggle-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var newValue = btn.dataset.value;
+
+                if (newValue === 'pending') {
+                    return; // already pending, nothing to confirm
+                }
+
+                activeGroup = group;
+                pendingValue = newValue;
+
+                var companyName = group.dataset.companyName;
+                var actionText = newValue === 'approve' ? 'approve' : 'reject';
+
+                document.getElementById('modalTitle').innerText =
+                    newValue === 'approve' ? 'Approve Company' : 'Reject Company';
+                document.getElementById('modalMessage').innerText =
+                    'Are you sure you want to ' + actionText + ' "' + companyName + '"?';
+
+                var confirmBtn = document.getElementById('modalConfirmBtn');
+                confirmBtn.classList.remove('approve', 'reject');
+                confirmBtn.classList.add(newValue === 'approve' ? 'approve' : 'reject');
+                confirmBtn.innerText = newValue === 'approve' ? 'Yes, Approve' : 'Yes, Reject';
+
+                document.getElementById('confirmModal').classList.add('active');
+            });
+        });
+    });
+
+    document.getElementById('modalCancelBtn').addEventListener('click', function() {
+        document.getElementById('confirmModal').classList.remove('active');
+        activeGroup = null;
+        pendingValue = null;
+    });
+
+    document.getElementById('modalConfirmBtn').addEventListener('click', function() {
+        if (activeGroup && pendingValue) {
+            var form = activeGroup.closest('form');
+            var actionInput = form.querySelector('.action-input');
+            actionInput.value = pendingValue;
+            form.submit();
+        }
+    });
+
+    // close modal if clicking outside the box
+    document.getElementById('confirmModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('active');
+            activeGroup = null;
+            pendingValue = null;
+        }
+    });
+</script>
+{% endblock %}

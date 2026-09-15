@@ -13,6 +13,22 @@
 
     <form method="post">
       {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div style="color: red; background: #fee; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+          {% for error in form.non_field_errors %}
+            <p style="margin: 0;">{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if messages %}
+        {% for message in messages %}
+          <div style="color: {% if message.tags == 'error' %}#c00{% else %}#0a0{% endif %}; background: {% if message.tags == 'error' %}#fee{% else %}#efe{% endif %}; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
       {{ form.as_p }}
       <div style="text-align: right; margin-top: -6px; margin-bottom: 14px;">
         <a href="/password-reset/" style="font-size: 13px; color: #4f46e5; text-decoration: none; font-weight: 500;">Forgot Password?</a>
