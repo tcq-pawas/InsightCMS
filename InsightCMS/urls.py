@@ -7,6 +7,7 @@ from wagtail.admin import urls as wagtailadmin_urls
 from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from Apps.blogs.feeds import CompanyBlogFeed
 from Apps.accounts.views import user_dashboard_view, logout_view, settings_view, forgot_password_view
 from Apps.blogs.views import (
     dashboard_blog_create,
@@ -27,6 +28,7 @@ admin.site.has_permission = lambda request: (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('cms/', include(wagtailadmin_urls)),
+    path('company/<slug:company_slug>/rss/', CompanyBlogFeed(), name='company_blog_rss'),
     path('dashboard/', include([
         path('', user_dashboard_view, name='dashboard'),
         path('settings/', settings_view, name='dashboard_settings'),

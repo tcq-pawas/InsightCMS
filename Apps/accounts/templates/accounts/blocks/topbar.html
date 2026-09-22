@@ -13,6 +13,7 @@
       {% if page.notification_count %}<span class="bp-bell-dot">{{ page.notification_count }}</span>{% endif %}
     </button>
 
+    {% if user.is_authenticated %}
     <div class="bp-user-profile">
       {% if user.avatar %}
         <img src="{{ user.avatar.url }}" class="bp-user-avatar" alt="Avatar">
@@ -20,12 +21,13 @@
         <div class="bp-user-avatar bp-avatar-default">{{ user.first_name|slice:":1"|default:"U" }}</div>
       {% endif %}
       <div class="bp-user-info">
-        <span class="bp-user-name">{{ user.get_full_name|default:user.email }}</span>
-        <span class="bp-user-role">{% if company %}{{ company.company_name }} &bull; {% endif %}{{ user.get_role_display|default:"Admin" }}</span>
+        <span class="bp-user-name">{% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username|default:user.email }}{% endif %}</span>
+        <span class="bp-user-role">{% if company %}{{ company.company_name }} &bull; {% endif %}{% if user.get_role_display %}{{ user.get_role_display }}{% else %}Admin{% endif %}</span>
       </div>
       <a href="{% url 'logout' %}" class="btn btn-sm btn-light ms-2 text-muted" title="Logout">
         <i class="fa-solid fa-right-from-bracket"></i>
       </a>
     </div>
+    {% endif %}
   </div>
 </header>
