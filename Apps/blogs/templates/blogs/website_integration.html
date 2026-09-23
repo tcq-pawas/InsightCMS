@@ -1,0 +1,184 @@
+{% extends "companies/base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}Website Integration | {{ company_name }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  .integration-card {
+    background:#ffffff;border-radius:16px;border:1px solid #E5E7EB;
+    padding:28px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,.05);
+  }
+  .step-badge {
+    background:#EEF2FF;color:#4F46E5;font-weight:700;padding:4px 12px;
+    border-radius:20px;font-size:.8rem;margin-bottom:8px;display:inline-block;
+  }
+  .lang-tabs-bar {
+    display:flex;gap:0;border-bottom:2px solid #E5E7EB;margin-bottom:0;overflow-x:auto;
+  }
+  .lang-tab-btn {
+    padding:9px 18px;border:none;background:transparent;color:#6B7280;font-weight:600;
+    font-size:.88rem;cursor:pointer;border-bottom:3px solid transparent;
+    margin-bottom:-2px;white-space:nowrap;transition:all .18s;
+  }
+  .lang-tab-btn:hover { color:#111827; }
+  .lang-tab-btn.active { color:#2563EB;border-bottom:3px solid #2563EB;background:transparent; }
+  .code-wrapper {
+    position:relative;border-radius:0 0 12px 12px;overflow:hidden;background:#111827;
+  }
+  .code-block {
+    background:#111827;color:#F3F4F6;padding:22px 20px 20px;
+    font-family:'Courier New',Courier,monospace;font-size:.88rem;
+    overflow-x:auto;overflow-y:auto;line-height:1.65;height:420px;margin-bottom:0;
+  }
+  .code-copy-icon-btn {
+    position:absolute;top:12px;right:14px;background:transparent;color:#9CA3AF;
+    border:none;padding:6px;font-size:1.1rem;cursor:pointer;
+    transition:all .2s ease;z-index:10;display:inline-flex;
+    align-items:center;justify-content:center;
+  }
+  .code-copy-icon-btn:hover { color:#FFFFFF;transform:scale(1.15); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bp-app-wrapper" id="integration">
+  {% include "accounts/blocks/sidebar.html" %}
+  <div class="bp-main-container">
+    {% include "accounts/blocks/topbar.html" %}
+    <main class="bp-content-body" style="max-width:1050px;margin:0 auto;padding:32px 24px;">
+
+      <!-- Page Header -->
+      <div class="bp-page-header mb-4">
+        <div>
+          <h1 class="bp-page-title" style="font-size:1.8rem;font-weight:700;color:#111827;">
+            <i class="fa-solid fa-code-compare me-2 text-primary"></i> Website Integration Guide
+          </h1>
+          <p class="bp-page-sub" style="color:#6B7280;font-size:.95rem;">
+            Step-by-step instructions for integrating <strong>{{ company_name }}</strong> blogs on any website.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="integration-card">
+        <span class="step-badge">Step 1</span>
+        <h3 style="font-size:1.15rem;font-weight:700;color:#1F2937;margin-bottom:8px;">Your Live RSS Feed Endpoint</h3>
+        <p style="color:#4B5563;font-size:.9rem;margin-bottom:16px;">
+          All blogs published under <strong>{{ company_name }}</strong> are live at this RSS XML endpoint:
+        </p>
+        <div class="d-flex gap-2">
+          <input type="text" id="rssFeedInput" readonly
+                 value="{{ cms_base_url }}/company/{{ company_slug }}/rss/"
+                 class="form-control"
+                 style="background:#F9FAFB;font-family:monospace;font-size:.9rem;font-weight:600;color:#374151;">
+          <button onclick="copyRssUrl()" class="btn btn-primary px-4 fw-semibold" style="white-space:nowrap;">
+            <i class="fa-regular fa-copy me-1"></i> Copy URL
+          </button>
+        </div>
+        {% if company.website_url %}
+        <p class="mt-2 mb-0" style="font-size:0.82rem;color:#10B981;">
+          <i class="fa-solid fa-circle-check me-1"></i>
+          Using your website URL: <strong>{{ company.website_url }}</strong>
+        </p>
+        {% else %}
+        <p class="mt-2 mb-0" style="font-size:0.82rem;color:#F59E0B;">
+          <i class="fa-solid fa-triangle-exclamation me-1"></i>
+          Showing local URL. Set your website URL in
+          <a href="/settings/" style="color:#2563EB;font-weight:600;">Settings</a>
+          to show your real domain here.
+        </p>
+        {% endif %}
+      </div>
+
+      <!-- Step 2: GFG-style language tabs -->
+      <div class="integration-card">
+        <span class="step-badge">Step 2</span>
+        <h3 style="font-size:1.15rem;font-weight:700;color:#1F2937;margin-bottom:4px;">Embed Blogs on Your Website</h3>
+        <p style="color:#4B5563;font-size:.9rem;margin-bottom:20px;">
+          Pick your framework — copy the snippet and paste it in your project.
+        </p>
+
+        <div class="lang-tabs-bar">
+          <button class="lang-tab-btn active" onclick="switchLang('html_js',this)">HTML / JS</button>
+          <button class="lang-tab-btn" onclick="switchLang('react',this)">React</button>
+          <button class="lang-tab-btn" onclick="switchLang('vuejs',this)">Vue.js</button>
+          <button class="lang-tab-btn" onclick="switchLang('nextjs',this)">Next.js</button>
+          <button class="lang-tab-btn" onclick="switchLang('django',this)">Django</button>
+          <button class="lang-tab-btn" onclick="switchLang('nodejs',this)">Node.js</button>
+          <button class="lang-tab-btn" onclick="switchLang('php',this)">PHP</button>
+          <button class="lang-tab-btn" onclick="switchLang('flask',this)">Flask</button>
+          <button class="lang-tab-btn" onclick="switchLang('csharp',this)">C# / .NET</button>
+        </div>
+
+        <div class="code-wrapper">
+          <button onclick="copyLangCode()" class="code-copy-icon-btn" title="Copy Code">
+            <i class="fa-regular fa-copy"></i>
+          </button>
+          <pre class="code-block"><code id="lang_code_display"></code></pre>
+        </div>
+        <p class="text-muted small mt-2 mb-0" id="langFileHint"></p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="integration-card">
+        <span class="step-badge">Step 3</span>
+        <h3 style="font-size:1.15rem;font-weight:700;color:#1F2937;margin-bottom:12px;">How It Works</h3>
+        <ol style="color:#4B5563;font-size:.95rem;line-height:1.8;padding-left:20px;margin-bottom:0;">
+          <li>Copy the RSS Feed URL from Step 1.</li>
+          <li>Pick your framework tab in Step 2, copy the snippet, and paste it in your project.</li>
+          <li>Whenever you publish or update a blog here, it <strong>instantly syncs</strong> to your website!</li>
+        </ol>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+// Django template values — rendered server-side
+const _RSS = "{{ cms_base_url }}/company/{{ company_slug }}/rss/";
+</script>
+{% verbatim %}
+<script>
+const LANG_CODES = {
+  html_js : { hint:"📁 Paste inside any HTML file — works on static, PHP, or any website.", code:"<!-- Blog Listing: InsightCMS RSS Integration -->\n<div id=\"rss-blogs-container\" style=\"display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;\"></div>\n\n<script>\ndocument.addEventListener(\"DOMContentLoaded\", function () {\n  const RSS = \"__RSS_URL__\";\n  const box = document.getElementById(\"rss-blogs-container\");\n\n  fetch(RSS)\n    .then(r => r.text())\n    .then(xml => {\n      const doc = new DOMParser().parseFromString(xml, \"text/xml\");\n      const items = doc.querySelectorAll(\"item\");\n      if (!items.length) { box.innerHTML = \"<p>No blogs yet.</p>\"; return; }\n\n      let html = \"\";\n      items.forEach(item => {\n        const title = item.querySelector(\"title\")?.textContent || \"No Title\";\n        const link  = item.querySelector(\"link\")?.textContent  || \"#\";\n        const desc  = item.querySelector(\"description\")?.textContent || \"\";\n        const date  = item.querySelector(\"pubDate\")?.textContent || \"\";\n        const enc   = item.querySelector(\"enclosure\");\n        const img   = enc ? enc.getAttribute(\"url\") : \"https://via.placeholder.com/400x220\";\n        const slug  = link.replace(/\\/+$/, \"\").split(\"/\").pop();\n        html += `<div style=\"background:#fff;border-radius:14px;border:1px solid #E5E7EB;overflow:hidden;\">\n          <img src=\"${img}\" alt=\"${title}\" style=\"width:100%;height:200px;object-fit:cover;\">\n          <div style=\"padding:18px;\">\n            <small style=\"color:#6B7280;\">${date}</small>\n            <h3 style=\"font-size:1.1rem;font-weight:700;margin:8px 0;\">${title}</h3>\n            <p style=\"color:#4B5563;font-size:.9rem;\">${desc}</p>\n            <a href=\"/blogs/${slug}/\" style=\"color:#2563EB;font-weight:600;text-decoration:none;\">Read More &rarr;</a>\n          </div>\n        </div>`;\n      });\n      box.innerHTML = html;\n    })\n    .catch(() => { box.innerHTML = \"<p style='color:red;'>Could not load blogs.</p>\"; });\n});\n<\/script>" },
+  react   : { hint:"📁 Create src/components/BlogList.jsx and use <BlogList /> anywhere.", code:"// BlogList.jsx — InsightCMS RSS Integration for React\nimport { useEffect, useState } from \"react\";\n\nconst RSS_URL = \"__RSS_URL__\";\n\nexport default function BlogList() {\n  const [blogs, setBlogs] = useState([]);\n  const [error, setError] = useState(null);\n\n  useEffect(() => {\n    fetch(RSS_URL)\n      .then(r => r.text())\n      .then(xml => {\n        const doc   = new DOMParser().parseFromString(xml, \"text/xml\");\n        const items = [...doc.querySelectorAll(\"item\")];\n        setBlogs(items.map(item => ({\n          title : item.querySelector(\"title\")?.textContent || \"No Title\",\n          link  : item.querySelector(\"link\")?.textContent  || \"#\",\n          desc  : item.querySelector(\"description\")?.textContent || \"\",\n          date  : item.querySelector(\"pubDate\")?.textContent || \"\",\n          img   : item.querySelector(\"enclosure\")?.getAttribute(\"url\") || \"https://via.placeholder.com/400x220\",\n        })));\n      })\n      .catch(() => setError(\"Could not load blogs.\"));\n  }, []);\n\n  if (error) return <p style={{color:'red'}}>{error}</p>;\n\n  return (\n    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:'24px'}}>\n      {blogs.map((b, i) => (\n        <div key={i} style={{background:'#fff',borderRadius:'14px',border:'1px solid #E5E7EB',overflow:'hidden'}}>\n          <img src={b.img} alt={b.title} style={{width:'100%',height:'200px',objectFit:'cover'}} />\n          <div style={{padding:'18px'}}>\n            <small style={{color:'#6B7280'}}>{b.date}</small>\n            <h3 style={{fontSize:'1.1rem',fontWeight:700,margin:'8px 0'}}>{b.title}</h3>\n            <p style={{color:'#4B5563',fontSize:'.9rem'}}>{b.desc}</p>\n            <a href={`/blogs/${b.link.replace(/\\/+$/,'').split('/').pop()}/`}\n               style={{color:'#2563EB',fontWeight:600,textDecoration:'none'}}>Read More &rarr;</a>\n          </div>\n        </div>\n      ))}\n    </div>\n  );\n}" },
+  vuejs   : { hint:"📁 Create src/components/BlogList.vue and use <BlogList /> anywhere.", code:"<!-- BlogList.vue — InsightCMS RSS Integration for Vue.js -->\n<template>\n  <div class=\"blog-grid\">\n    <p v-if=\"error\" style=\"color:red\">{{ error }}</p>\n    <div v-for=\"(blog, i) in blogs\" :key=\"i\" class=\"blog-card\">\n      <img :src=\"blog.img\" :alt=\"blog.title\" />\n      <div class=\"card-body\">\n        <small>{{ blog.date }}</small>\n        <h3>{{ blog.title }}</h3>\n        <p>{{ blog.desc }}</p>\n        <a :href=\"blog.detail\">Read More &rarr;</a>\n      </div>\n    </div>\n  </div>\n</template>\n\n<script setup>\nimport { ref, onMounted } from \"vue\";\nconst RSS_URL = \"__RSS_URL__\";\nconst blogs = ref([]);\nconst error = ref(null);\n\nonMounted(async () => {\n  try {\n    const xml = await (await fetch(RSS_URL)).text();\n    const doc = new DOMParser().parseFromString(xml, \"text/xml\");\n    blogs.value = [...doc.querySelectorAll(\"item\")].map(item => {\n      const link = item.querySelector(\"link\")?.textContent || \"#\";\n      const slug = link.replace(/\\/+$/, \"\").split(\"/\").pop();\n      return {\n        title : item.querySelector(\"title\")?.textContent || \"No Title\",\n        desc  : item.querySelector(\"description\")?.textContent || \"\",\n        date  : item.querySelector(\"pubDate\")?.textContent || \"\",\n        img   : item.querySelector(\"enclosure\")?.getAttribute(\"url\") || \"https://via.placeholder.com/400x220\",\n        detail: `/blogs/${slug}/`,\n      };\n    });\n  } catch { error.value = \"Could not load blogs.\"; }\n});\n<\/script>\n\n<style scoped>\n.blog-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px; }\n.blog-card { background:#fff;border-radius:14px;border:1px solid #E5E7EB;overflow:hidden; }\n.blog-card img { width:100%;height:200px;object-fit:cover; }\n.card-body { padding:18px; }\n.card-body h3 { font-size:1.1rem;font-weight:700;margin:8px 0; }\n.card-body a  { color:#2563EB;font-weight:600;text-decoration:none; }\n</style>" },
+  nextjs  : { hint:"📁 Create app/blogs/page.jsx (App Router). Install: npm i fast-xml-parser.", code:"// app/blogs/page.jsx — InsightCMS RSS Integration for Next.js (App Router)\n// Install: npm i fast-xml-parser\nconst RSS_URL = \"__RSS_URL__\";\n\nasync function getBlogs() {\n  const res = await fetch(RSS_URL, { next: { revalidate: 60 } });\n  const xml = await res.text();\n  const { XMLParser } = await import(\"fast-xml-parser\");\n  const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: \"@_\" });\n  const obj    = parser.parse(xml);\n  const items  = obj?.rss?.channel?.item || [];\n  return Array.isArray(items) ? items : [items];\n}\n\nexport default async function BlogsPage() {\n  const blogs = await getBlogs();\n  return (\n    <main style={{ maxWidth:'1100px', margin:'0 auto', padding:'40px 20px' }}>\n      <h1>Blogs</h1>\n      <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:'24px' }}>\n        {blogs.map((b, i) => {\n          const link = (b?.link || '').toString();\n          const slug = link.replace(/\\/+$/, '').split('/').pop();\n          const img  = b?.enclosure?.['@_url'] || 'https://via.placeholder.com/400x220';\n          return (\n            <div key={i} style={{ background:'#fff',borderRadius:'14px',border:'1px solid #E5E7EB',overflow:'hidden' }}>\n              <img src={img} alt={b.title} style={{ width:'100%',height:'200px',objectFit:'cover' }} />\n              <div style={{ padding:'18px' }}>\n                <small style={{ color:'#6B7280' }}>{b.pubDate}</small>\n                <h2 style={{ fontSize:'1.1rem',fontWeight:700,margin:'8px 0' }}>{b.title}</h2>\n                <p style={{ color:'#4B5563',fontSize:'.9rem' }}>{b.description}</p>\n                <a href={`/blogs/${slug}/`} style={{ color:'#2563EB',fontWeight:600,textDecoration:'none' }}>\n                  Read More &rarr;\n                </a>\n              </div>\n            </div>\n          );\n        })}\n      </div>\n    </main>\n  );\n}" },
+  django  : { hint:"📁 Add blogs_page() to views.py. Comment block shows the template snippet.", code:"# views.py — InsightCMS RSS Integration for Django\nimport urllib.request, xml.etree.ElementTree as ET\nfrom django.shortcuts import render\n\nRSS_URL = \"__RSS_URL__\"\n\ndef blogs_page(request):\n    blogs, error = [], None\n    try:\n        req = urllib.request.Request(RSS_URL, headers={'User-Agent': 'Mozilla/5.0'})\n        with urllib.request.urlopen(req, timeout=5) as r:\n            root    = ET.fromstring(r.read())\n            channel = root.find('channel')\n            for item in channel.findall('item'):\n                enc  = item.find('enclosure')\n                slug = (item.findtext('link','#').rstrip('/').split('/') or [''])[-1]\n                blogs.append({\n                    'title': item.findtext('title','No Title'),\n                    'slug' : slug,\n                    'desc' : item.findtext('description',''),\n                    'date' : item.findtext('pubDate',''),\n                    'img'  : enc.get('url') if enc else '',\n                })\n    except Exception as e:\n        error = str(e)\n    return render(request, 'blogs.html', {'blogs': blogs, 'error': error})\n\n# ── blogs.html template snippet ──\n# {% for blog in blogs %}\n# <div>\n#   <img src=\"{{ blog.img }}\" alt=\"{{ blog.title }}\">\n#   <h3>{{ blog.title }}</h3>\n#   <p>{{ blog.desc }}</p>\n#   <a href=\"/blogs/{{ blog.slug }}/\">Read More</a>\n# </div>\n# {% endfor %}" },
+  nodejs  : { hint:"📁 Add to routes/blogs.js. Install: npm i axios fast-xml-parser.", code:"// routes/blogs.js — InsightCMS RSS Integration for Node.js / Express\n// Install: npm i axios fast-xml-parser\nconst express = require('express');\nconst axios   = require('axios');\nconst { XMLParser } = require('fast-xml-parser');\nconst router  = express.Router();\n\nconst RSS_URL = \"__RSS_URL__\";\n\nrouter.get('/blogs', async (req, res) => {\n  try {\n    const { data: xml } = await axios.get(RSS_URL, { timeout: 5000 });\n    const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_' });\n    let items = parser.parse(xml)?.rss?.channel?.item || [];\n    if (!Array.isArray(items)) items = [items];\n\n    const blogs = items.map(item => ({\n      title : item.title || 'No Title',\n      slug  : (item.link || '').replace(/\\/+$/, '').split('/').pop(),\n      desc  : item.description || '',\n      date  : item.pubDate || '',\n      img   : item.enclosure?.['@_url'] || '',\n    }));\n\n    res.render('blogs', { blogs });\n    // or: res.json({ blogs });\n  } catch (err) {\n    res.status(500).json({ error: 'Could not fetch blogs: ' + err.message });\n  }\n});\n\nmodule.exports = router;\n// In app.js: app.use('/', require('./routes/blogs'));" },
+  php     : { hint:"📁 Paste into blogs.php — works on any shared hosting.", code:"<?php\n// blogs.php — InsightCMS RSS Integration for PHP\n$rss_url = \"__RSS_URL__\";\n$xml     = @simplexml_load_file($rss_url);\n$blogs   = [];\n\nif ($xml) {\n    foreach ($xml->channel->item as $item) {\n        $link    = (string) $item->link;\n        $slug    = basename(rtrim($link, '/'));\n        $enc     = $item->enclosure;\n        $blogs[] = [\n            'title' => (string) $item->title,\n            'slug'  => $slug,\n            'desc'  => (string) $item->description,\n            'date'  => (string) $item->pubDate,\n            'img'   => $enc ? (string) $enc->attributes()->url : '',\n        ];\n    }\n}\n?>\n<div style=\"display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;\">\n<?php foreach ($blogs as $b): ?>\n  <div style=\"background:#fff;border-radius:14px;border:1px solid #E5E7EB;overflow:hidden;\">\n    <?php if ($b['img']): ?>\n      <img src=\"<?= htmlspecialchars($b['img']) ?>\" alt=\"<?= htmlspecialchars($b['title']) ?>\"\n           style=\"width:100%;height:200px;object-fit:cover;\">\n    <?php endif; ?>\n    <div style=\"padding:18px;\">\n      <small style=\"color:#6B7280;\"><?= htmlspecialchars($b['date']) ?></small>\n      <h3 style=\"font-size:1.1rem;font-weight:700;margin:8px 0;\"><?= htmlspecialchars($b['title']) ?></h3>\n      <p style=\"color:#4B5563;font-size:.9rem;\"><?= htmlspecialchars($b['desc']) ?></p>\n      <a href=\"/blogs/<?= htmlspecialchars($b['slug']) ?>/\"\n         style=\"color:#2563EB;font-weight:600;text-decoration:none;\">Read More &rarr;</a>\n    </div>\n  </div>\n<?php endforeach; ?>\n</div>" },
+  flask   : { hint:"📁 Add route to app.py / views.py. Requires: pip install requests xmltodict (or xml.etree).", code:"# app.py — InsightCMS RSS Integration for Flask\nimport urllib.request, xml.etree.ElementTree as ET\nfrom flask import Flask, render_template\n\napp = Flask(__name__)\nRSS_URL = \"__RSS_URL__\"\n\n@app.route('/blogs')\ndef blogs_page():\n    blogs, error = [], None\n    try:\n        req = urllib.request.Request(RSS_URL, headers={'User-Agent': 'Mozilla/5.0'})\n        with urllib.request.urlopen(req, timeout=5) as r:\n            root = ET.fromstring(r.read())\n            channel = root.find('channel')\n            for item in channel.findall('item'):\n                enc = item.find('enclosure')\n                slug = (item.findtext('link', '#').rstrip('/').split('/') or [''])[-1]\n                blogs.append({\n                    'title': item.findtext('title', 'No Title'),\n                    'slug' : slug,\n                    'desc' : item.findtext('description', ''),\n                    'date' : item.findtext('pubDate', ''),\n                    'img'  : enc.get('url') if enc is not None else '',\n                })\n    except Exception as e:\n        error = str(e)\n    return render_template('blogs.html', blogs=blogs, error=error)\n\n# ── templates/blogs.html ──\n# {% for b in blogs %}\n# <div class=\"blog-card\">\n#   <img src=\"{{ b.img }}\" alt=\"{{ b.title }}\">\n#   <h3>{{ b.title }}</h3>\n#   <p>{{ b.desc }}</p>\n#   <a href=\"/blogs/{{ b.slug }}/\">Read More</a>\n# </div>\n# {% endfor %}" },
+  csharp  : { hint:"📁 Add to ASP.NET Core Controller (e.g. BlogController.cs).", code:"// BlogController.cs — InsightCMS RSS Integration for ASP.NET Core (C#)\nusing Microsoft.AspNetCore.Mvc;\nusing System.Xml.Linq;\n\npublic class BlogController : Controller\n{\n    private static readonly HttpClient _httpClient = new HttpClient();\n    private const string RssUrl = \"__RSS_URL__\";\n\n    [HttpGet(\"/blogs\")]\n    public async Task<IActionResult> Index()\n    {\n        var blogs = new List<BlogPostDto>();\n        try\n        {\n            var xmlString = await _httpClient.GetStringAsync(RssUrl);\n            var xdoc = XDocument.Parse(xmlString);\n            var items = xdoc.Descendants(\"item\");\n\n            foreach (var item in items)\n            {\n                var link = item.Element(\"link\")?.Value ?? \"#\";\n                var slug = link.TrimEnd('/').Split('/').LastOrDefault() ?? \"\";\n                var enclosure = item.Element(\"enclosure\");\n                var imgUrl = enclosure?.Attribute(\"url\")?.Value ?? \"\";\n\n                blogs.Add(new BlogPostDto\n                {\n                    Title = item.Element(\"title\")?.Value ?? \"No Title\",\n                    Link = link,\n                    Slug = slug,\n                    Description = item.Element(\"description\")?.Value ?? \"\",\n                    PubDate = item.Element(\"pubDate\")?.Value ?? \"\",\n                    ImageUrl = imgUrl\n                });\n            }\n        }\n        catch (Exception ex)\n        {\n            ViewBag.Error = ex.Message;\n        }\n\n        return View(blogs);\n    }\n}\n\npublic class BlogPostDto\n{\n    public string Title { get; set; } = \"\";\n    public string Link { get; set; } = \"\";\n    public string Slug { get; set; } = \"\";\n    public string Description { get; set; } = \"\";\n    public string PubDate { get; set; } = \"\";\n    public string ImageUrl { get; set; } = \"\";\n}" },
+};
+
+function switchLang(lang, btn) {
+  document.querySelectorAll(".lang-tab-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  const s = LANG_CODES[lang];
+  document.getElementById("lang_code_display").textContent = s.code.replace(/__RSS_URL__/g, _RSS);
+  document.getElementById("langFileHint").textContent = s.hint;
+}
+
+function copyLangCode() {
+  const txt = document.getElementById("lang_code_display").textContent;
+  navigator.clipboard.writeText(txt).then(() => alert("Code copied to clipboard!"));
+}
+
+function copyRssUrl() {
+  const inp = document.getElementById("rssFeedInput");
+  inp.select();
+  navigator.clipboard.writeText(inp.value).then(() => alert("RSS URL copied!"));
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const firstBtn = document.querySelector(".lang-tab-btn.active");
+  if (firstBtn) switchLang("html_js", firstBtn);
+});
+</script>
+{% endverbatim %}
+{% endblock %}

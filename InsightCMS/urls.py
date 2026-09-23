@@ -13,7 +13,7 @@ from Apps.blogs.views import (
     dashboard_blog_create,
     dashboard_blog_edit,
     dashboard_blog_toggle_publish,
-    dashboard_blog_delete,
+    dashboard_blog_delete, dashboard_website_integration
 )
 
 
@@ -43,7 +43,7 @@ urlpatterns = [
     path('documents/', include(wagtaildocs_urls)),
     path("api/v1/", include("Apps.blogs.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path('dashboard/integration/', dashboard_website_integration, name='company_integration_docs'),
     path('', include(wagtail_urls)),  
 ]
 

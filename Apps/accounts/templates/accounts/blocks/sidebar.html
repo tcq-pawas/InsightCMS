@@ -11,25 +11,27 @@
   <nav class="bp-nav">
     {% for item in sidebar_links %}
       {% with link=item.value %}
-        {% if link.title|lower == 'logout' %}
-          <!-- Logout: POST form -->
-          <form method="post" action="{% url 'logout' %}" style="margin:0;padding:0;">
-            {% csrf_token %}
-            <button type="submit" class="bp-nav-item w-100 text-start border-0 bg-transparent" style="cursor:pointer;">
-              <i class="fa-solid {{ link.icon|default:'fa-right-from-bracket' }}"></i>
+        {% with title_lower=link.title|lower %}
+          {% if title_lower == 'logout' %}
+            <!-- Logout: POST form -->
+            <form method="post" action="{% url 'logout' %}" style="margin:0;padding:0;">
+              {% csrf_token %}
+              <button type="submit" class="bp-nav-item w-100 text-start border-0 bg-transparent" style="cursor:pointer;">
+                <i class="fa-solid {{ link.icon|default:'fa-right-from-bracket' }}"></i>
+                <span>{{ link.title }}</span>
+              </button>
+            </form>
+          {% else %}
+            <a href="{% if link.url == '#integration' or 'integration' in title_lower or 'website' in title_lower %}/dashboard/integration/{% elif link.url == '#comment' or link.url == '#comments' or title_lower == 'comments' %}/dashboard/#comment{% elif link.url == '#overview' or title_lower == 'overview' %}/dashboard/#overview{% elif link.url == '#posts' or title_lower == 'posts' %}/blog-posts/{% elif link.url == '#settings' or link.url == '#setting' or title_lower == 'settings' %}/settings/{% elif link.url == '#dashboard' or title_lower == 'dashboard' %}/dashboard/{% else %}{{ link.url|default:'/dashboard/' }}{% endif %}" 
+               class="bp-nav-item {% if active_tab == 'integration' and 'integration' in title_lower or active_tab == 'integration' and 'website' in title_lower or active_tab == 'integration' and link.url == '#integration' %}active{% elif active_tab == 'settings' and title_lower == 'settings' %}active{% elif active_tab == 'posts' and title_lower == 'posts' %}active{% elif not active_tab and title_lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
+              <i class="fa-solid {{ link.icon|default:'fa-file-lines' }}"></i> 
               <span>{{ link.title }}</span>
-            </button>
-          </form>
-        {% else %}
-          <a href="{% if link.url == '#comment' or link.url == '#comments' or link.title|lower == 'comments' %}/dashboard/#comment{% elif link.url == '#overview' or link.title|lower == 'overview' %}/dashboard/#overview{% elif link.url == '#posts' or link.title|lower == 'posts' %}/blog-posts/{% elif link.url == '#settings' or link.url == '#setting' or link.title|lower == 'settings' %}/settings/{% elif link.url == '#dashboard' or link.title|lower == 'dashboard' %}/dashboard/{% else %}{{ link.url|default:'/dashboard/' }}{% endif %}" 
-             class="bp-nav-item {% if active_tab == 'settings' and link.title|lower == 'settings' %}active{% elif active_tab == 'posts' and link.title|lower == 'posts' %}active{% elif not active_tab and link.title|lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
-            <i class="fa-solid {{ link.icon|default:'fa-file-lines' }}"></i> 
-            <span>{{ link.title }}</span>
-            {% if link.badge_text %}
-              <span class="bp-nav-badge">{{ link.badge_text }}</span>
-            {% endif %}
-          </a>
-        {% endif %}
+              {% if link.badge_text %}
+                <span class="bp-nav-badge">{{ link.badge_text }}</span>
+              {% endif %}
+            </a>
+          {% endif %}
+        {% endwith %}
       {% endwith %}
     {% endfor %}
   </nav>

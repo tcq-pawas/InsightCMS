@@ -110,7 +110,12 @@ def _get_request_company(user):
     if profile and profile.company:
         return profile.company
     membership = user.company_memberships.first()
-    return membership.company if membership else None
+    if membership and membership.company:
+        return membership.company
+    if user.is_superuser:
+        from Apps.companies.models import Company
+        return Company.objects.first()
+    return None
 
 
 @login_required(login_url='/login/')
@@ -305,3 +310,36 @@ def dashboard_blog_delete(request, page_id):
         messages.success(request, f"Blog '{title}' deleted successfully!")
 
     return redirect('/blog-posts/')
+
+@login_required(login_url='/login/')
+def dashboard_website_integration(request):
+    """View to provide ready-made RSS feed integration docs & snippets for logged-in company."""
+    company = _get_request_company(request.user)
+    
+    company_slug = company.slug if (company and company.slug) else "your-company"
+    company_name = company.company_name if company else "Your Company"
+
+    # Priority: company.website_url > settings.CMS_SITE_URL > request domain
+    # Company admin can set their website URL from the Settings page.
+    from django.conf import settings as django_settings
+
+    company_website_url = (company.website_url or "").rstrip("/") if company else ""
+    fallback_url = getattr(django_settings, 'CMS_SITE_URL', None) or request.build_absolute_uri('/')[:-1]
+    cms_base_url = company_website_url if company_website_url else fallback_url
+
+
+    
+    from Apps.accounts.models import UserDashboardPage
+    dashboard_page = UserDashboardPage.objects.live().first()
+    sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
+
+    return render(request, 'blogs/website_integration.html', {
+        'company': company,
+        'company_slug': company_slug,
+        'company_name': company_name,
+        'cms_base_url': cms_base_url,
+        'dashboard_page': dashboard_page,
+        'sidebar_links': sidebar_links,
+        'active_tab': 'integration',
+        'user': request.user,
+    })

@@ -159,6 +159,16 @@ WAGTAIL_SITE_NAME = 'InsightCMS'
 WAGTAILADMIN_BASE_URL = config('WAGTAILADMIN_BASE_URL', default='http://localhost:8000')
 WAGTAILADMIN_SITE_NAME = 'InsightCMS Administration'
 
+# ─── CMS Public Site URL ────────────────────────────────────────────────────
+# Used in Website Integration page to display the correct RSS Feed URL.
+# Leave as None locally → auto-detects from request (http://127.0.0.1:8000).
+# Set to your production domain for demo/screenshot purposes:
+#   CMS_SITE_URL = "https://mycompany.com"
+CMS_SITE_URL = None  # fallback only — company.website_url is used first
+
+
+# ────────────────────────────────────────────────────────────────────────────
+
 # REST Framework Settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
