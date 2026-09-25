@@ -21,9 +21,7 @@
         <tr>
           <th style="min-width: 260px;">BLOG TITLE</th>
           <th>DESCRIPTION</th>
-          <th class="text-center">CATEGORY</th>
           <th class="text-center">STATUS</th>
-          <th class="text-end">DATE</th>
         </tr>
       </thead>
       <tbody>
@@ -40,19 +38,18 @@
 
             <!-- Little Description -->
             <td>
-              <span class="text-muted small d-inline-block text-truncate" style="max-width: 260px;" title="{{ blog.short_description|default:blog.title }}">
+              <span class="text-muted small d-inline-block text-truncate" style="max-width: 320px;" title="{{ blog.short_description|default:blog.title }}">
                 {{ blog.short_description|default:"No description provided" }}
               </span>
             </td>
 
-            <!-- Category -->
+            <!-- Status: (Waiting for Approval, Approved / Published, Rejected) -->
             <td class="text-center">
-              <span class="bp-tag">{{ blog.category.name|default:"General" }}</span>
-            </td>
-
-            <!-- Status: (Waiting for Approval, Approved / Published, Draft) -->
-            <td class="text-center">
-              {% if blog.live %}
+              {% if blog.approval_status == 'rejected' %}
+                <span class="badge rounded-pill px-3 py-2 fw-bold" style="font-size: 0.82rem; background-color: #fde8e8 !important; color: #9b1c1c !important; border: 1px solid #f8b4b4;">
+                  <i class="fa-solid fa-circle-xmark me-1"></i> Approval Rejected
+                </span>
+              {% elif blog.live and blog.approval_status == 'approved' %}
                 <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2 fw-bold" style="font-size: 0.82rem;">
                   <i class="fa-solid fa-circle-check me-1"></i> Approved
                 </span>
@@ -62,15 +59,10 @@
                 </span>
               {% endif %}
             </td>
-
-            <!-- Date -->
-            <td class="text-end text-muted small">
-              {{ blog.latest_revision_created_at|date:"M d, Y"|default:blog.first_published_at|date:"M d, Y" }}
-            </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="5" class="text-center py-4 text-muted">
+            <td colspan="3" class="text-center py-4 text-muted">
               <p class="mb-2">You haven't written any blogs yet.</p>
               <a href="{% url 'dashboard_blog_create' %}" class="btn btn-primary btn-sm rounded-pill px-3">
                 <i class="fa-solid fa-plus me-1"></i> Create Your First Blog

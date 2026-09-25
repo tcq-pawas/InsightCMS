@@ -116,6 +116,22 @@ class BlogPage(Page):
         related_name='blogs',
         verbose_name=_('Tags')
     )
+    APPROVAL_PENDING = 'pending'
+    APPROVAL_APPROVED = 'approved'
+    APPROVAL_REJECTED = 'rejected'
+    APPROVAL_CHOICES = [
+        (APPROVAL_PENDING, 'Waiting for Approval'),
+        (APPROVAL_APPROVED, 'Approved'),
+        (APPROVAL_REJECTED, 'Rejected'),
+    ]
+
+    approval_status = models.CharField(
+        max_length=20,
+        choices=APPROVAL_CHOICES,
+        default=APPROVAL_APPROVED,
+        verbose_name=_('Approval Status')
+    )
+
     featured = models.BooleanField(
         default=False,
         verbose_name=_('Featured Blog')

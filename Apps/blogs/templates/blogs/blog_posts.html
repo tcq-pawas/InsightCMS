@@ -66,7 +66,9 @@
             </a>
             <div class="bp-blog-meta">
               <span>
-                {% if blog.live %}
+                {% if blog.approval_status == 'rejected' %}
+                  <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background-color: #fde8e8 !important; color: #9b1c1c !important; border: 1px solid #f8b4b4;">❌ Rejected</span>
+                {% elif blog.live and blog.approval_status == 'approved' %}
                   <strong class="text-success">Published</strong>
                 {% else %}
                   <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background-color: #fff8e1 !important; color: #b78103 !important; border: 1px solid #ffe082;">⏳ Waiting for Approval</span>
@@ -110,14 +112,23 @@
               </button>
             </form>
 
-            <!-- Company Admin: Approve pending employee blog -->
+            <!-- Company Admin: Approve & Reject buttons -->
             {% if not blog.live %}
-            <form method="post" action="{% url 'dashboard_blog_approve' blog.id %}" class="d-inline">
-              {% csrf_token %}
-              <button type="submit" class="bp-icon-btn border-0 bg-transparent" title="Approve & Publish this Blog">
-                <i class="fa-solid fa-circle-check text-primary"></i>
-              </button>
-            </form>
+              <!-- Approve Button (Checkmark) -->
+              <form method="post" action="{% url 'dashboard_blog_approve' blog.id %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="bp-icon-btn border-0 bg-transparent text-success fs-6" title="Approve & Publish this Blog">
+                  <i class="fa-solid fa-circle-check"></i>
+                </button>
+              </form>
+
+              <!-- Reject Button (Cross) -->
+              <form method="post" action="{% url 'dashboard_blog_reject' blog.id %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="bp-icon-btn border-0 bg-transparent text-danger fs-6" title="Reject this Blog">
+                  <i class="fa-solid fa-circle-xmark"></i>
+                </button>
+              </form>
             {% endif %}
             {% endif %}
 
