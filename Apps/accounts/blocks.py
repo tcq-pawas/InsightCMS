@@ -36,8 +36,8 @@ class SidebarLinkBlock(blocks.StructBlock):
 
 # Block 1: Stat Card Item + Row Block
 class StatCardBlock(blocks.StructBlock):
-    label = blocks.CharBlock(required=True, max_length=50, default="Total Posts")
-    value = blocks.CharBlock(required=True, max_length=50, default="128")
+    label = blocks.CharBlock(required=True, max_length=50, default="Total Blogs", help_text="e.g. Total Blogs, Today's Blog, Published Blogs, Unpublished Blogs")
+    value = blocks.CharBlock(required=False, max_length=50, default="", help_text="Optional. Leave blank to auto-calculate live from database.")
     growth = blocks.CharBlock(required=False, max_length=50, default="12.5%", help_text="e.g. 12.5%")
     icon_theme = blocks.ChoiceBlock(
         choices=[

@@ -1,10 +1,18 @@
 <aside class="bp-sidebar">
-  <!-- Brand Logo -->
-  <div class="bp-brand">
-    <div class="bp-brand-icon">
-      <span class="bp-brand-letter">{% if company %}{{ company.company_name|slice:":1" }}{% elif page.brand_name %}{{ page.brand_name|slice:":1" }}{% else %}B{% endif %}</span>
+  <!-- Brand Logo & Company Name (Compact Sleek Box) -->
+  <div class="bp-brand text-center d-flex flex-column align-items-center mb-3 py-2 px-3 rounded-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+    <div class="bp-brand-logo-box mb-1 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: #ffffff; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.12); overflow: hidden; padding: 4px;">
+      {% if company and company.logo %}
+        <img src="{{ company.logo.url }}" alt="{{ company.company_name }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+      {% elif page.brand_logo %}
+        <img src="{{ page.brand_logo.url }}" alt="{{ page.brand_name }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+      {% else %}
+        <span class="fw-bold text-primary" style="font-size: 1.3rem;">{% if company %}{{ company.company_name|slice:":1" }}{% elif page.brand_name %}{{ page.brand_name|slice:":1" }}{% else %}B{% endif %}</span>
+      {% endif %}
     </div>
-    <span class="bp-brand-name">{% if company %}{{ company.company_name }}{% elif page.brand_name %}{{ page.brand_name }}{% else %}BlogPro{% endif %}</span>
+    <span class="bp-brand-name fw-bold" style="font-size: 0.88rem; color: #ffffff; text-align: center; word-break: break-word; line-height: 1.2;">
+      {% if company %}{{ company.company_name }}{% elif page.brand_name %}{{ page.brand_name }}{% else %}BlogPro{% endif %}
+    </span>
   </div>
 
   <!-- Dynamic Navigation Menu -->

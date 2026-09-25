@@ -69,7 +69,7 @@
                 {% if blog.live %}
                   <strong class="text-success">Published</strong>
                 {% else %}
-                  <strong class="text-secondary">Draft</strong>
+                  <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background-color: #fff8e1 !important; color: #b78103 !important; border: 1px solid #ffe082;">⏳ Waiting for Approval</span>
                 {% endif %}
                 · {{ blog.first_published_at|date:"M d, Y"|default:blog.latest_revision_created_at|date:"M d, Y" }}
               </span>
@@ -89,11 +89,6 @@
               <i class="fa-solid fa-pen-to-square"></i>
             </a>
 
-            <!-- Category / Tag Icon -->
-            <!-- <span class="bp-icon-btn" title="Category: {{ blog.category.name|default:'General' }}">
-              <i class="fa-solid fa-tag"></i>
-            </span> -->
-
             <!-- Delete Form Action -->
             <form method="post" action="{% url 'dashboard_blog_delete' blog.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this blog post?');">
               {% csrf_token %}
@@ -102,7 +97,8 @@
               </button>
             </form>
 
-            <!-- Toggle Publish / View Action -->
+            {% if not is_employee %}
+            <!-- Company Admin: Toggle Publish / Unpublish -->
             <form method="post" action="{% url 'dashboard_blog_toggle_publish' blog.id %}" class="d-inline">
               {% csrf_token %}
               <button type="submit" class="bp-icon-btn border-0 bg-transparent" title="Toggle Publish Status (Publish/Unpublish)">
@@ -114,26 +110,23 @@
               </button>
             </form>
 
+            <!-- Company Admin: Approve pending employee blog -->
+            {% if not blog.live %}
+            <form method="post" action="{% url 'dashboard_blog_approve' blog.id %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="bp-icon-btn border-0 bg-transparent" title="Approve & Publish this Blog">
+                <i class="fa-solid fa-circle-check text-primary"></i>
+              </button>
+            </form>
+            {% endif %}
+            {% endif %}
+
             <!-- Live Post Link -->
             {% if blog.live %}
             <a href="{{ blog.url }}" target="_blank" class="bp-icon-btn" title="View Live Blog Page">
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </a>
             {% endif %}
-
-            <!-- Author Avatar -->
-            <!-- {% if blog.author and blog.author.avatar %}
-              <img src="{{ blog.author.avatar.url }}" class="bp-author-avatar-small" title="{{ blog.author.get_full_name|default:blog.author.email }}">
-            {% else %}
-              <div class="bp-author-avatar-fallback" title="{{ blog.author.get_full_name|default:blog.author.email|default:'Admin' }}">
-                {{ blog.author.first_name|slice:":1"|default:"A" }}
-              </div>
-            {% endif %} -->
-
-            <!-- Share & Stats -->
-            <!-- <span class="bp-icon-btn ms-1" title="Share"><i class="fa-solid fa-share-nodes"></i></span>
-            <span class="d-flex align-items-center gap-1 font-size-12"><i class="fa-regular fa-comment"></i> {{ blog.comments_count|default:"0" }}</span>
-            <span class="d-flex align-items-center gap-1 font-size-12"><i class="fa-solid fa-chart-simple"></i> {{ blog.views_count|default:"0" }}</span> -->
           </div>
         </div>
         {% empty %}

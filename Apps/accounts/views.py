@@ -1,5 +1,6 @@
 from django.contrib.auth import logout
 from django.shortcuts import redirect, render
+from django.db import models
 from Apps.accounts.models import UserDashboardPage
 
 
@@ -13,7 +14,9 @@ def user_dashboard_view(request):
     if not request.user.is_authenticated:
         return redirect(get_login_url())
 
-    from Apps.companies.models import UserProfile
+    from django.utils import timezone
+    from Apps.companies.models import UserProfile, CompanyMembership
+    from Apps.accounts.models import User
     from Apps.blogs.models import BlogPage
 
     # 1. Logged-in user ki company find karein
@@ -24,17 +27,80 @@ def user_dashboard_view(request):
     context = dashboard_page.get_context(request) if dashboard_page else {}
     sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
 
-    # 2. Recent blogs sirf isi company ke fetch karein
-    recent_blogs_qs = BlogPage.objects.all()
-    if company:
-        recent_blogs_qs = recent_blogs_qs.filter(company=company)
+    # 2. Scope blogs according to user role:
+    # - If Super Admin / Company Admin -> View all blogs across company
+    # - If Employee (Company User) -> View ONLY their own written blogs
+    is_employee = (request.user.role == User.Role.COMPANY_USER)
+    
+    if is_employee:
+        my_blogs_qs = BlogPage.objects.filter(author=request.user)
+        if company:
+            my_blogs_qs = my_blogs_qs.filter(company=company)
+        dashboard_blogs_qs = my_blogs_qs
+    else:
+        dashboard_blogs_qs = BlogPage.objects.all()
+        if company:
+            dashboard_blogs_qs = dashboard_blogs_qs.filter(company=company)
+
+    # Calculate real-time counts for cards
+    today = timezone.localdate()
+    total_blogs_count = dashboard_blogs_qs.count()
+    published_blogs_count = dashboard_blogs_qs.filter(live=True).count()
+    unpublished_blogs_count = dashboard_blogs_qs.filter(live=False).count()
+    today_blogs_count = dashboard_blogs_qs.filter(
+        latest_revision_created_at__date=today
+    ).count()
+
+    # 3. Writers / Authors data calculation (for Company Admin view)
+    # Fetch team members of this company or all authors who wrote blogs
+    writers_data = []
+    if not is_employee:
+        if company:
+            company_users = User.objects.filter(
+                models.Q(userprofile__company=company) | models.Q(company_memberships__company=company)
+            ).distinct()
+        else:
+            company_users = User.objects.all()
+
+        all_company_blogs = BlogPage.objects.all()
+        if company:
+            all_company_blogs = all_company_blogs.filter(company=company)
+
+        for u in company_users:
+            user_blogs = all_company_blogs.filter(author=u)
+            user_total = user_blogs.count()
+            user_published = user_blogs.filter(live=True).count()
+            user_unpublished = user_blogs.filter(live=False).count()
+
+            writers_data.append({
+                'user': u,
+                'name': u.get_full_name() or u.admin_username or u.email.split('@')[0],
+                'email': u.email,
+                'role': u.get_role_display(),
+                'total_posts': user_total,
+                'published': user_published,
+                'unpublished': user_unpublished,
+            })
+
+        # Sort writers by total posts descending
+        writers_data.sort(key=lambda x: x['total_posts'], reverse=True)
+
+    # For employee view: fetch their own blogs with full details
+    employee_blogs = dashboard_blogs_qs.select_related('category', 'featured_image').order_by('-latest_revision_created_at')
 
     context.update({
         'page': dashboard_page,
         'sidebar_links': sidebar_links,
         'user': request.user,
         'company': company,
-        'recent_blogs': recent_blogs_qs.order_by('-latest_revision_created_at')[:5]
+        'is_employee': is_employee,
+        'total_blogs_count': total_blogs_count,
+        'today_blogs_count': today_blogs_count,
+        'published_blogs_count': published_blogs_count,
+        'unpublished_blogs_count': unpublished_blogs_count,
+        'writers_data': writers_data,
+        'employee_blogs': employee_blogs,
+        'recent_blogs': dashboard_blogs_qs.order_by('-latest_revision_created_at')[:5]
     })
     return render(request, 'accounts/dashboard.html', context)
 
@@ -108,7 +174,7 @@ def settings_view(request):
                 messages.error(request, f"User with email '{member_email}' already exists.")
                 return redirect('/settings/#team')
 
-            # Create User as COMPANY_USER (Writer / Editor)
+            # Create User as COMPANY_USER (Writer / Editor) - pre-approved by company admin
             new_user = User.objects.create_user(
                 email=member_email,
                 password=member_password,
@@ -116,7 +182,9 @@ def settings_view(request):
                 last_name=member_last_name,
                 company_name=company.company_name,
                 role=User.Role.COMPANY_USER,
-                is_staff=True  # Wagtail CMS editorial access
+                is_staff=True,       # Wagtail CMS editorial access
+                is_active=True,
+                is_approved=True     # Pre-approved by Company Admin (No super admin approval needed)
             )
 
             # Link to this company

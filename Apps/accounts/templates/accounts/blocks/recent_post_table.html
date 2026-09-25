@@ -1,12 +1,16 @@
-<div class="bp-card mb-4" id="posts">
+{% if is_employee %}
+<!-- ========================================================= -->
+<!-- EMPLOYEE VIEW: My Blogs & Approval Status Table           -->
+<!-- ========================================================= -->
+<div class="bp-card mb-4" id="my-blogs">
   <div class="bp-card-header d-flex justify-content-between align-items-center">
     <div>
-      <h3 class="bp-card-title">{{ page.recent_posts_heading|default:"Recent Posts" }}</h3>
-      <span class="bp-card-sub">{{ page.recent_posts_subtext|default:"Manage your latest published and draft articles" }}</span>
+      <h3 class="bp-card-title">My Blogs & Articles</h3>
+      <span class="bp-card-sub">Track all blogs written by you and their approval status</span>
     </div>
     <div>
-      <a href="{{ page.view_all_posts_url|default:'/blog-posts/' }}" class="bp-link-sm">
-        {{ page.view_all_posts_text|default:"View all posts →" }}
+      <a href="{% url 'dashboard_blog_create' %}" class="bp-btn-primary btn-sm rounded-pill px-3">
+        <i class="fa-solid fa-plus me-1"></i> Write New Blog
       </a>
     </div>
   </div>
@@ -15,71 +19,61 @@
     <table class="table bp-table align-middle mb-0">
       <thead>
         <tr>
-          <th>{{ page.th_post_title|default:"POST TITLE" }}</th>
-          <th>{{ page.th_category|default:"CATEGORY" }}</th>
-          <th>{{ page.th_status|default:"STATUS" }}</th>
-          <th>{{ page.th_views|default:"VIEWS" }}</th>
-          <th>{{ page.th_date|default:"DATE" }}</th>
-          <th class="text-end">{{ page.th_actions|default:"ACTIONS" }}</th>
+          <th style="min-width: 260px;">BLOG TITLE</th>
+          <th>DESCRIPTION</th>
+          <th class="text-center">CATEGORY</th>
+          <th class="text-center">STATUS</th>
+          <th class="text-end">DATE</th>
         </tr>
       </thead>
       <tbody>
-        {% for blog in recent_blogs %}
+        {% for blog in employee_blogs %}
           <tr>
-            <!-- Post Title & Short Description -->
+            <!-- Title & Link to edit -->
             <td>
               <div class="fw-semibold text-dark">
-                <a href="{% url 'dashboard_blog_edit' blog.id %}" class="text-decoration-none text-dark">
+                <a href="{% url 'dashboard_blog_edit' blog.id %}" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
                   🚀 {{ blog.title }}
                 </a>
               </div>
-              {% if blog.short_description %}
-                <small class="text-muted d-block text-truncate" style="max-width: 280px;">
-                  {{ blog.short_description }}
-                </small>
-              {% endif %}
+            </td>
+
+            <!-- Little Description -->
+            <td>
+              <span class="text-muted small d-inline-block text-truncate" style="max-width: 260px;" title="{{ blog.short_description|default:blog.title }}">
+                {{ blog.short_description|default:"No description provided" }}
+              </span>
             </td>
 
             <!-- Category -->
-            <td>
+            <td class="text-center">
               <span class="bp-tag">{{ blog.category.name|default:"General" }}</span>
             </td>
 
-            <!-- Status Badge -->
-            <td>
+            <!-- Status: (Waiting for Approval, Approved / Published, Draft) -->
+            <td class="text-center">
               {% if blog.live %}
-                <span class="bp-badge badge-published">Published</span>
+                <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2 fw-bold" style="font-size: 0.82rem;">
+                  <i class="fa-solid fa-circle-check me-1"></i> Approved
+                </span>
               {% else %}
-                <span class="bp-badge badge-draft">Draft</span>
+                <span class="badge rounded-pill px-3 py-2 fw-bold" style="font-size: 0.82rem; background-color: #fff8e1 !important; color: #b78103 !important; border: 1px solid #ffe082;">
+                  <i class="fa-regular fa-clock me-1"></i> Waiting for Approval
+                </span>
               {% endif %}
             </td>
 
-            <!-- Views Count -->
-            <td class="text-muted">{{ blog.views_count|default:"0" }}</td>
-
-            <!-- Published / Updated Date -->
-            <td class="text-muted">
-              {{ blog.first_published_at|date:"M d, Y"|default:blog.latest_revision_created_at|date:"M d, Y" }}
-            </td>
-
-            <!-- Actions -->
-            <td class="text-end">
-              <a href="{% url 'dashboard_blog_edit' blog.id %}" class="btn btn-sm bp-btn-icon" title="Edit Post">
-                <i class="fa-solid fa-pen"></i>
-              </a>
-              {% if blog.live %}
-                <a href="{{ blog.url }}" class="btn btn-sm bp-btn-icon" target="_blank" title="View Live Article">
-                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                </a>
-              {% endif %}
+            <!-- Date -->
+            <td class="text-end text-muted small">
+              {{ blog.latest_revision_created_at|date:"M d, Y"|default:blog.first_published_at|date:"M d, Y" }}
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="6" class="text-center py-4 text-muted">
-              <p class="mb-2">{{ page.empty_posts_text|default:"No blog posts found." }}</p>
+            <td colspan="5" class="text-center py-4 text-muted">
+              <p class="mb-2">You haven't written any blogs yet.</p>
               <a href="{% url 'dashboard_blog_create' %}" class="btn btn-primary btn-sm rounded-pill px-3">
-                <i class="fa-solid fa-plus me-1"></i> {{ page.empty_create_btn_text|default:"Create your first blog" }}
+                <i class="fa-solid fa-plus me-1"></i> Create Your First Blog
               </a>
             </td>
           </tr>
@@ -88,3 +82,92 @@
     </table>
   </div>
 </div>
+
+{% else %}
+<!-- ========================================================= -->
+<!-- COMPANY ADMIN VIEW: Writers & Authors Summary Table        -->
+<!-- ========================================================= -->
+<div class="bp-card mb-4" id="writers">
+  <div class="bp-card-header d-flex justify-content-between align-items-center">
+    <div>
+      <h3 class="bp-card-title">{{ page.recent_posts_heading|default:"Writers & Authors Summary" }}</h3>
+      <span class="bp-card-sub">{{ page.recent_posts_subtext|default:"Overview of team members and their published blog contributions" }}</span>
+    </div>
+    <div>
+      <a href="{{ page.view_all_posts_url|default:'/settings/#team' }}" class="bp-link-sm">
+        {{ page.view_all_posts_text|default:"Manage Team →" }}
+      </a>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table bp-table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>{{ page.th_post_title|default:"AUTHOR / WRITER" }}</th>
+          <th>{{ page.th_category|default:"EMAIL" }}</th>
+          <th class="text-center">{{ page.th_views|default:"TOTAL POSTS" }}</th>
+          <th class="text-center">{{ page.th_status|default:"PUBLISHED" }}</th>
+          <th class="text-center">{{ page.th_date|default:"UNPUBLISHED" }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for writer in writers_data %}
+          <tr>
+            <!-- Author Name + Avatar / Icon -->
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                     style="width: 36px; height: 36px; background: #EEF2FF; color: #4F46E5; font-size: 0.9rem;">
+                  {{ writer.name|slice:":1"|upper }}
+                </div>
+                <div>
+                  <div class="fw-semibold text-dark">{{ writer.name }}</div>
+                  <small class="text-muted">{{ writer.role }}</small>
+                </div>
+              </div>
+            </td>
+
+            <!-- Email -->
+            <td>
+              <span class="text-muted">{{ writer.email }}</span>
+            </td>
+
+            <!-- Total Posts -->
+            <td class="text-center">
+              <span class="badge rounded-pill bg-light text-dark px-3 py-2 fw-bold" style="border: 1px solid #E5E7EB; font-size: 0.85rem;">
+                {{ writer.total_posts }}
+              </span>
+            </td>
+
+            <!-- Published Count -->
+            <td class="text-center">
+              <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2 fw-bold" style="font-size: 0.85rem;">
+                <i class="fa-solid fa-circle-check me-1"></i> {{ writer.published }}
+              </span>
+            </td>
+
+            <!-- Unpublished Count -->
+            <td class="text-center">
+              <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis px-3 py-2 fw-bold" style="font-size: 0.85rem;">
+                <i class="fa-regular fa-clock me-1"></i> {{ writer.unpublished }}
+              </span>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-4 text-muted">
+              <p class="mb-2">{{ page.empty_posts_text|default:"No writers found in your company." }}</p>
+              <a href="{{ page.view_all_posts_url|default:'/settings/#team' }}" class="btn btn-primary btn-sm rounded-pill px-3">
+                <i class="fa-solid fa-user-plus me-1"></i> {{ page.empty_create_btn_text|default:"Invite Team Member" }}
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+

@@ -179,11 +179,18 @@ def dashboard_blog_create(request):
         blog_index.add_child(instance=blog_page)
 
         # Publish or Save Draft
-        revision = blog_page.save_revision()
-        if action_type == 'publish':
+        # Employee (COMPANY_USER) ke blogs auto-publish nahi honge — approval chahiye
+        from Apps.accounts.models import User as UserModel
+        if request.user.role == UserModel.Role.COMPANY_USER:
+            # Always save as draft / unpublish — Company Admin approve karega
+            blog_page.unpublish()
+            messages.success(request, f"Blog '{title}' submitted for approval. Company Admin will review it.")
+        elif action_type == 'publish':
+            revision = blog_page.save_revision()
             revision.publish()
             messages.success(request, f"Blog '{title}' published successfully!")
         else:
+            blog_page.unpublish()
             messages.success(request, f"Blog '{title}' saved as draft!")
 
         return redirect('/blog-posts/')
@@ -243,7 +250,12 @@ def dashboard_blog_edit(request, page_id):
         action_type = request.POST.get('action_type', 'publish')
         revision = blog_page.save_revision()
 
-        if action_type == 'publish':
+        # Employee (COMPANY_USER) ke blogs approval ke bina publish nahi honge
+        from Apps.accounts.models import User as UserModel
+        if request.user.role == UserModel.Role.COMPANY_USER:
+            blog_page.unpublish()
+            messages.success(request, f"Blog '{blog_page.title}' updated & submitted for approval. Company Admin will review it.")
+        elif action_type == 'publish':
             revision.publish()
             messages.success(request, f"Blog '{blog_page.title}' updated & published!")
         else:
@@ -308,6 +320,29 @@ def dashboard_blog_delete(request, page_id):
         title = blog_page.title
         blog_page.delete()
         messages.success(request, f"Blog '{title}' deleted successfully!")
+
+    return redirect('/blog-posts/')
+
+
+@login_required(login_url='/login/')
+def dashboard_blog_approve(request, page_id):
+    """Company Admin approves (publishes) a pending employee blog draft."""
+    from Apps.accounts.models import User as UserModel
+    if request.method == 'POST':
+        # Only Company Admin or Super Admin can approve
+        if request.user.role not in [UserModel.Role.COMPANY_ADMIN] and not request.user.is_superuser:
+            messages.error(request, "You don't have permission to approve blogs.")
+            return redirect('/blog-posts/')
+
+        company = _get_request_company(request.user)
+        if request.user.is_superuser:
+            blog_page = get_object_or_404(BlogPage, id=page_id)
+        else:
+            blog_page = get_object_or_404(BlogPage, id=page_id, company=company)
+
+        revision = blog_page.save_revision()
+        revision.publish()
+        messages.success(request, f"✅ Blog '{blog_page.title}' approved & published successfully!")
 
     return redirect('/blog-posts/')
 

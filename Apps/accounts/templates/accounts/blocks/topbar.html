@@ -8,10 +8,6 @@
   </div>
 
   <div class="bp-topbar-right">
-    <button class="bp-icon-btn position-relative">
-      <i class="fa-regular fa-bell"></i>
-      {% if page.notification_count %}<span class="bp-bell-dot">{{ page.notification_count }}</span>{% endif %}
-    </button>
 
     {% if user.is_authenticated %}
     <div class="bp-user-profile">

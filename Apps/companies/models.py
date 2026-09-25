@@ -271,7 +271,7 @@ class CompanyBlogPostsPage(Page):
     def serve(self, request):
         from django.shortcuts import redirect, render
         from Apps.blogs.models import BlogPage, BlogIndexPage
-        from Apps.accounts.models import UserDashboardPage
+        from Apps.accounts.models import UserDashboardPage, User
         from Apps.companies.models import CompanyMembership
 
         if not request.user.is_authenticated:
@@ -291,6 +291,11 @@ class CompanyBlogPostsPage(Page):
             first_index = BlogIndexPage.objects.first()
             blog_index_id = first_index.id if first_index else None
 
+        # Employee (COMPANY_USER) sirf apne blogs dekhe — Company Admin ke nahi
+        is_employee = (request.user.role == User.Role.COMPANY_USER)
+        if is_employee:
+            blogs = blogs.filter(author=request.user)
+
         dashboard_page = UserDashboardPage.objects.live().first()
         sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
 
@@ -300,6 +305,7 @@ class CompanyBlogPostsPage(Page):
             'dashboard_page': dashboard_page,
             'sidebar_links': sidebar_links,
             'user': request.user,
+            'is_employee': is_employee,
             'blogs': blogs,
             'blog_index_id': blog_index_id,
             'active_tab': 'posts',

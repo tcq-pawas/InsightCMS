@@ -13,7 +13,9 @@ from Apps.blogs.views import (
     dashboard_blog_create,
     dashboard_blog_edit,
     dashboard_blog_toggle_publish,
-    dashboard_blog_delete, dashboard_website_integration
+    dashboard_blog_delete,
+    dashboard_blog_approve,
+    dashboard_website_integration
 )
 
 
@@ -36,6 +38,7 @@ urlpatterns = [
         path('blogs/<int:page_id>/edit/', dashboard_blog_edit, name='dashboard_blog_edit'),
         path('blogs/<int:page_id>/toggle-publish/', dashboard_blog_toggle_publish, name='dashboard_blog_toggle_publish'),
         path('blogs/<int:page_id>/delete/', dashboard_blog_delete, name='dashboard_blog_delete'),
+        path('blogs/<int:page_id>/approve/', dashboard_blog_approve, name='dashboard_blog_approve'),
     ])),
     path('settings/', settings_view, name='settings'),
     path('logout/', logout_view, name='logout'),

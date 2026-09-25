@@ -1,32 +1,56 @@
 <div class="bp-stats-row">
   {% if value.stat_cards %}
     {% for card in value.stat_cards %}
+      {% with lbl=card.label|lower %}
       <div class="bp-stat-card">
         <div class="bp-stat-top">
-          <div class="bp-stat-icon {{ card.icon_theme|default:'icon-blue' }}">
-            {% if card.icon_theme == 'icon-cyan' %}
-              <i class="fa-solid fa-chart-simple"></i>
-            {% elif card.icon_theme == 'icon-pink' %}
-              <i class="fa-regular fa-comment-dots"></i>
-            {% elif card.icon_theme == 'icon-purple' %}
-              <i class="fa-solid fa-user-group"></i>
-            {% elif card.icon_theme == 'icon-orange' %}
-              <i class="fa-regular fa-paper-plane"></i>
-            {% else %}
-              <i class="fa-regular fa-newspaper"></i>
-            {% endif %}
-          </div>
+          {% if 'today' in lbl %}
+            <div class="bp-stat-icon" style="background:#e0e7ff; color:#4f46e5;"><i class="fa-solid fa-calendar-day"></i></div>
+          {% elif 'unpublished' in lbl or 'draft' in lbl %}
+            <div class="bp-stat-icon" style="background:#fef3c7; color:#d97706;"><i class="fa-regular fa-clock"></i></div>
+          {% elif 'publish' in lbl %}
+            <div class="bp-stat-icon" style="background:#dcfce7; color:#16a34a;"><i class="fa-solid fa-circle-check"></i></div>
+          {% elif 'view' in lbl %}
+            <div class="bp-stat-icon" style="background:#f3e8ff; color:#9333ea;"><i class="fa-solid fa-chart-simple"></i></div>
+          {% elif 'comment' in lbl %}
+            <div class="bp-stat-icon" style="background:#fae8ff; color:#c026d3;"><i class="fa-regular fa-comment-dots"></i></div>
+          {% elif 'subscriber' in lbl or 'user' in lbl or 'author' in lbl %}
+            <div class="bp-stat-icon" style="background:#e0f2fe; color:#0284c7;"><i class="fa-solid fa-user-group"></i></div>
+          {% else %}
+            <div class="bp-stat-icon" style="background:#dbeafe; color:#2563eb;"><i class="fa-regular fa-newspaper"></i></div>
+          {% endif %}
           {% if card.growth %}
             <span class="bp-stat-badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ card.growth }}</span>
           {% endif %}
         </div>
         <div class="bp-stat-label">{{ card.label }}</div>
-        <div class="bp-stat-val">{{ card.value }}</div>
+        <div class="bp-stat-val">
+          {% if 'unpublished' in lbl or 'draft' in lbl %}
+            {{ unpublished_blogs_count }}
+          {% elif 'today' in lbl %}
+            {{ today_blogs_count }}
+          {% elif 'publish' in lbl %}
+            {{ published_blogs_count }}
+          {% elif 'total' in lbl or 'post' in lbl or 'blog' in lbl %}
+            {{ total_blogs_count }}
+          {% elif forloop.counter == 1 %}
+            {{ total_blogs_count|default:card.value }}
+          {% elif forloop.counter == 2 %}
+            {{ today_blogs_count|default:card.value }}
+          {% elif forloop.counter == 3 %}
+            {{ published_blogs_count|default:card.value }}
+          {% elif forloop.counter == 4 %}
+            {{ unpublished_blogs_count|default:card.value }}
+          {% else %}
+            {{ card.value }}
+          {% endif %}
+        </div>
         {% if value.caption %}<div class="bp-stat-caption">{{ value.caption }}</div>{% endif %}
       </div>
+      {% endwith %}
     {% endfor %}
   {% else %}
-    <!-- Fallback to direct page model fields -->
+    <!-- Fallback to direct page model fields with real dynamic counts -->
     {% if page.stat1_label or page.stat1_value %}
     <div class="bp-stat-card">
       <div class="bp-stat-top">
@@ -35,8 +59,8 @@
           <span class="bp-stat-badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ page.stat1_growth }}</span>
         {% endif %}
       </div>
-      <div class="bp-stat-label">{{ page.stat1_label }}</div>
-      <div class="bp-stat-val">{{ page.stat1_value }}</div>
+      <div class="bp-stat-label">{{ page.stat1_label|default:"Total Blogs" }}</div>
+      <div class="bp-stat-val">{{ total_blogs_count|default:page.stat1_value }}</div>
       {% if page.stat_caption %}<div class="bp-stat-caption">{{ page.stat_caption }}</div>{% endif %}
     </div>
     {% endif %}
@@ -44,13 +68,13 @@
     {% if page.stat2_label or page.stat2_value %}
     <div class="bp-stat-card">
       <div class="bp-stat-top">
-        <div class="bp-stat-icon icon-cyan"><i class="fa-solid fa-chart-simple"></i></div>
+        <div class="bp-stat-icon icon-cyan"><i class="fa-solid fa-calendar-day"></i></div>
         {% if page.stat2_growth %}
           <span class="bp-stat-badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ page.stat2_growth }}</span>
         {% endif %}
       </div>
-      <div class="bp-stat-label">{{ page.stat2_label }}</div>
-      <div class="bp-stat-val">{{ page.stat2_value }}</div>
+      <div class="bp-stat-label">{{ page.stat2_label|default:"Today's Blog" }}</div>
+      <div class="bp-stat-val">{{ today_blogs_count|default:page.stat2_value }}</div>
       {% if page.stat_caption %}<div class="bp-stat-caption">{{ page.stat_caption }}</div>{% endif %}
     </div>
     {% endif %}
@@ -58,13 +82,13 @@
     {% if page.stat3_label or page.stat3_value %}
     <div class="bp-stat-card">
       <div class="bp-stat-top">
-        <div class="bp-stat-icon icon-pink"><i class="fa-regular fa-comment-dots"></i></div>
+        <div class="bp-stat-icon icon-green" style="background:#ecfdf5;color:#10b981;"><i class="fa-solid fa-circle-check"></i></div>
         {% if page.stat3_growth %}
           <span class="bp-stat-badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ page.stat3_growth }}</span>
         {% endif %}
       </div>
-      <div class="bp-stat-label">{{ page.stat3_label }}</div>
-      <div class="bp-stat-val">{{ page.stat3_value }}</div>
+      <div class="bp-stat-label">{{ page.stat3_label|default:"Published Blogs" }}</div>
+      <div class="bp-stat-val">{{ published_blogs_count|default:page.stat3_value }}</div>
       {% if page.stat_caption %}<div class="bp-stat-caption">{{ page.stat_caption }}</div>{% endif %}
     </div>
     {% endif %}
@@ -72,21 +96,21 @@
     {% if page.stat4_label or page.stat4_value %}
     <div class="bp-stat-card">
       <div class="bp-stat-top">
-        <div class="bp-stat-icon icon-purple"><i class="fa-solid fa-user-group"></i></div>
+        <div class="bp-stat-icon icon-orange" style="background:#fff7ed;color:#f97316;"><i class="fa-regular fa-clock"></i></div>
         {% if page.stat4_growth %}
           <span class="bp-stat-badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ page.stat4_growth }}</span>
         {% endif %}
       </div>
-      <div class="bp-stat-label">{{ page.stat4_label }}</div>
-      <div class="bp-stat-val">{{ page.stat4_value }}</div>
+      <div class="bp-stat-label">{{ page.stat4_label|default:"Unpublished Blogs" }}</div>
+      <div class="bp-stat-val">{{ unpublished_blogs_count|default:page.stat4_value }}</div>
       {% if page.stat_caption %}<div class="bp-stat-caption">{{ page.stat_caption }}</div>{% endif %}
     </div>
     {% endif %}
 
-    {% if page.stat5_label or page.stat5_value %}
+    {% if page.stat5_label and page.stat5_value and page.stat5_label != page.stat4_label %}
     <div class="bp-stat-card">
       <div class="bp-stat-top">
-        <div class="bp-stat-icon icon-orange"><i class="fa-regular fa-paper-plane"></i></div>
+        <div class="bp-stat-icon icon-purple"><i class="fa-solid fa-layer-group"></i></div>
         {% if page.stat5_growth %}
           <span class="bp-stat-badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ page.stat5_growth }}</span>
         {% endif %}

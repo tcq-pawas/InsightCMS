@@ -127,9 +127,12 @@ class LoginPage(Page):
             # 1. Check credentials & authenticate
             user = form.get_user()
             
-            if not user.is_superuser and not user.is_approved:
+            # Super Admin approval is ONLY required for newly registered Company Admins
+            # Company Users (writers/employees created by Company Admin) or Super Admins can login directly
+            is_company_admin = (user.role == User.Role.COMPANY_ADMIN)
+            if is_company_admin and not user.is_approved and not user.is_superuser:
                 from django.contrib import messages
-                messages.error(request, "Your account is pending Super Admin approval. Please wait for confirmation.")
+                messages.error(request, "Your company account is pending Super Admin approval. Please wait for confirmation.")
                 context = self.get_context(request)
                 context["form"] = form
                 from Apps.accounts.models import RegisterPage
@@ -348,20 +351,20 @@ class UserDashboardPage(Page):
     views_filter_2 = models.CharField(max_length=50, blank=True, default="7 Days")
     views_filter_3 = models.CharField(max_length=50, blank=True, default="All Time")
 
-    recent_posts_heading = models.CharField(max_length=150, blank=True, default="Recent Posts")
-    recent_posts_subtext = models.CharField(max_length=255, blank=True, default="Manage your latest published and draft articles")
-    view_all_posts_text = models.CharField(max_length=50, blank=True, default="View All")
-    view_all_posts_url = models.CharField(max_length=255, blank=True, default="/cms/pages/")
+    recent_posts_heading = models.CharField(max_length=150, blank=True, default="Writers & Authors Summary", verbose_name="Table Heading")
+    recent_posts_subtext = models.CharField(max_length=255, blank=True, default="Overview of team members and their published blog contributions", verbose_name="Table Subtitle")
+    view_all_posts_text = models.CharField(max_length=50, blank=True, default="Manage Team →", verbose_name="Action Link Text")
+    view_all_posts_url = models.CharField(max_length=255, blank=True, default="/settings/#team", verbose_name="Action Link URL")
 
-    # Recent Posts Table Column Headers (Fully Dynamic)
-    th_post_title = models.CharField(max_length=50, blank=True, default="POST TITLE")
-    th_category = models.CharField(max_length=50, blank=True, default="CATEGORY")
-    th_status = models.CharField(max_length=50, blank=True, default="STATUS")
-    th_views = models.CharField(max_length=50, blank=True, default="VIEWS")
-    th_date = models.CharField(max_length=50, blank=True, default="DATE")
-    th_actions = models.CharField(max_length=50, blank=True, default="ACTIONS")
-    empty_posts_text = models.CharField(max_length=100, blank=True, default="No blog posts found.")
-    empty_create_btn_text = models.CharField(max_length=50, blank=True, default="Create your first blog")
+    # Writers Table Column Headers (Fully Dynamic from Wagtail)
+    th_post_title = models.CharField(max_length=50, blank=True, default="AUTHOR / WRITER", verbose_name="Column 1 (Writer Name)")
+    th_category = models.CharField(max_length=50, blank=True, default="EMAIL", verbose_name="Column 2 (Email)")
+    th_views = models.CharField(max_length=50, blank=True, default="TOTAL POSTS", verbose_name="Column 3 (Total Posts)")
+    th_status = models.CharField(max_length=50, blank=True, default="PUBLISHED", verbose_name="Column 4 (Published)")
+    th_date = models.CharField(max_length=50, blank=True, default="UNPUBLISHED", verbose_name="Column 5 (Unpublished)")
+    th_actions = models.CharField(max_length=50, blank=True, default="STATUS", verbose_name="Column 6 (Status)")
+    empty_posts_text = models.CharField(max_length=100, blank=True, default="No writers found in your company.", verbose_name="Empty Table Message")
+    empty_create_btn_text = models.CharField(max_length=50, blank=True, default="Invite Team Member", verbose_name="Empty Button Text")
 
     # 6. Audience Overview
     audience_heading = models.CharField(max_length=150, blank=True, default="Audience Overview")
