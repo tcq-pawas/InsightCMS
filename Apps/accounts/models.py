@@ -754,3 +754,18 @@ class SettingsPage(Page):
 
     class Meta:
         verbose_name = "Settings Page"
+
+
+class UserNotification(BaseModel):
+    """Notification model for user alerts (Approve/Reject blog notifications)."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    notification_type = models.CharField(max_length=50, default='info') # 'approved', 'rejected', 'info'
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Notification for {self.user.email}: {self.title}"

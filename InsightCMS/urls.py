@@ -8,7 +8,13 @@ from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from Apps.blogs.feeds import CompanyBlogFeed
-from Apps.accounts.views import user_dashboard_view, logout_view, settings_view, forgot_password_view
+from Apps.accounts.views import (
+    user_dashboard_view,
+    logout_view,
+    settings_view,
+    forgot_password_view,
+    user_profile_view
+)
 from Apps.blogs.views import (
     dashboard_blog_create,
     dashboard_blog_edit,
@@ -43,6 +49,7 @@ urlpatterns = [
         path('blogs/<int:page_id>/reject/', dashboard_blog_reject, name='dashboard_blog_reject'),
     ])),
     path('settings/', settings_view, name='settings'),
+    path('my-profile/', user_profile_view, name='my_profile'),
     path('logout/', logout_view, name='logout'),
     path('password-reset/', forgot_password_view, name='password_reset'),
     path('documents/', include(wagtaildocs_urls)),

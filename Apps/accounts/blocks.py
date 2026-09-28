@@ -15,6 +15,7 @@ class SidebarLinkBlock(blocks.StructBlock):
             ('fa-comments', 'Comments'),
             ('fa-chart-line', 'Chart / Analytics'),
             ('fa-user', 'User / Subscribers'),
+            ('fa-user-gear', 'User / Profile Settings'),
             ('fa-wand-magic-sparkles', 'Magic / Appearance'),
             ('fa-puzzle-piece', 'Puzzle / Plugins'),
             ('fa-gear', 'Gear / Settings'),

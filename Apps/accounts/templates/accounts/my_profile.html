@@ -1,0 +1,266 @@
+{% extends "companies/base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}My Profile | {{ page.brand_name|default:"ShivangiCMS" }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  .bp-settings-nav {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 1.75rem;
+    padding-bottom: 0.5rem;
+    overflow-x: auto;
+  }
+  .bp-settings-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.15rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #64748b;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .bp-settings-tab:hover { color: #0f172a; background: #f1f5f9; }
+  .bp-settings-tab.active { color: #2563eb !important; background: #eff6ff !important; font-weight: 600; }
+  .bp-settings-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  }
+  .bp-settings-section-header { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #f1f5f9; }
+  .bp-settings-title { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0 0 0.35rem 0; display: flex; align-items: center; gap: 0.6rem; }
+  .bp-settings-sub { font-size: 0.85rem; color: #64748b; margin: 0; }
+  .bp-form-label { font-size: 0.85rem; font-weight: 600; color: #0f172a; margin-bottom: 0.4rem; display: block; }
+  .bp-form-control {
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #0f172a;
+    background-color: #fff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .bp-form-control:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+  .bp-form-control:disabled, .bp-form-control[readonly] { background-color: #f8fafc; color: #94a3b8; cursor: not-allowed; }
+  .bp-form-hint { font-size: 0.78rem; color: #64748b; margin-top: 0.35rem; }
+  .bp-avatar-upload-wrap { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.5rem; }
+  .bp-avatar-preview {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: #2563eb; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.4rem;
+    border: 2px solid #fff; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+    overflow: hidden;
+  }
+  .bp-badge-status { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; }
+  .bp-badge-success { background: #dcfce7; color: #166534; }
+  .bp-btn-save {
+    background: #2563eb; color: #fff; border: none;
+    padding: 0.65rem 1.4rem; border-radius: 8px;
+    font-size: 0.88rem; font-weight: 600; cursor: pointer;
+    transition: background 0.15s ease;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+  }
+  .bp-btn-save:hover { background: #1d4ed8; color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bp-app-wrapper" id="my_profile">
+
+  {% include "accounts/blocks/sidebar.html" %}
+
+  <div class="bp-main-container">
+    {% include "accounts/blocks/topbar.html" %}
+
+    <main class="bp-content-body">
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="bp-page-header mb-4">
+        <div>
+          <h1 class="bp-page-title">My Profile</h1>
+          <p class="bp-page-sub">View and update your personal profile details and password.</p>
+        </div>
+      </div>
+
+      <div class="bp-settings-nav">
+        <button class="bp-settings-tab active" onclick="switchProfileTab('profile', this)">
+          <i class="fa-regular fa-user"></i> Profile Information
+        </button>
+        <button class="bp-settings-tab" onclick="switchProfileTab('security', this)">
+          <i class="fa-solid fa-shield-halved"></i> Security & Password
+        </button>
+      </div>
+
+      <!-- 1. PROFILE SECTION -->
+      <div id="section-profile" class="profile-tab-pane">
+        <div class="bp-settings-card">
+          <div class="bp-settings-section-header">
+            <h2 class="bp-settings-title"><i class="fa-regular fa-user text-primary"></i> Personal Details</h2>
+            <p class="bp-settings-sub">Update your name and profile avatar.</p>
+          </div>
+
+          <form method="post" action="{% url 'my_profile' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="bp-avatar-upload-wrap">
+              <div class="bp-avatar-preview">
+                {% if user.avatar %}
+                  <img src="{{ user.avatar.url }}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;">
+                {% else %}
+                  {{ user.first_name|slice:":1"|default:user.email|slice:":1"|upper }}
+                {% endif %}
+              </div>
+              <div>
+                <div class="fw-bold text-dark">{{ user.get_full_name|default:user.email }}</div>
+                <div class="text-muted small mb-2">{{ user.email }}</div>
+                <input type="file" name="avatar" id="avatarInput" class="d-none" accept="image/*" onchange="previewAvatar(this)">
+                <label for="avatarInput" class="btn btn-sm btn-outline-secondary" style="cursor:pointer;">
+                  <i class="fa-solid fa-camera me-1"></i> Change Avatar
+                </label>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="bp-form-label">First Name</label>
+                <input type="text" name="first_name" class="bp-form-control" value="{{ user.first_name|default:'' }}" placeholder="Enter first name">
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">Last Name</label>
+                <input type="text" name="last_name" class="bp-form-control" value="{{ user.last_name|default:'' }}" placeholder="Enter last name">
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">Email Address</label>
+                <input type="email" class="bp-form-control" value="{{ user.email }}" readonly>
+                <div class="bp-form-hint">Email address is managed by your company administrator.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">Role</label>
+                <input type="text" class="bp-form-control" value="{{ user.get_role_display }}" disabled>
+              </div>
+              {% if company %}
+              <div class="col-md-6">
+                <label class="bp-form-label">Company</label>
+                <input type="text" class="bp-form-control" value="{{ company.company_name }}" disabled>
+              </div>
+              {% endif %}
+              <div class="col-12 mt-3">
+                <button type="submit" class="bp-btn-save">
+                  <i class="fa-solid fa-check me-1"></i> Save Changes
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 2. SECURITY SECTION -->
+      <div id="section-security" class="profile-tab-pane d-none">
+        <div class="bp-settings-card">
+          <div class="bp-settings-section-header">
+            <h2 class="bp-settings-title"><i class="fa-solid fa-shield-halved text-primary"></i> Change Password</h2>
+            <p class="bp-settings-sub">Ensure your account is using a strong password.</p>
+          </div>
+
+          <form method="post" action="{% url 'my_profile' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action_type" value="update_password">
+
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="bp-form-label">Current Password</label>
+                <input type="password" name="old_password" class="bp-form-control" required placeholder="••••••••">
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">New Password</label>
+                <input type="password" name="new_password1" class="bp-form-control" required placeholder="Enter new password">
+              </div>
+              <div class="col-md-6">
+                <label class="bp-form-label">Confirm New Password</label>
+                <input type="password" name="new_password2" class="bp-form-control" required placeholder="Confirm new password">
+              </div>
+              <div class="col-12 mt-3">
+                <button type="submit" class="bp-btn-save">
+                  <i class="fa-solid fa-key me-1"></i> Update Password
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <hr class="my-4" style="border-color: #f1f5f9;">
+
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold text-dark">Active Session</div>
+              <p class="text-muted small mb-0">Currently signed in from this browser.</p>
+            </div>
+            <form method="post" action="{% url 'logout' %}" style="margin:0;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger">
+                <i class="fa-solid fa-right-from-bracket me-1"></i> Sign Out
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function switchProfileTab(tabName, btnElement) {
+    document.querySelectorAll('.profile-tab-pane').forEach(el => el.classList.add('d-none'));
+    document.querySelectorAll('.bp-settings-tab').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById('section-' + tabName);
+    if (target) target.classList.remove('d-none');
+    if (btnElement) btnElement.classList.add('active');
+  }
+
+  function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.querySelector('.bp-avatar-preview');
+        preview.innerHTML = `<img src="${e.target.result}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;">`;
+      }
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (['profile', 'security'].includes(hash)) {
+      const tabBtn = document.querySelector(`.bp-settings-tab[onclick*="${hash}"]`);
+      if (tabBtn) switchProfileTab(hash, tabBtn);
+    }
+  });
+</script>
+{% endblock %}

@@ -299,6 +299,9 @@ class CompanyBlogPostsPage(Page):
         dashboard_page = UserDashboardPage.objects.live().first()
         sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
 
+        notifications = request.user.notifications.all()[:10] if request.user.is_authenticated else []
+        unread_notifications_count = request.user.notifications.filter(is_read=False).count() if request.user.is_authenticated else 0
+
         context = self.get_context(request)
         context.update({
             'page': self,
@@ -306,6 +309,8 @@ class CompanyBlogPostsPage(Page):
             'sidebar_links': sidebar_links,
             'user': request.user,
             'is_employee': is_employee,
+            'notifications': notifications,
+            'unread_notifications_count': unread_notifications_count,
             'blogs': blogs,
             'blog_index_id': blog_index_id,
             'active_tab': 'posts',

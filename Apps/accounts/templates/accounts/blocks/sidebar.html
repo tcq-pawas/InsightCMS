@@ -20,7 +20,11 @@
     {% for item in sidebar_links %}
       {% with link=item.value %}
         {% with title_lower=link.title|lower %}
-          {% if title_lower == 'logout' %}
+          {% if is_employee and 'setting' in title_lower or is_employee and 'integration' in title_lower or is_employee and 'website' in title_lower or user.role == 'company_user' and 'setting' in title_lower or user.role == 'company_user' and 'integration' in title_lower or user.role == 'company_user' and 'website' in title_lower %}
+            <!-- Hide Settings and Integration tabs for normal User/Employee -->
+          {% elif not is_employee and 'profile' in title_lower %}
+            <!-- Hide My Profile link for Admins — only employees see it -->
+          {% elif title_lower == 'logout' %}
             <!-- Logout: POST form -->
             <form method="post" action="{% url 'logout' %}" style="margin:0;padding:0;">
               {% csrf_token %}
@@ -30,8 +34,8 @@
               </button>
             </form>
           {% else %}
-            <a href="{% if link.url == '#integration' or 'integration' in title_lower or 'website' in title_lower %}/dashboard/integration/{% elif link.url == '#comment' or link.url == '#comments' or title_lower == 'comments' %}/dashboard/#comment{% elif link.url == '#overview' or title_lower == 'overview' %}/dashboard/#overview{% elif link.url == '#posts' or title_lower == 'posts' %}/blog-posts/{% elif link.url == '#settings' or link.url == '#setting' or title_lower == 'settings' %}/settings/{% elif link.url == '#dashboard' or title_lower == 'dashboard' %}/dashboard/{% else %}{{ link.url|default:'/dashboard/' }}{% endif %}" 
-               class="bp-nav-item {% if active_tab == 'integration' and 'integration' in title_lower or active_tab == 'integration' and 'website' in title_lower or active_tab == 'integration' and link.url == '#integration' %}active{% elif active_tab == 'settings' and title_lower == 'settings' %}active{% elif active_tab == 'posts' and title_lower == 'posts' %}active{% elif not active_tab and title_lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
+            <a href="{% if 'profile' in title_lower %}/my-profile/{% elif link.url == '#integration' or 'integration' in title_lower or 'website' in title_lower %}/dashboard/integration/{% elif link.url == '#comment' or link.url == '#comments' or title_lower == 'comments' %}/dashboard/#comment{% elif link.url == '#overview' or title_lower == 'overview' %}/dashboard/#overview{% elif link.url == '#posts' or title_lower == 'posts' %}/blog-posts/{% elif link.url == '#settings' or link.url == '#setting' or title_lower == 'settings' %}/settings/{% elif link.url == '#dashboard' or title_lower == 'dashboard' %}/dashboard/{% else %}{{ link.url|default:'/dashboard/' }}{% endif %}" 
+               class="bp-nav-item {% if active_tab == 'my_profile' and 'profile' in title_lower %}active{% elif active_tab == 'integration' and 'integration' in title_lower or active_tab == 'integration' and 'website' in title_lower or active_tab == 'integration' and link.url == '#integration' %}active{% elif active_tab == 'settings' and title_lower == 'settings' %}active{% elif active_tab == 'posts' and title_lower == 'posts' %}active{% elif not active_tab and title_lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
               <i class="fa-solid {{ link.icon|default:'fa-file-lines' }}"></i> 
               <span>{{ link.title }}</span>
               {% if link.badge_text %}

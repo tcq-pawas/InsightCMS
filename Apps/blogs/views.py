@@ -227,8 +227,12 @@ def dashboard_blog_edit(request, page_id):
     company = _get_request_company(request.user)
     
     # Restrict lookup to own company (superusers bypass)
+    from Apps.accounts.models import User as UserModel
     if request.user.is_superuser:
         blog_page = get_object_or_404(BlogPage, id=page_id)
+    elif request.user.role == UserModel.Role.COMPANY_USER:
+        # Normal user can ONLY edit their own blogs
+        blog_page = get_object_or_404(BlogPage, id=page_id, company=company, author=request.user)
     else:
         blog_page = get_object_or_404(BlogPage, id=page_id, company=company)
 
@@ -299,8 +303,13 @@ def dashboard_blog_edit(request, page_id):
 
 @login_required(login_url='/login/')
 def dashboard_blog_toggle_publish(request, page_id):
-    """Toggle Publish/Unpublish status - restricted to own company."""
+    """Toggle Publish/Unpublish status - restricted to Company Admins."""
     if request.method == 'POST':
+        from Apps.accounts.models import User as UserModel
+        if request.user.role == UserModel.Role.COMPANY_USER and not request.user.is_superuser:
+            messages.error(request, "Permission denied. Only Company Admins can toggle publish status.")
+            return redirect('/blog-posts/')
+
         company = _get_request_company(request.user)
         if request.user.is_superuser:
             blog_page = get_object_or_404(BlogPage, id=page_id)
@@ -325,8 +334,12 @@ def dashboard_blog_delete(request, page_id):
     """Delete a BlogPage - strictly restricted to own company."""
     if request.method == 'POST':
         company = _get_request_company(request.user)
+        from Apps.accounts.models import User as UserModel
         if request.user.is_superuser:
             blog_page = get_object_or_404(BlogPage, id=page_id)
+        elif request.user.role == UserModel.Role.COMPANY_USER:
+            # Normal user can ONLY delete their own blogs
+            blog_page = get_object_or_404(BlogPage, id=page_id, company=company, author=request.user)
         else:
             blog_page = get_object_or_404(BlogPage, id=page_id, company=company)
 
@@ -340,7 +353,7 @@ def dashboard_blog_delete(request, page_id):
 @login_required(login_url='/login/')
 def dashboard_blog_approve(request, page_id):
     """Company Admin approves (publishes) a pending employee blog draft."""
-    from Apps.accounts.models import User as UserModel
+    from Apps.accounts.models import User as UserModel, UserNotification
     if request.method == 'POST':
         # Only Company Admin or Super Admin can approve
         if request.user.role not in [UserModel.Role.COMPANY_ADMIN] and not request.user.is_superuser:
@@ -357,6 +370,16 @@ def dashboard_blog_approve(request, page_id):
         blog_page.save()
         revision = blog_page.save_revision()
         revision.publish()
+
+        # Send Notification to Author
+        if blog_page.author:
+            UserNotification.objects.create(
+                user=blog_page.author,
+                title="Blog Approved & Published 🎉",
+                message=f"Your blog '{blog_page.title}' has been approved and published by Company Admin.",
+                notification_type='approved'
+            )
+
         messages.success(request, f"✅ Blog '{blog_page.title}' approved & published successfully!")
 
     return redirect('/blog-posts/')
@@ -365,7 +388,7 @@ def dashboard_blog_approve(request, page_id):
 @login_required(login_url='/login/')
 def dashboard_blog_reject(request, page_id):
     """Company Admin rejects a pending employee blog submission."""
-    from Apps.accounts.models import User as UserModel
+    from Apps.accounts.models import User as UserModel, UserNotification
     if request.method == 'POST':
         if request.user.role not in [UserModel.Role.COMPANY_ADMIN] and not request.user.is_superuser:
             messages.error(request, "You don't have permission to reject blogs.")
@@ -380,6 +403,16 @@ def dashboard_blog_reject(request, page_id):
         blog_page.approval_status = BlogPage.APPROVAL_REJECTED
         blog_page.save()
         blog_page.unpublish()
+
+        # Send Notification to Author
+        if blog_page.author:
+            UserNotification.objects.create(
+                user=blog_page.author,
+                title="Blog Status Update ❌",
+                message=f"Your blog '{blog_page.title}' was reviewed and rejected by Company Admin.",
+                notification_type='rejected'
+            )
+
         messages.warning(request, f"❌ Blog '{blog_page.title}' has been rejected.")
 
     return redirect('/blog-posts/')
@@ -387,6 +420,11 @@ def dashboard_blog_reject(request, page_id):
 @login_required(login_url='/login/')
 def dashboard_website_integration(request):
     """View to provide ready-made RSS feed integration docs & snippets for logged-in company."""
+    from Apps.accounts.models import User as UserModel
+    if request.user.role == UserModel.Role.COMPANY_USER:
+        messages.error(request, "Access restricted. Integration settings are for Company Admins only.")
+        return redirect('/dashboard/')
+
     company = _get_request_company(request.user)
     
     company_slug = company.slug if (company and company.slug) else "your-company"

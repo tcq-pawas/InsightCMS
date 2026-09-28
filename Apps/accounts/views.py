@@ -88,12 +88,17 @@ def user_dashboard_view(request):
     # For employee view: fetch their own blogs with full details
     employee_blogs = dashboard_blogs_qs.select_related('category', 'featured_image').order_by('-latest_revision_created_at')
 
+    notifications = request.user.notifications.all()[:10]
+    unread_notifications_count = request.user.notifications.filter(is_read=False).count()
+
     context.update({
         'page': dashboard_page,
         'sidebar_links': sidebar_links,
         'user': request.user,
         'company': company,
         'is_employee': is_employee,
+        'notifications': notifications,
+        'unread_notifications_count': unread_notifications_count,
         'total_blogs_count': total_blogs_count,
         'today_blogs_count': today_blogs_count,
         'published_blogs_count': published_blogs_count,
@@ -113,6 +118,12 @@ def logout_view(request):
 def settings_view(request):
     if not request.user.is_authenticated:
         return redirect(get_login_url())
+
+    from Apps.accounts.models import User as UserModel
+    if request.user.role == UserModel.Role.COMPANY_USER:
+        from django.contrib import messages
+        messages.error(request, "Access restricted. Settings are for Company Admins only.")
+        return redirect('/dashboard/')
 
     from Apps.accounts.models import SettingsPage
     settings_page = SettingsPage.objects.live().first()
@@ -258,3 +269,73 @@ def forgot_password_view(request):
         'login_url': login_url,
         'submitted': submitted
     })
+
+
+def user_profile_view(request):
+    if not request.user.is_authenticated:
+        return redirect(get_login_url())
+
+    from django.contrib import messages
+    from django.contrib.auth import update_session_auth_hash
+    from Apps.companies.models import UserProfile
+    from Apps.accounts.models import UserDashboardPage
+
+    dashboard_page = UserDashboardPage.objects.live().first()
+    context = dashboard_page.get_context(request) if dashboard_page else {}
+    sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
+
+    profile = UserProfile.objects.filter(user=request.user).select_related('company').first()
+    company = profile.company if profile else None
+
+    if request.method == 'POST':
+        action_type = request.POST.get('action_type')
+
+        if action_type == 'update_password':
+            old_pass = request.POST.get('old_password', '')
+            new_pass1 = request.POST.get('new_password1', '')
+            new_pass2 = request.POST.get('new_password2', '')
+
+            if not request.user.check_password(old_pass):
+                messages.error(request, "Current password is incorrect!")
+            elif new_pass1 != new_pass2:
+                messages.error(request, "New passwords do not match!")
+            elif len(new_pass1) < 6:
+                messages.error(request, "New password must be at least 6 characters long!")
+            else:
+                request.user.set_password(new_pass1)
+                request.user.save()
+                update_session_auth_hash(request, request.user)
+                messages.success(request, "Password updated successfully!")
+            return redirect('/my-profile/#security')
+
+        else:
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            avatar_file = request.FILES.get('avatar')
+
+            user = request.user
+            if first_name is not None:
+                user.first_name = first_name.strip()
+            if last_name is not None:
+                user.last_name = last_name.strip()
+            if avatar_file and hasattr(user, 'avatar'):
+                user.avatar = avatar_file
+
+            user.save()
+            messages.success(request, "Profile details updated successfully!")
+            return redirect('/my-profile/')
+
+    notifications = request.user.notifications.all()[:10]
+    unread_notifications_count = request.user.notifications.filter(is_read=False).count()
+
+    context.update({
+        'page': dashboard_page,
+        'sidebar_links': sidebar_links,
+        'user': request.user,
+        'company': company,
+        'is_employee': (request.user.role == request.user.Role.COMPANY_USER),
+        'notifications': notifications,
+        'unread_notifications_count': unread_notifications_count,
+        'active_tab': 'my_profile',
+    })
+    return render(request, 'accounts/my_profile.html', context)
