@@ -1,0 +1,251 @@
+{% extends "companies/base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}Comments | {% if company and company.company_name %}{{ company.company_name }}{% elif dashboard_page and dashboard_page.brand_name %}{{ dashboard_page.brand_name }}{% else %}BlogPro{% endif %}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  body { background: #f8fafc; }
+  .comment-row:hover { background: #f8fafc; }
+  .badge-pending  { background: #fef3c7; color: #92400e; }
+  .badge-approved { background: #d1fae5; color: #065f46; }
+  .badge-spam     { background: #fee2e2; color: #991b1b; }
+  .comment-snippet { max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tab-link { padding: 10px 22px; border-bottom: 2px solid transparent; font-weight: 600; color: #64748b; text-decoration: none; display:inline-block; font-size: 0.92rem; }
+  .tab-link.active { border-bottom-color: #2563eb; color: #2563eb; }
+  .tab-link:hover { color: #2563eb; }
+  .reply-box { background: #f8fafc; border-left: 3px solid #2563eb; padding: 10px 14px; margin-top: 6px; border-radius: 6px; font-size: 0.83rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bp-app-wrapper">
+  <!-- Dynamic Wagtail Sidebar -->
+  {% include "accounts/blocks/sidebar.html" %}
+
+  <div class="bp-main-container flex-grow-1 d-flex flex-column min-vh-100">
+    <!-- Dynamic Topbar -->
+    {% include "accounts/blocks/topbar.html" %}
+
+    <main class="bp-content-body flex-grow-1 p-4" style="max-width:1200px; width:100%; margin:0 auto;">
+
+      <!-- Header — Dynamic from Wagtail CMS -->
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <h4 class="fw-bold mb-1" style="color:#0f172a; font-size:1.6rem;">
+            {% if dashboard_page and dashboard_page.comments_page_title %}{{ dashboard_page.comments_page_title }}{% else %}Comments{% endif %}
+          </h4>
+          <p class="text-muted small mb-0">
+            {% if dashboard_page and dashboard_page.comments_page_subtext %}{{ dashboard_page.comments_page_subtext }}{% else %}Moderate visitor comments on your blog posts across <strong>{% if company and company.company_name %}{{ company.company_name }}{% elif dashboard_page and dashboard_page.brand_name %}{{ dashboard_page.brand_name }}{% else %}your company{% endif %}</strong>.{% endif %}
+            {% if pending_count > 0 %}<span class="badge bg-warning text-dark ms-1">{{ pending_count }} pending</span>{% endif %}
+          </p>
+        </div>
+      </div>
+
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
+          {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+
+      <!-- Status Tabs -->
+      <div class="bg-white rounded-top-3 shadow-sm" style="border-bottom:1px solid #e2e8f0;">
+        <div class="px-3">
+          <a href="?status=all"      class="tab-link {% if status_filter == 'all' %}active{% endif %}">All</a>
+          <a href="?status=approved" class="tab-link {% if status_filter == 'approved' %}active{% endif %}">Approved</a>
+          <a href="?status=spam"     class="tab-link {% if status_filter == 'spam' %}active{% endif %}">Spam</a>
+        </div>
+      </div>
+
+      <!-- Comments List Table -->
+      <div class="bg-white rounded-bottom-3 shadow-sm mb-5">
+        {% if comments %}
+        <div class="table-responsive">
+        <table class="table mb-0">
+          <thead style="background:#f8fafc;">
+            <tr>
+              <th class="ps-4 py-3 text-muted fw-semibold" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.5px;">
+                {% if dashboard_page and dashboard_page.comments_th_author %}{{ dashboard_page.comments_th_author }}{% else %}Author{% endif %}
+              </th>
+              <th class="py-3 text-muted fw-semibold" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.5px;">
+                {% if dashboard_page and dashboard_page.comments_th_comment %}{{ dashboard_page.comments_th_comment }}{% else %}Comment{% endif %}
+              </th>
+              <th class="py-3 text-muted fw-semibold" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.5px;">
+                {% if dashboard_page and dashboard_page.comments_th_post %}{{ dashboard_page.comments_th_post }}{% else %}Blog Post{% endif %}
+              </th>
+              <th class="py-3 text-muted fw-semibold" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.5px;">
+                {% if dashboard_page and dashboard_page.comments_th_date %}{{ dashboard_page.comments_th_date }}{% else %}Date{% endif %}
+              </th>
+              <th class="py-3 text-muted fw-semibold" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.5px;">
+                {% if dashboard_page and dashboard_page.comments_th_status %}{{ dashboard_page.comments_th_status }}{% else %}Status{% endif %}
+              </th>
+              <th class="py-3 text-muted fw-semibold" style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.5px;">
+                {% if dashboard_page and dashboard_page.comments_th_actions %}{{ dashboard_page.comments_th_actions }}{% else %}Actions{% endif %}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for comment in comments %}
+          <tr class="comment-row border-top">
+            <!-- Author -->
+            <td class="ps-4 py-3 align-middle">
+              <div class="fw-semibold" style="font-size:0.92rem;color:#0f172a;">
+                {{ comment.author_name }}
+                {% if comment.admin_user %}<span class="badge ms-1" style="background:#dbeafe;color:#1e40af;font-size:0.7rem;">Team</span>{% endif %}
+              </div>
+              <div class="text-muted" style="font-size:0.78rem;">{{ comment.author_email }}</div>
+              {% if comment.parent %}
+                <div class="text-muted" style="font-size:0.76rem;">reply to {{ comment.parent.author_name }}</div>
+              {% endif %}
+            </td>
+
+            <!-- Comment content & replies -->
+            <td class="py-3 align-middle">
+              <div class="comment-snippet" title="{{ comment.content }}">{{ comment.content }}</div>
+              {% for reply in comment.replies.all %}
+                <div class="reply-box mt-1">
+                  <span class="fw-semibold" style="color:#2563eb;">{{ reply.author_name }}</span>
+                  {% if reply.admin_user %}<span class="badge ms-1" style="background:#dbeafe;color:#1e40af;font-size:0.68rem;">Team</span>{% endif %}
+                  <div class="text-muted mt-1">{{ reply.content }}</div>
+                </div>
+              {% endfor %}
+            </td>
+
+            <!-- Blog Post title -->
+            <td class="py-3 align-middle">
+              <a href="{{ comment.blog.full_url }}" target="_blank" class="text-decoration-none fw-medium" style="font-size:0.88rem;color:#2563eb;">
+                {{ comment.blog.title }}
+              </a>
+            </td>
+
+            <!-- Date -->
+            <td class="py-3 align-middle text-muted" style="font-size:0.82rem;white-space:nowrap;">
+              {{ comment.created_at|date:"M d, Y" }}<br>
+              <span style="font-size:0.76rem;">{{ comment.created_at|time:"H:i" }}</span>
+            </td>
+
+            <!-- Status Badge -->
+            <td class="py-3 align-middle">
+              <span class="badge badge-{{ comment.status }} px-2.5 py-1" style="border-radius:6px;font-size:0.78rem;">
+                {% if comment.status == "pending" %}Pending
+                {% elif comment.status == "approved" %}Approved
+                {% else %}Spam
+                {% endif %}
+              </span>
+            </td>
+
+            <!-- Action Buttons & Modals -->
+            <td class="py-3 align-middle">
+              <div class="d-flex gap-2 flex-wrap">
+                {% if comment.status == "spam" %}
+                  <!-- Restore from Spam → back to Approved -->
+                  <form method="post" action="{% url 'comment_approve' comment.id %}">{% csrf_token %}
+                    <button type="submit" class="btn btn-sm" style="background:#d1fae5;color:#065f46;border:none;font-size:0.8rem;" title="Restore to Approved">
+                      <i class="fas fa-rotate-left"></i> Restore
+                    </button>
+                  </form>
+                {% else %}
+                  {% if not comment.admin_user %}
+                    <button class="btn btn-sm" style="background:#dbeafe;color:#1e40af;border:none;font-size:0.8rem;"
+                      data-bs-toggle="modal" data-bs-target="#replyModal{{ comment.id }}">
+                      <i class="fas fa-reply"></i> Reply
+                    </button>
+                  {% endif %}
+                  <form method="post" action="{% url 'comment_delete' comment.id %}">{% csrf_token %}
+                    <input type="hidden" name="action" value="spam">
+                    <button type="submit" class="btn btn-sm" style="background:#fef3c7;color:#92400e;border:none;font-size:0.8rem;" title="Mark as Spam">
+                      <i class="fas fa-ban"></i>
+                    </button>
+                  </form>
+                {% endif %}
+                <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:none;font-size:0.8rem;"
+                  data-bs-toggle="modal" data-bs-target="#deleteModal{{ comment.id }}">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Reply Modal -->
+          <div class="modal fade" id="replyModal{{ comment.id }}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0">
+                  <h6 class="modal-title fw-bold">Reply to {{ comment.author_name }}</h6>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="p-3 mb-3 rounded-3" style="background:#f1f5f9;font-size:0.88rem;">
+                    <strong>Their comment:</strong><br>{{ comment.content }}
+                  </div>
+                  <form method="post" action="{% url 'comment_reply' comment.id %}">{% csrf_token %}
+                    <div class="mb-3">
+                      <label class="form-label small fw-semibold">Your Reply</label>
+                      <textarea name="reply_content" rows="4" class="form-control" placeholder="Write your reply..." required></textarea>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-end">
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn btn-sm text-white" style="background:#2563eb;">
+                        <i class="fas fa-paper-plane me-1"></i> Send Reply
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delete Modal -->
+          <div class="modal fade" id="deleteModal{{ comment.id }}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0">
+                  <h6 class="modal-title fw-bold text-danger">Delete Comment?</h6>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <p class="text-muted">Delete comment by <strong>{{ comment.author_name }}</strong>? This cannot be undone.</p>
+                  <form method="post" action="{% url 'comment_delete' comment.id %}">{% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <div class="d-flex gap-2 justify-content-end">
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash me-1"></i> Delete</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% endfor %}
+          </tbody>
+        </table>
+        </div>
+        {% else %}
+        <!-- Empty state -->
+        <div class="text-center py-5 text-muted">
+          <i class="fas fa-comment-slash fa-3x mb-3" style="color:#cbd5e1;"></i>
+          <p class="fw-semibold mb-1">
+            {% if dashboard_page and dashboard_page.comments_page_empty_heading %}{{ dashboard_page.comments_page_empty_heading }}{% else %}No comments yet{% endif %}
+          </p>
+          <p class="small">
+            {% if status_filter == "approved" %}No approved comments yet.
+            {% elif status_filter == "spam" %}No spam comments. 🎉
+            {% else %}{% if dashboard_page and dashboard_page.comments_page_empty_subtext %}{{ dashboard_page.comments_page_empty_subtext }}{% else %}Visitor comments on your blog posts will appear here.{% endif %}
+            {% endif %}
+          </p>
+        </div>
+        {% endif %}
+      </div>
+
+    </main>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from wagtail.images.models import Image
-from Apps.blogs.models import BlogPage, BlogCategory, BlogTag
+from Apps.blogs.models import BlogPage, BlogCategory, BlogTag, BlogComment
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -64,3 +64,17 @@ class BlogPageListSerializer(BlogPageSerializer):
             'author_name', 'category', 'tags', 'featured',
             'publish_date', 'company_name',
         ]
+
+
+class BlogCommentSerializer(serializers.ModelSerializer):
+    replies = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BlogComment
+        fields = ['id', 'author_name', 'content', 'created_at', 'parent', 'replies']
+
+    def get_replies(self, obj):
+        if obj.replies.exists():
+            approved_replies = obj.replies.filter(status='approved').order_by('created_at')
+            return BlogCommentSerializer(approved_replies, many=True).data
+        return []

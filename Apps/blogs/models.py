@@ -271,3 +271,68 @@ class BlogTag(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.company.company_name if self.company else 'Global'})"
+
+
+class BlogComment(models.Model):
+    """Comment on a BlogPage with support for moderation, replies, and notifications."""
+    
+    STATUS_PENDING = 'pending'
+    STATUS_APPROVED = 'approved'
+    STATUS_SPAM = 'spam'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending Approval'),
+        (STATUS_APPROVED, 'Approved'),
+        (STATUS_SPAM, 'Spam / Hidden'),
+    ]
+
+    blog = models.ForeignKey(
+        'blogs.BlogPage',
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name=_('Blog Post')
+    )
+    author_name = models.CharField(max_length=150, verbose_name=_('Commenter Name'))
+    author_email = models.EmailField(verbose_name=_('Commenter Email'))
+    content = models.TextField(verbose_name=_('Comment Text'))
+    
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+        verbose_name=_('Moderation Status')
+    )
+    
+    # Threaded replies (Admin / Author replying to visitor comment)
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='replies',
+        verbose_name=_('Parent Comment')
+    )
+    
+    # If an authenticated user (Company Admin / Writer) created this reply
+    admin_user = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='admin_comments',
+        verbose_name=_('Team Member (if reply)')
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('Created At'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_('Updated At'))
+
+    class Meta:
+        verbose_name = _('Blog Comment')
+        verbose_name_plural = _('Blog Comments')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Comment by {self.author_name} on {self.blog.title}"
+
+    @property
+    def is_reply(self):
+        return self.parent is not None

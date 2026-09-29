@@ -1,5 +1,6 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 
@@ -9,6 +10,7 @@ from Apps.blogs.serializers import (
     BlogPageListSerializer,
     BlogCategorySerializer,
     BlogTagSerializer,
+    BlogCommentSerializer,
 )
 from Apps.companies.authentication import CompanyAPIKeyAuthentication
 from Apps.companies.api_permissions import HasValidCompanyAPIKey
@@ -72,6 +74,45 @@ def blog_detail(request, slug):
 
     serializer = BlogPageSerializer(blog)
     return Response(serializer.data)
+
+
+@api_view(["GET", "POST"])
+@authentication_classes([CompanyAPIKeyAuthentication])
+@permission_classes([HasValidCompanyAPIKey])
+def api_blog_comments(request, slug):
+    """API endpoint for external websites to fetch approved comments or submit new comment."""
+    company = request.user
+    try:
+        blog = BlogPage.objects.live().public().get(company=company, slug=slug)
+    except BlogPage.DoesNotExist:
+        return Response({"detail": "Blog not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "GET":
+        comments = blog.comments.filter(status="approved", parent=None).order_by("-created_at")
+        serializer = BlogCommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+    elif request.method == "POST":
+        name = request.data.get("author_name", "").strip()
+        email = request.data.get("author_email", "").strip()
+        content = request.data.get("content", "").strip()
+
+        if not name or not content:
+            return Response({"detail": "author_name and content are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        comment = BlogComment.objects.create(
+            blog=blog,
+            author_name=name,
+            author_email=email,
+            content=content,
+            status="approved",
+        )
+        return Response({
+            "message": "Comment posted successfully.",
+            "id": comment.id,
+            "status": comment.status,
+        }, status=status.HTTP_201_CREATED)
+
 
 
 @api_view(["GET"])
@@ -454,3 +495,330 @@ def dashboard_website_integration(request):
         'active_tab': 'integration',
         'user': request.user,
     })
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# COMMENT SYSTEM VIEWS
+# ──────────────────────────────────────────────────────────────────────────────
+
+from Apps.blogs.models import BlogComment
+from django.views.decorators.http import require_POST
+from django.core.mail import send_mail
+from django.conf import settings as django_settings_mail
+
+
+def comment_submit(request, page_id):
+    """Public view — visitors submit a comment on a blog post page."""
+    blog = get_object_or_404(BlogPage, pk=page_id)
+    if request.method == 'POST':
+        name = request.POST.get('author_name', '').strip()
+        email = request.POST.get('author_email', '').strip()
+        content = request.POST.get('content', '').strip()
+
+        if name and content:
+            comment = BlogComment.objects.create(
+                blog=blog,
+                author_name=name,
+                author_email=email,
+                content=content,
+                status='approved',
+            )
+            # Email notification to blog author + admin
+            recipients = []
+            if blog.owner and blog.owner.email:
+                recipients.append(blog.owner.email)
+            # Also notify company admin if different
+            if blog.company:
+                from Apps.companies.models import UserProfile
+                admins = UserProfile.objects.filter(
+                    company=blog.company,
+                    user__role='company_admin',
+                    user__is_active=True
+                ).values_list('user__email', flat=True)
+                recipients += list(admins)
+                if not recipients and blog.company.email:
+                    recipients.append(blog.company.email)
+            recipients = list(set(r for r in recipients if r))
+            if recipients:
+                try:
+                    send_mail(
+                        subject=f'New comment on "{blog.title}"',
+                        message=(
+                            f'A new comment was posted by {name} ({email}):\n\n'
+                            f'"{content}"\n\n'
+                            f'Visit your dashboard to view or delete it if needed.\n'
+                        ),
+                        from_email=getattr(django_settings_mail, 'DEFAULT_FROM_EMAIL', 'noreply@insightcms.com'),
+                        recipient_list=recipients,
+                        fail_silently=True,
+                    )
+                except Exception:
+                    pass
+            messages.success(request, 'Your comment has been posted successfully!')
+        else:
+            messages.error(request, 'Name and comment are required.')
+
+    return redirect(blog.full_url if hasattr(blog, 'full_url') else '/')
+
+
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+
+@csrf_exempt
+def comment_submit_by_slug(request, slug):
+    """
+    Public endpoint for external sites (e.g. HeyDay/Hectare) to:
+    1. GET /blogs/<slug>/comments/submit/ -> returns JSON array of approved comments + replies
+    2. POST /blogs/<slug>/comments/submit/ -> submits a comment and returns JSON result
+    """
+    blog = BlogPage.objects.live().filter(slug=slug).first()
+    if not blog:
+        return JsonResponse({'error': 'Blog post not found.'}, status=404)
+
+    if request.method == 'GET':
+        comments = blog.comments.filter(status='approved', parent=None).order_by('-created_at')
+        comments_data = []
+        for c in comments:
+            replies_data = []
+            for r in c.replies.filter(status='approved'):
+                replies_data.append({
+                    'id': r.id,
+                    'author_name': r.author_name,
+                    'author_email': r.author_email,
+                    'content': r.content,
+                    'created_at': r.created_at.strftime('%b %d, %Y'),
+                    'is_team': bool(r.admin_user),
+                })
+            comments_data.append({
+                'id': c.id,
+                'author_name': c.author_name,
+                'author_email': c.author_email,
+                'content': c.content,
+                'created_at': c.created_at.strftime('%b %d, %Y'),
+                'is_team': bool(c.admin_user),
+                'replies': replies_data,
+            })
+        return JsonResponse({'success': True, 'count': len(comments_data), 'comments': comments_data})
+
+    elif request.method == 'POST':
+        # Accept JSON body or regular form data
+        name = ''
+        email = ''
+        content = ''
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+                name = data.get('author_name', '').strip()
+                email = data.get('author_email', '').strip()
+                content = data.get('content', '').strip()
+            except Exception:
+                pass
+        else:
+            name = request.POST.get('author_name', '').strip()
+            email = request.POST.get('author_email', '').strip()
+            content = request.POST.get('content', '').strip()
+
+        if not name or not content:
+            return JsonResponse({'error': 'Author name and comment content are required.'}, status=400)
+
+        comment = BlogComment.objects.create(
+            blog=blog,
+            author_name=name,
+            author_email=email,
+            content=content,
+            status='approved',
+        )
+
+        # Send email notifications
+        recipients = []
+        if blog.owner and blog.owner.email:
+            recipients.append(blog.owner.email)
+        if blog.company:
+            from Apps.companies.models import UserProfile
+            admins = UserProfile.objects.filter(
+                company=blog.company,
+                user__role='company_admin',
+                user__is_active=True
+            ).values_list('user__email', flat=True)
+            recipients += list(admins)
+            if not recipients and blog.company.email:
+                recipients.append(blog.company.email)
+        recipients = list(set(r for r in recipients if r))
+        if recipients:
+            try:
+                send_mail(
+                    subject=f'New comment on "{blog.title}"',
+                    message=(
+                        f'A new comment was posted by {name} ({email}):\n\n'
+                        f'"{content}"\n\n'
+                        f'Visit your dashboard to view or moderate it:\n'
+                        f'http://127.0.0.1:8000/comments/\n'
+                    ),
+                    from_email=getattr(django_settings_mail, 'DEFAULT_FROM_EMAIL', 'noreply@insightcms.com'),
+                    recipient_list=recipients,
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Comment submitted and published successfully!',
+            'comment_id': comment.id
+        }, status=201)
+
+    return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+
+@login_required(login_url='/login/')
+def dashboard_comments_view(request):
+    """Dashboard — list all comments for this company's blogs."""
+    from Apps.accounts.models import User as UserModel, UserDashboardPage
+    user = request.user
+    company = _get_request_company(user)
+
+    if user.role == UserModel.Role.COMPANY_USER:
+        # Employee sees only comments on their own blogs
+        comments = BlogComment.objects.filter(
+            blog__owner=user
+        ).select_related('blog', 'parent').order_by('-created_at')
+    else:
+        # Admin sees all company blog comments
+        comments = BlogComment.objects.filter(
+            blog__company=company
+        ).select_related('blog', 'parent').order_by('-created_at')
+
+    # Filter by status tab
+    status_filter = request.GET.get('status', 'all')
+    if status_filter in ('pending', 'approved', 'spam'):
+        comments = comments.filter(status=status_filter)
+
+    # Counts for badges
+    pending_count = BlogComment.objects.filter(
+        blog__company=company, status='pending'
+    ).count() if user.role != UserModel.Role.COMPANY_USER else BlogComment.objects.filter(
+        blog__owner=user, status='pending'
+    ).count()
+
+    dashboard_page = UserDashboardPage.objects.live().first()
+    sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
+
+    return render(request, 'blogs/dashboard_comments.html', {
+        'comments': comments,
+        'status_filter': status_filter,
+        'pending_count': pending_count,
+        'sidebar_links': sidebar_links,
+        'active_tab': 'comments',
+        'user': user,
+        'company': company,
+        'is_employee': user.role == UserModel.Role.COMPANY_USER,
+        'dashboard_page': dashboard_page,
+    })
+
+
+@login_required(login_url='/login/')
+def comment_approve(request, comment_id):
+    """Approve a pending comment OR restore a spam comment back to approved."""
+    from Apps.accounts.models import User as UserModel
+    comment = get_object_or_404(BlogComment, pk=comment_id)
+    company = _get_request_company(request.user)
+
+    # Permission check
+    if request.user.role == UserModel.Role.COMPANY_USER:
+        if comment.blog.owner != request.user:
+            messages.error(request, 'You do not have permission to approve this comment.')
+            return redirect('dashboard_comments')
+    else:
+        if comment.blog.company != company:
+            messages.error(request, 'Access denied.')
+            return redirect('dashboard_comments')
+
+    was_spam = comment.status == 'spam'
+    comment.status = 'approved'
+    comment.save(update_fields=['status'])
+    if was_spam:
+        messages.success(request, 'Comment restored to Approved.')
+    else:
+        messages.success(request, 'Comment approved.')
+    return redirect('dashboard_comments')
+
+
+@login_required(login_url='/login/')
+def comment_delete(request, comment_id):
+    """Delete (or mark spam) a comment."""
+    from Apps.accounts.models import User as UserModel
+    comment = get_object_or_404(BlogComment, pk=comment_id)
+    company = _get_request_company(request.user)
+
+    if request.user.role == UserModel.Role.COMPANY_USER:
+        if comment.blog.owner != request.user:
+            messages.error(request, 'You do not have permission.')
+            return redirect('dashboard_comments')
+    else:
+        if comment.blog.company != company:
+            messages.error(request, 'Access denied.')
+            return redirect('dashboard_comments')
+
+    action = request.POST.get('action', 'delete')
+    if action == 'spam':
+        comment.status = 'spam'
+        comment.save(update_fields=['status'])
+        messages.success(request, 'Comment marked as spam.')
+    else:
+        comment.delete()
+        messages.success(request, 'Comment deleted.')
+    return redirect('dashboard_comments')
+
+
+@login_required(login_url='/login/')
+def comment_reply(request, comment_id):
+    """Admin/Author replies to a visitor comment from the dashboard."""
+    from Apps.accounts.models import User as UserModel
+    parent_comment = get_object_or_404(BlogComment, pk=comment_id)
+    company = _get_request_company(request.user)
+
+    if request.user.role == UserModel.Role.COMPANY_USER:
+        if parent_comment.blog.owner != request.user:
+            messages.error(request, 'You do not have permission.')
+            return redirect('dashboard_comments')
+    else:
+        if parent_comment.blog.company != company:
+            messages.error(request, 'Access denied.')
+            return redirect('dashboard_comments')
+
+    if request.method == 'POST':
+        reply_content = request.POST.get('reply_content', '').strip()
+        if reply_content:
+            reply = BlogComment.objects.create(
+                blog=parent_comment.blog,
+                author_name=request.user.get_full_name() or request.user.email,
+                author_email=request.user.email,
+                content=reply_content,
+                status='approved',   # admin replies are auto-approved
+                parent=parent_comment,
+                admin_user=request.user,
+            )
+            # Notify the original commenter by email
+            if parent_comment.author_email:
+                try:
+                    send_mail(
+                        subject=f'Reply to your comment on "{parent_comment.blog.title}"',
+                        message=(
+                            f'Hi {parent_comment.author_name},\n\n'
+                            f'The team replied to your comment:\n\n'
+                            f'Your comment: "{parent_comment.content}"\n\n'
+                            f'Reply: "{reply_content}"\n\n'
+                            f'Visit the blog post to see the full conversation.'
+                        ),
+                        from_email=getattr(django_settings_mail, 'DEFAULT_FROM_EMAIL', 'noreply@insightcms.com'),
+                        recipient_list=[parent_comment.author_email],
+                        fail_silently=True,
+                    )
+                except Exception:
+                    pass
+            messages.success(request, 'Reply posted.')
+        else:
+            messages.error(request, 'Reply cannot be empty.')
+
+    return redirect('dashboard_comments')

@@ -74,6 +74,9 @@
                   <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background-color: #fff8e1 !important; color: #b78103 !important; border: 1px solid #ffe082;">⏳ Waiting for Approval</span>
                 {% endif %}
                 · {{ blog.first_published_at|date:"M d, Y"|default:blog.latest_revision_created_at|date:"M d, Y" }}
+                · <a href="{% url 'dashboard_comments' %}?status=all" class="text-decoration-none text-muted" title="View & Moderate Comments">
+                    <i class="fa-regular fa-comment me-1" style="color: #2563eb;"></i>{{ blog.comments.count }}
+                  </a>
               </span>
 
               {% if blog.short_description %}

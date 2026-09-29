@@ -407,6 +407,20 @@ class UserDashboardPage(Page):
     view_all_comments_text = models.CharField(max_length=50, blank=True, default="View All")
     view_all_comments_url = models.CharField(max_length=255, blank=True, default="/cms/")
 
+    # Comments Moderation Page Fields (Editable from Wagtail CMS /cms/)
+    comments_page_title = models.CharField(max_length=150, blank=True, default="Comments", verbose_name="Comments Page Title")
+    comments_page_subtext = models.CharField(max_length=255, blank=True, default="Moderate visitor comments on your blog posts.", verbose_name="Comments Page Subtitle")
+    comments_page_empty_heading = models.CharField(max_length=100, blank=True, default="No comments yet", verbose_name="Empty State Title")
+    comments_page_empty_subtext = models.CharField(max_length=255, blank=True, default="Visitor comments on your blog posts will appear here.", verbose_name="Empty State Subtitle")
+
+    # Comments Table Column Headers
+    comments_th_author  = models.CharField(max_length=50, blank=True, default="Author",   verbose_name="Column: Author")
+    comments_th_comment = models.CharField(max_length=50, blank=True, default="Comment",  verbose_name="Column: Comment")
+    comments_th_post    = models.CharField(max_length=50, blank=True, default="Blog Post", verbose_name="Column: Blog Post")
+    comments_th_date    = models.CharField(max_length=50, blank=True, default="Date",     verbose_name="Column: Date")
+    comments_th_status  = models.CharField(max_length=50, blank=True, default="Status",   verbose_name="Column: Status")
+    comments_th_actions = models.CharField(max_length=50, blank=True, default="Actions",  verbose_name="Column: Actions")
+
     # Comment 1
     comment_1_author = models.CharField(max_length=100, blank=True, default="Alex Johnson")
     comment_1_time = models.CharField(max_length=50, blank=True, default="10m ago")
@@ -518,6 +532,18 @@ class UserDashboardPage(Page):
             FieldPanel("empty_create_btn_text"),
         ], heading="3. Recent Posts Table Configuration"),
         MultiFieldPanel([
+            FieldPanel("comments_page_title"),
+            FieldPanel("comments_page_subtext"),
+            FieldPanel("comments_page_empty_heading"),
+            FieldPanel("comments_page_empty_subtext"),
+            FieldPanel("comments_th_author"),
+            FieldPanel("comments_th_comment"),
+            FieldPanel("comments_th_post"),
+            FieldPanel("comments_th_date"),
+            FieldPanel("comments_th_status"),
+            FieldPanel("comments_th_actions"),
+        ], heading="4. Comments Moderation Page"),
+        MultiFieldPanel([
             FieldPanel("footer_tagline"),
             FieldPanel("footer_facebook_url"),
             FieldPanel("footer_twitter_url"),
@@ -534,7 +560,7 @@ class UserDashboardPage(Page):
             FieldPanel("footer_col2_link2_text"),
             FieldPanel("footer_col2_link2_url"),
             FieldPanel("copyright_text"),
-        ], heading="4. Footer Settings & Social Links"),
+        ], heading="5. Footer Settings & Social Links"),
     ]
         
 
