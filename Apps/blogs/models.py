@@ -136,6 +136,11 @@ class BlogPage(Page):
         default=False,
         verbose_name=_('Featured Blog')
     )
+    allow_comments = models.BooleanField(
+        default=True,
+        verbose_name=_('Allow Comments'),
+        help_text=_('Enable or disable visitor comments for this blog post.')
+    )
     publish_date = models.DateTimeField(
         null=True,
         blank=True,
@@ -161,6 +166,7 @@ class BlogPage(Page):
         FieldPanel('category'),
         FieldPanel('tags'),
         FieldPanel('featured'),
+        FieldPanel('allow_comments'),
         FieldPanel('publish_date'),
     ]
     
@@ -278,11 +284,12 @@ class BlogComment(models.Model):
     
     STATUS_PENDING = 'pending'
     STATUS_APPROVED = 'approved'
-    STATUS_SPAM = 'spam'
+    STATUS_REJECTED = 'rejected'
+    STATUS_SPAM = 'spam'  # backward-compatible alias for rejected
     STATUS_CHOICES = [
-        (STATUS_PENDING, 'Pending Approval'),
+        (STATUS_PENDING, 'Pending'),
         (STATUS_APPROVED, 'Approved'),
-        (STATUS_SPAM, 'Spam / Hidden'),
+        (STATUS_REJECTED, 'Rejected'),
     ]
 
     blog = models.ForeignKey(
@@ -298,7 +305,7 @@ class BlogComment(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default=STATUS_PENDING,
+        default=STATUS_APPROVED,
         verbose_name=_('Moderation Status')
     )
     

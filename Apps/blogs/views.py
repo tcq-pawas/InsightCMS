@@ -206,6 +206,7 @@ def dashboard_blog_create(request):
             category = cat_qs.filter(id=category_id).first()
 
         # Create BlogPage instance strictly scoped to company
+        allow_comments = request.POST.get('allow_comments') == 'on' if 'allow_comments' in request.POST else True
         blog_page = BlogPage(
             title=title,
             short_description=short_description,
@@ -213,7 +214,8 @@ def dashboard_blog_create(request):
             category=category,
             featured_image=wagtail_image,
             author=request.user,
-            company=company
+            company=company,
+            allow_comments=allow_comments,
         )
 
         # Add to Wagtail page tree
@@ -281,6 +283,7 @@ def dashboard_blog_edit(request, page_id):
         blog_page.title = request.POST.get('title', blog_page.title)
         blog_page.short_description = request.POST.get('short_description', blog_page.short_description)
         blog_page.body = request.POST.get('body', blog_page.body)
+        blog_page.allow_comments = request.POST.get('allow_comments') == 'on' if 'allow_comments' in request.POST else False
         
         category_id = request.POST.get('category')
         if category_id:
@@ -515,13 +518,17 @@ def comment_submit(request, page_id):
         email = request.POST.get('author_email', '').strip()
         content = request.POST.get('content', '').strip()
 
+        if not getattr(blog, 'allow_comments', True):
+            messages.error(request, 'Comments are closed for this blog post.')
+            return redirect(blog.full_url if hasattr(blog, 'full_url') else '/')
+
         if name and content:
             comment = BlogComment.objects.create(
                 blog=blog,
                 author_name=name,
                 author_email=email,
                 content=content,
-                status='approved',
+                status='pending',
             )
             # Email notification to blog author + admin
             recipients = []
@@ -546,7 +553,8 @@ def comment_submit(request, page_id):
                         message=(
                             f'A new comment was posted by {name} ({email}):\n\n'
                             f'"{content}"\n\n'
-                            f'Visit your dashboard to view or delete it if needed.\n'
+                            f'Visit your dashboard to view or moderate it:\n'
+                            f'http://127.0.0.1:8000/comments/?status=pending\n'
                         ),
                         from_email=getattr(django_settings_mail, 'DEFAULT_FROM_EMAIL', 'noreply@insightcms.com'),
                         recipient_list=recipients,
@@ -554,7 +562,7 @@ def comment_submit(request, page_id):
                     )
                 except Exception:
                     pass
-            messages.success(request, 'Your comment has been posted successfully!')
+            messages.success(request, 'Your comment has been submitted and is awaiting approval.')
         else:
             messages.error(request, 'Name and comment are required.')
 
@@ -576,58 +584,80 @@ def comment_submit_by_slug(request, slug):
     if not blog:
         return JsonResponse({'error': 'Blog post not found.'}, status=404)
 
+    def serialize_comment(c):
+        child_replies = []
+        for r in c.replies.filter(status='approved').order_by('created_at'):
+            child_replies.append(serialize_comment(r))
+        return {
+            'id': c.id,
+            'author_name': c.author_name,
+            'author_email': c.author_email,
+            'content': c.content,
+            'created_at': c.created_at.strftime('%b %d, %Y'),
+            'is_team': bool(c.admin_user),
+            'replies': child_replies,
+        }
+
     if request.method == 'GET':
-        comments = blog.comments.filter(status='approved', parent=None).order_by('-created_at')
-        comments_data = []
-        for c in comments:
-            replies_data = []
-            for r in c.replies.filter(status='approved'):
-                replies_data.append({
-                    'id': r.id,
-                    'author_name': r.author_name,
-                    'author_email': r.author_email,
-                    'content': r.content,
-                    'created_at': r.created_at.strftime('%b %d, %Y'),
-                    'is_team': bool(r.admin_user),
-                })
-            comments_data.append({
-                'id': c.id,
-                'author_name': c.author_name,
-                'author_email': c.author_email,
-                'content': c.content,
-                'created_at': c.created_at.strftime('%b %d, %Y'),
-                'is_team': bool(c.admin_user),
-                'replies': replies_data,
-            })
-        return JsonResponse({'success': True, 'count': len(comments_data), 'comments': comments_data})
+        if not getattr(blog, 'allow_comments', True):
+            return JsonResponse({'success': True, 'allow_comments': False, 'count': 0, 'comments': []})
+        root_comments = blog.comments.filter(status='approved', parent=None).order_by('-created_at')
+        comments_data = [serialize_comment(c) for c in root_comments]
+        return JsonResponse({'success': True, 'allow_comments': True, 'count': len(comments_data), 'comments': comments_data})
 
     elif request.method == 'POST':
         # Accept JSON body or regular form data
         name = ''
         email = ''
         content = ''
+        parent_id = None
+        action = None
+        comment_id = None
+
         if request.content_type == 'application/json':
             try:
                 data = json.loads(request.body.decode('utf-8'))
+                action = data.get('action')
+                comment_id = data.get('comment_id')
                 name = data.get('author_name', '').strip()
                 email = data.get('author_email', '').strip()
                 content = data.get('content', '').strip()
+                parent_id = data.get('parent_id')
             except Exception:
                 pass
         else:
+            action = request.POST.get('action')
+            comment_id = request.POST.get('comment_id')
             name = request.POST.get('author_name', '').strip()
             email = request.POST.get('author_email', '').strip()
             content = request.POST.get('content', '').strip()
+            parent_id = request.POST.get('parent_id')
+
+        # Handle comment deletion
+        if action == 'delete' and comment_id:
+            del_comment = BlogComment.objects.filter(pk=comment_id, blog=blog).first()
+            if del_comment:
+                del_comment.delete()
+                return JsonResponse({'success': True, 'message': 'Comment deleted successfully.'})
+            return JsonResponse({'error': 'Comment not found.'}, status=404)
+
+        if not getattr(blog, 'allow_comments', True):
+            return JsonResponse({'error': 'Comments are disabled for this blog post.'}, status=403)
 
         if not name or not content:
             return JsonResponse({'error': 'Author name and comment content are required.'}, status=400)
+
+        parent_comment = None
+        if parent_id:
+            parent_comment = BlogComment.objects.filter(pk=parent_id, blog=blog).first()
 
         comment = BlogComment.objects.create(
             blog=blog,
             author_name=name,
             author_email=email,
             content=content,
-            status='approved',
+            parent=parent_comment,
+            status='pending',
         )
 
         # Send email notifications
@@ -653,7 +683,7 @@ def comment_submit_by_slug(request, slug):
                         f'A new comment was posted by {name} ({email}):\n\n'
                         f'"{content}"\n\n'
                         f'Visit your dashboard to view or moderate it:\n'
-                        f'http://127.0.0.1:8000/comments/\n'
+                        f'http://127.0.0.1:8000/comments/?status=pending\n'
                     ),
                     from_email=getattr(django_settings_mail, 'DEFAULT_FROM_EMAIL', 'noreply@insightcms.com'),
                     recipient_list=recipients,
@@ -664,8 +694,9 @@ def comment_submit_by_slug(request, slug):
 
         return JsonResponse({
             'success': True,
-            'message': 'Comment submitted and published successfully!',
-            'comment_id': comment.id
+            'message': 'Your comment has been submitted and is awaiting admin approval.',
+            'comment_id': comment.id,
+            'status': 'pending'
         }, status=201)
 
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
@@ -673,41 +704,60 @@ def comment_submit_by_slug(request, slug):
 
 @login_required(login_url='/login/')
 def dashboard_comments_view(request):
-    """Dashboard — list all comments for this company's blogs."""
+    """Dashboard — list all comments for this company's blogs with blog filter and counts."""
     from Apps.accounts.models import User as UserModel, UserDashboardPage
+    from Apps.blogs.models import BlogPage
     user = request.user
     company = _get_request_company(user)
 
     if user.role == UserModel.Role.COMPANY_USER:
-        # Employee sees only comments on their own blogs
-        comments = BlogComment.objects.filter(
-            blog__owner=user
-        ).select_related('blog', 'parent').order_by('-created_at')
+        blogs_list = BlogPage.objects.live().filter(owner=user).order_by('title')
+        base_comments = BlogComment.objects.filter(blog__owner=user)
     else:
-        # Admin sees all company blog comments
-        comments = BlogComment.objects.filter(
-            blog__company=company
-        ).select_related('blog', 'parent').order_by('-created_at')
+        blogs_list = BlogPage.objects.live().filter(company=company).order_by('title')
+        base_comments = BlogComment.objects.filter(blog__company=company)
+
+    # Filter by specific Blog Post
+    selected_blog_id = request.GET.get('blog_id')
+    selected_blog = None
+    if selected_blog_id:
+        try:
+            selected_blog = blogs_list.filter(id=int(selected_blog_id)).first()
+            if selected_blog:
+                base_comments = base_comments.filter(blog=selected_blog)
+        except (ValueError, TypeError):
+            selected_blog_id = None
+
+    # Calculate scope counts (Total, Pending, Approved, Rejected)
+    total_count = base_comments.count()
+    pending_count = base_comments.filter(status='pending').count()
+    approved_count = base_comments.filter(status='approved').count()
+    rejected_count = base_comments.filter(status__in=['rejected', 'spam']).count()
+
+    comments = base_comments.select_related('blog', 'parent', 'admin_user').order_by('-created_at')
 
     # Filter by status tab
     status_filter = request.GET.get('status', 'all')
-    if status_filter in ('pending', 'approved', 'spam'):
-        comments = comments.filter(status=status_filter)
-
-    # Counts for badges
-    pending_count = BlogComment.objects.filter(
-        blog__company=company, status='pending'
-    ).count() if user.role != UserModel.Role.COMPANY_USER else BlogComment.objects.filter(
-        blog__owner=user, status='pending'
-    ).count()
+    if status_filter == 'pending':
+        comments = comments.filter(status='pending')
+    elif status_filter == 'approved':
+        comments = comments.filter(status='approved')
+    elif status_filter in ('rejected', 'spam'):
+        comments = comments.filter(status__in=['rejected', 'spam'])
 
     dashboard_page = UserDashboardPage.objects.live().first()
     sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
 
     return render(request, 'blogs/dashboard_comments.html', {
         'comments': comments,
-        'status_filter': status_filter,
+        'blogs_list': blogs_list,
+        'selected_blog_id': int(selected_blog_id) if selected_blog_id else None,
+        'selected_blog': selected_blog,
+        'total_count': total_count,
         'pending_count': pending_count,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'status_filter': status_filter,
         'sidebar_links': sidebar_links,
         'active_tab': 'comments',
         'user': user,
@@ -719,7 +769,7 @@ def dashboard_comments_view(request):
 
 @login_required(login_url='/login/')
 def comment_approve(request, comment_id):
-    """Approve a pending comment OR restore a spam comment back to approved."""
+    """Approve a pending comment OR restore a rejected/spam comment back to approved."""
     from Apps.accounts.models import User as UserModel
     comment = get_object_or_404(BlogComment, pk=comment_id)
     company = _get_request_company(request.user)
@@ -734,10 +784,10 @@ def comment_approve(request, comment_id):
             messages.error(request, 'Access denied.')
             return redirect('dashboard_comments')
 
-    was_spam = comment.status == 'spam'
+    was_rejected = comment.status in ('rejected', 'spam')
     comment.status = 'approved'
     comment.save(update_fields=['status'])
-    if was_spam:
+    if was_rejected:
         messages.success(request, 'Comment restored to Approved.')
     else:
         messages.success(request, 'Comment approved.')
@@ -746,7 +796,7 @@ def comment_approve(request, comment_id):
 
 @login_required(login_url='/login/')
 def comment_delete(request, comment_id):
-    """Delete (or mark spam) a comment."""
+    """Delete (or mark rejected/spam) a comment."""
     from Apps.accounts.models import User as UserModel
     comment = get_object_or_404(BlogComment, pk=comment_id)
     company = _get_request_company(request.user)
@@ -761,10 +811,10 @@ def comment_delete(request, comment_id):
             return redirect('dashboard_comments')
 
     action = request.POST.get('action', 'delete')
-    if action == 'spam':
-        comment.status = 'spam'
+    if action in ('reject', 'rejected', 'spam'):
+        comment.status = 'rejected'
         comment.save(update_fields=['status'])
-        messages.success(request, 'Comment marked as spam.')
+        messages.success(request, 'Comment marked as rejected.')
     else:
         comment.delete()
         messages.success(request, 'Comment deleted.')
@@ -817,8 +867,41 @@ def comment_reply(request, comment_id):
                     )
                 except Exception:
                     pass
-            messages.success(request, 'Reply posted.')
+            messages.success(request, 'Reply posted successfully.')
         else:
             messages.error(request, 'Reply cannot be empty.')
+
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'dashboard_comments'
+    return redirect(next_url)
+
+
+@login_required(login_url='/login/')
+def comments_bulk_action(request):
+    """Bulk delete, bulk approve, or bulk spam selected comments."""
+    from Apps.accounts.models import User as UserModel
+    if request.method == 'POST':
+        action = request.POST.get('bulk_action', 'delete')
+        comment_ids = request.POST.getlist('selected_comments')
+
+        if not comment_ids:
+            messages.warning(request, 'Please select at least one comment.')
+            return redirect('dashboard_comments')
+
+        company = _get_request_company(request.user)
+        if request.user.role == UserModel.Role.COMPANY_USER:
+            qs = BlogComment.objects.filter(id__in=comment_ids, blog__owner=request.user)
+        else:
+            qs = BlogComment.objects.filter(id__in=comment_ids, blog__company=company)
+
+        count = qs.count()
+        if action == 'delete':
+            qs.delete()
+            messages.success(request, f'Successfully deleted {count} comment(s).')
+        elif action == 'spam':
+            qs.update(status='spam')
+            messages.success(request, f'Successfully marked {count} comment(s) as spam.')
+        elif action == 'approve':
+            qs.update(status='approved')
+            messages.success(request, f'Successfully approved {count} comment(s).')
 
     return redirect('dashboard_comments')

@@ -24,6 +24,7 @@ from Apps.blogs.views import (
     comment_delete,
     comment_reply,
     comment_submit_by_slug,
+    comments_bulk_action,
     dashboard_blog_toggle_publish,
     dashboard_blog_delete,
     dashboard_blog_approve,
@@ -64,6 +65,7 @@ urlpatterns = [
     path('comments/<int:comment_id>/approve/', comment_approve, name='comment_approve'),
     path('comments/<int:comment_id>/delete/', comment_delete, name='comment_delete'),
     path('comments/<int:comment_id>/reply/', comment_reply, name='comment_reply'),
+    path('comments/bulk-action/', comments_bulk_action, name='comments_bulk_action'),
     # Public comment submit (no login required — for blog post page & external sites)
     path('blogs/<int:page_id>/comments/submit/', comment_submit, name='comment_submit'),
     path('blogs/<slug:slug>/comments/submit/', comment_submit_by_slug, name='comment_submit_slug'),

@@ -1,0 +1,56 @@
+﻿<div class="d-flex gap-3 {% if is_child %}mt-3 ms-4{% else %}mb-4{% endif %}">
+  <!-- Avatar -->
+  <div class="flex-shrink-0">
+    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm"
+         style="width:{% if is_child %}34px{% else %}40px{% endif %};height:{% if is_child %}34px{% else %}40px{% endif %};background:{% if comment.admin_user %}#0F766E{% else %}#475569{% endif %};font-size:{% if is_child %}0.85rem{% else %}1rem{% endif %};">
+      {{ comment.author_name|first|upper }}
+    </div>
+  </div>
+
+  <!-- Comment bubble & thread -->
+  <div class="flex-grow-1">
+    <div class="p-3 rounded-3" style="background:{% if comment.admin_user %}#eff6ff{% else %}#f8fafc{% endif %};border:1px solid {% if comment.admin_user %}#bfdbfe{% else %}#e2e8f0{% endif %};">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="fw-semibold" style="font-size:{% if is_child %}0.88rem{% else %}0.92rem{% endif %};color:#1e293b;">
+          {{ comment.author_name }}
+          {% if comment.admin_user %}
+            <span class="badge ms-1" style="background:#2563eb;color:#fff;font-size:0.68rem;">Team Reply</span>
+          {% endif %}
+        </span>
+        <span class="text-muted" style="font-size:0.74rem;">{{ comment.created_at|timesince }} ago</span>
+      </div>
+      <p class="mb-0" style="font-size:{% if is_child %}0.88rem{% else %}0.9rem{% endif %};color:#374151;">{{ comment.content }}</p>
+    </div>
+
+    <!-- Action: Reply Button -->
+    <div class="mt-1 ms-1">
+      <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 fw-semibold" style="font-size:0.75rem; color:#2563eb;" onclick="toggleBlogPreviewReply('{{ comment.id }}')">
+        <i class="fa-solid fa-reply me-1"></i> Reply
+      </button>
+    </div>
+
+    <!-- Inline Reply Box -->
+    <div id="preview-reply-{{ comment.id }}" style="display:none;" class="mt-2 p-3 bg-white rounded-3 border">
+      <form method="post" action="{% url 'comment_reply' comment.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}#comments">
+        <div class="mb-2">
+          <textarea name="reply_content" rows="2" class="form-control form-control-sm" placeholder="Write a team reply to {{ comment.author_name }}..." required></textarea>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" style="font-size:0.78rem;" onclick="toggleBlogPreviewReply('{{ comment.id }}')">Cancel</button>
+          <button type="submit" class="btn btn-sm text-white fw-semibold" style="background:#2563eb; font-size:0.78rem;">
+            <i class="fa-solid fa-paper-plane me-1"></i> Send Reply
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Recursive child replies -->
+    {% for child in comment.replies.all %}
+      {% if child.status == "approved" %}
+        {% include "blogs/includes/blog_comment_node.html" with comment=child is_child=True %}
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>

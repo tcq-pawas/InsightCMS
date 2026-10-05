@@ -90,7 +90,16 @@
                   <span>Visibility:</span>
                   <span>Public</span>
                 </div>
-                <div class="wp-publish-actions">
+                <div class="mt-3 pt-2 border-top">
+                  <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="allow_comments" id="allowComments" checked style="cursor:pointer;">
+                    <label class="form-check-label fw-semibold" for="allowComments" style="font-size:0.85rem; color:#334155; cursor:pointer;">
+                      <i class="fa-regular fa-comments me-1 text-primary"></i> Allow Comments
+                    </label>
+                  </div>
+                  <small class="text-muted d-block" style="font-size:0.75rem;">Visitors can submit comments on this post.</small>
+                </div>
+                <div class="wp-publish-actions mt-3">
                   <button type="submit" name="action_type" value="draft"
                           class="btn btn-sm btn-outline-secondary px-3 rounded-pill">
                     <i class="fa-regular fa-file me-1"></i> {{ page.draft_button_text|default:"Save as Draft" }}

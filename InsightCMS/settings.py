@@ -211,20 +211,12 @@ CORS_ALLOW_HEADERS = [
     'x-api-key',
 ]
 
-# Security Settings (only for production)
-SECURE_SSL_REDIRECT = False
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
-    SECURE_HSTS_SECONDS = 31536000  
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True 
-    SECURE_HSTS_PRELOAD = True  
+# Session Settings (Stay logged in for 30 days & isolated cookie to prevent port conflict with port 8001)
+SESSION_COOKIE_NAME = 'cms_sessionid'
+CSRF_COOKIE_NAME = 'cms_csrftoken'
+SESSION_COOKIE_AGE = 1209600 * 2  # 30 days in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = True
 
 # Email Settings (optional)
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
