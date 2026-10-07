@@ -513,58 +513,99 @@ from django.conf import settings as django_settings_mail
 def comment_submit(request, page_id):
     """Public view — visitors submit a comment on a blog post page."""
     blog = get_object_or_404(BlogPage, pk=page_id)
+    company = blog.company
+
     if request.method == 'POST':
         name = request.POST.get('author_name', '').strip()
         email = request.POST.get('author_email', '').strip()
         content = request.POST.get('content', '').strip()
+        parent_id = request.POST.get('parent_id')
 
-        if not getattr(blog, 'allow_comments', True):
-            messages.error(request, 'Comments are closed for this blog post.')
+        # 1. General Check: Comments Enabled
+        comments_allowed = company.allow_comments if (company and hasattr(company, 'allow_comments')) else getattr(blog, 'allow_comments', True)
+        if not comments_allowed:
+            messages.error(request, 'Comments are currently disabled.')
             return redirect(blog.full_url if hasattr(blog, 'full_url') else '/')
 
-        if name and content:
-            comment = BlogComment.objects.create(
-                blog=blog,
-                author_name=name,
-                author_email=email,
-                content=content,
-                status='pending',
-            )
-            # Email notification to blog author + admin
-            recipients = []
-            if blog.owner and blog.owner.email:
-                recipients.append(blog.owner.email)
-            # Also notify company admin if different
-            if blog.company:
-                from Apps.companies.models import UserProfile
-                admins = UserProfile.objects.filter(
-                    company=blog.company,
-                    user__role='company_admin',
-                    user__is_active=True
-                ).values_list('user__email', flat=True)
-                recipients += list(admins)
-                if not recipients and blog.company.email:
-                    recipients.append(blog.company.email)
-            recipients = list(set(r for r in recipients if r))
-            if recipients:
-                try:
-                    send_mail(
-                        subject=f'New comment on "{blog.title}"',
-                        message=(
-                            f'A new comment was posted by {name} ({email}):\n\n'
-                            f'"{content}"\n\n'
-                            f'Visit your dashboard to view or moderate it:\n'
-                            f'http://127.0.0.1:8000/comments/?status=pending\n'
-                        ),
-                        from_email=getattr(django_settings_mail, 'DEFAULT_FROM_EMAIL', 'noreply@insightcms.com'),
-                        recipient_list=recipients,
-                        fail_silently=True,
-                    )
-                except Exception:
-                    pass
-            messages.success(request, 'Your comment has been submitted and is awaiting approval.')
+        # 1B. General Check: Replies Allowed
+        allow_replies = company.comments_allow_replies if (company and hasattr(company, 'comments_allow_replies')) else True
+        if parent_id and not allow_replies:
+            messages.error(request, 'Replies to comments are disabled.')
+            return redirect(blog.full_url if hasattr(blog, 'full_url') else '/')
+
+        # 3. Form Fields Check: Name Required
+        name_required = company.comments_name_field_required if (company and hasattr(company, 'comments_name_field_required')) else True
+        if name_required and not name:
+            messages.error(request, 'Name is required to post a comment.')
+            return redirect(blog.full_url if hasattr(blog, 'full_url') else '/')
+
+        # 3B. Form Fields Check: Email Mode
+        email_mode = company.comments_email_field_mode if (company and hasattr(company, 'comments_email_field_mode')) else 'optional'
+        if email_mode == 'required' and not email:
+            messages.error(request, 'Email address is required to post a comment.')
+            return redirect(blog.full_url if hasattr(blog, 'full_url') else '/')
+        elif email_mode == 'hidden':
+            email = ''
+
+        if not content:
+            messages.error(request, 'Comment content cannot be empty.')
+            return redirect(blog.full_url if hasattr(blog, 'full_url') else '/')
+
+        parent_comment = None
+        if parent_id and allow_replies:
+            parent_comment = BlogComment.objects.filter(pk=parent_id, blog=blog).first()
+
+        # 2. Moderation Check: Review All Comments
+        require_mod = company.comments_require_moderation if (company and hasattr(company, 'comments_require_moderation')) else True
+        status_val = 'pending' if require_mod else 'approved'
+
+        comment = BlogComment.objects.create(
+            blog=blog,
+            author_name=name or 'Anonymous',
+            author_email=email,
+            content=content,
+            parent=parent_comment,
+            status=status_val,
+        )
+
+        # Custom under-review message or instant live notice
+        if require_mod:
+            custom_msg = company.comments_under_review_message if (company and hasattr(company, 'comments_under_review_message')) else 'Your comment has been submitted and is awaiting approval.'
+            messages.success(request, custom_msg)
         else:
-            messages.error(request, 'Name and comment are required.')
+            messages.success(request, 'Your comment has been posted successfully.')
+
+        # Email notification to blog author + admin
+        recipients = []
+        if blog.owner and blog.owner.email:
+            recipients.append(blog.owner.email)
+        if blog.company:
+            from Apps.companies.models import UserProfile
+            admins = UserProfile.objects.filter(
+                company=blog.company,
+                user__role='company_admin',
+                user__is_active=True
+            ).values_list('user__email', flat=True)
+            recipients += list(admins)
+            if not recipients and blog.company.email:
+                recipients.append(blog.company.email)
+        recipients = list(set(r for r in recipients if r))
+        if recipients:
+            try:
+                send_mail(
+                    subject=f'New comment on "{blog.title}"',
+                    message=(
+                        f'A new comment was posted by {name} ({email}):\n\n'
+                        f'"{content}"\n\n'
+                        f'Visit your dashboard to view or moderate it:\n'
+                        f'http://127.0.0.1:8000/comments/?status=pending\n'
+                    ),
+                    from_email=getattr(django_settings_mail, 'DEFAULT_FROM_EMAIL', 'noreply@insightcms.com'),
+                    recipient_list=recipients,
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
 
     return redirect(blog.full_url if hasattr(blog, 'full_url') else '/')
 
@@ -598,12 +639,30 @@ def comment_submit_by_slug(request, slug):
             'replies': child_replies,
         }
 
+    company = blog.company
+
     if request.method == 'GET':
-        if not getattr(blog, 'allow_comments', True):
+        comments_allowed = company.allow_comments if (company and hasattr(company, 'allow_comments')) else getattr(blog, 'allow_comments', True)
+        if not comments_allowed:
             return JsonResponse({'success': True, 'allow_comments': False, 'count': 0, 'comments': []})
-        root_comments = blog.comments.filter(status='approved', parent=None).order_by('-created_at')
+
+        per_page = company.comments_per_page if (company and hasattr(company, 'comments_per_page')) else 10
+        allow_replies = company.comments_allow_replies if (company and hasattr(company, 'comments_allow_replies')) else True
+
+        root_comments = blog.comments.filter(status='approved', parent=None).order_by('-created_at')[:per_page]
         comments_data = [serialize_comment(c) for c in root_comments]
-        return JsonResponse({'success': True, 'allow_comments': True, 'count': len(comments_data), 'comments': comments_data})
+        return JsonResponse({
+            'success': True,
+            'allow_comments': True,
+            'allow_replies': allow_replies,
+            'comments_per_page': per_page,
+            'form_settings': {
+                'name_required': company.comments_name_field_required if (company and hasattr(company, 'comments_name_field_required')) else True,
+                'email_mode': company.comments_email_field_mode if (company and hasattr(company, 'comments_email_field_mode')) else 'optional',
+            },
+            'count': len(comments_data),
+            'comments': comments_data,
+        })
 
     elif request.method == 'POST':
         # Accept JSON body or regular form data
@@ -641,23 +700,41 @@ def comment_submit_by_slug(request, slug):
                 return JsonResponse({'success': True, 'message': 'Comment deleted successfully.'})
             return JsonResponse({'error': 'Comment not found.'}, status=404)
 
-        if not getattr(blog, 'allow_comments', True):
-            return JsonResponse({'error': 'Comments are disabled for this blog post.'}, status=403)
+        comments_allowed = company.allow_comments if (company and hasattr(company, 'allow_comments')) else getattr(blog, 'allow_comments', True)
+        if not comments_allowed:
+            return JsonResponse({'error': 'Comments are disabled for this workspace.'}, status=403)
 
-        if not name or not content:
-            return JsonResponse({'error': 'Author name and comment content are required.'}, status=400)
+        allow_replies = company.comments_allow_replies if (company and hasattr(company, 'comments_allow_replies')) else True
+        if parent_id and not allow_replies:
+            return JsonResponse({'error': 'Comment replies are currently disabled.'}, status=403)
+
+        name_required = company.comments_name_field_required if (company and hasattr(company, 'comments_name_field_required')) else True
+        if name_required and not name:
+            return JsonResponse({'error': 'Author name is required.'}, status=400)
+
+        email_mode = company.comments_email_field_mode if (company and hasattr(company, 'comments_email_field_mode')) else 'optional'
+        if email_mode == 'required' and not email:
+            return JsonResponse({'error': 'Author email is required.'}, status=400)
+        elif email_mode == 'hidden':
+            email = ''
+
+        if not content:
+            return JsonResponse({'error': 'Comment content cannot be empty.'}, status=400)
 
         parent_comment = None
-        if parent_id:
+        if parent_id and allow_replies:
             parent_comment = BlogComment.objects.filter(pk=parent_id, blog=blog).first()
+
+        require_mod = company.comments_require_moderation if (company and hasattr(company, 'comments_require_moderation')) else True
+        status_val = 'pending' if require_mod else 'approved'
 
         comment = BlogComment.objects.create(
             blog=blog,
-            author_name=name,
+            author_name=name or 'Anonymous',
             author_email=email,
             content=content,
             parent=parent_comment,
-            status='pending',
+            status=status_val,
         )
 
         # Send email notifications
@@ -692,11 +769,17 @@ def comment_submit_by_slug(request, slug):
             except Exception:
                 pass
 
+        success_msg = (
+            company.comments_under_review_message
+            if (require_mod and company and hasattr(company, 'comments_under_review_message') and company.comments_under_review_message)
+            else ('Your comment has been submitted and is awaiting admin approval.' if require_mod else 'Your comment has been published.')
+        )
+
         return JsonResponse({
             'success': True,
-            'message': 'Your comment has been submitted and is awaiting admin approval.',
+            'message': success_msg,
+            'status': status_val,
             'comment_id': comment.id,
-            'status': 'pending'
         }, status=201)
 
     return JsonResponse({'error': 'Method not allowed.'}, status=405)

@@ -13,7 +13,9 @@ from Apps.accounts.views import (
     logout_view,
     settings_view,
     forgot_password_view,
-    user_profile_view
+    user_profile_view,
+    blog_comments_settings_view,
+    manage_users_settings_view,
 )
 from Apps.blogs.views import (
     dashboard_blog_create,
@@ -71,6 +73,10 @@ urlpatterns = [
     path('blogs/<slug:slug>/comments/submit/', comment_submit_by_slug, name='comment_submit_slug'),
     path('blogs/<slug:slug>/comments/api/', comment_submit_by_slug, name='comment_api_slug'),
     path('settings/', settings_view, name='settings'),
+    path('settings/blog/comments/', blog_comments_settings_view, name='blog_comments_settings'),
+    path('settings/users/', manage_users_settings_view, name='manage_users_settings'),
+    path('dashboard/settings/blog/comments/', blog_comments_settings_view, name='dashboard_blog_comments_settings'),
+    path('dashboard/settings/users/', manage_users_settings_view, name='dashboard_manage_users_settings'),
     path('my-profile/', user_profile_view, name='my_profile'),
     path('logout/', logout_view, name='logout'),
     path('password-reset/', forgot_password_view, name='password_reset'),

@@ -1,34 +1,87 @@
 from wagtail import blocks
 
 
-# 1. Single Sidebar Link Block (Menu Item)
-class SidebarLinkBlock(blocks.StructBlock):
-    title = blocks.CharBlock(required=True, max_length=50, default="Posts", help_text="Link name (e.g. Posts, Categories, Media)")
-    url = blocks.CharBlock(required=True, max_length=255, default="/cms/pages/", help_text="URL path (e.g. /dashboard/, /cms/pages/)")
+class SidebarChildLinkBlock(blocks.StructBlock):
+    title = blocks.CharBlock(required=True, max_length=50, default="Comments Settings", help_text="Sub-link name (e.g. Comments Settings, Manage User Settings)")
+    url = blocks.CharBlock(required=True, max_length=255, default="/settings/blog/comments/", help_text="URL path (e.g. /settings/blog/comments/)")
     icon = blocks.ChoiceBlock(
         choices=[
-            ('fa-table-cells-large', 'Dashboard / Grid'),
-            ('fa-pen-nib', 'Pen / Posts'),
-            ('fa-layer-group', 'Layer / Categories'),
-            ('fa-image', 'Image / Media'),
-            ('fa-file-lines', 'File / Pages'),
-            ('fa-comments', 'Comments'),
-            ('fa-chart-line', 'Chart / Analytics'),
-            ('fa-user', 'User / Subscribers'),
-            ('fa-user-gear', 'User / Profile Settings'),
-            ('fa-wand-magic-sparkles', 'Magic / Appearance'),
-            ('fa-puzzle-piece', 'Puzzle / Plugins'),
-            ('fa-gear', 'Gear / Settings'),
+            ('fa-regular fa-comments', 'Comments (Outline)'),
+            ('fa-solid fa-comments', 'Comments (Solid)'),
+            ('fa-solid fa-folder-open', 'Folder Open'),
+            ('fa-solid fa-newspaper', 'Newspaper / Blog'),
+            ('fa-solid fa-users-gear', 'Users / Team Settings'),
+            ('fa-solid fa-sliders', 'Sliders / Controls'),
+            ('fa-solid fa-gear', 'Gear / Settings'),
+            ('fa-solid fa-shield-halved', 'Security / Shield'),
+            ('fa-solid fa-file-lines', 'File / Pages'),
+            ('fa-solid fa-link', 'Link / Generic'),
         ],
-        default='fa-file-lines',
+        default='fa-regular fa-comments',
+        help_text="Choose FontAwesome Icon"
+    )
+    badge_text = blocks.CharBlock(required=False, max_length=10, help_text="Optional badge")
+
+    class Meta:
+        icon = "link"
+        label = "Sub Link Item"
+
+
+class SidebarSubmenuBlock(blocks.StructBlock):
+    title = blocks.CharBlock(required=True, max_length=50, default="Blog Settings", help_text="Submenu Group Name (e.g. Blog Settings)")
+    icon = blocks.ChoiceBlock(
+        choices=[
+            ('fa-solid fa-folder-open', 'Folder Open'),
+            ('fa-solid fa-newspaper', 'Newspaper / Blog'),
+            ('fa-solid fa-gear', 'Gear / Settings'),
+            ('fa-solid fa-sliders', 'Sliders'),
+            ('fa-solid fa-layer-group', 'Layer Group'),
+        ],
+        default='fa-solid fa-folder-open',
+        help_text="Submenu Icon"
+    )
+    nested_links = blocks.ListBlock(SidebarChildLinkBlock(), label="Nested Links (e.g. Comments Settings)", required=False)
+
+    class Meta:
+        icon = "folder-open-inverse"
+        label = "Submenu Group (Level 1)"
+
+
+# 1. Single Sidebar Link Block (Menu Item)
+class SidebarLinkBlock(blocks.StructBlock):
+    title = blocks.CharBlock(required=True, max_length=50, default="Settings", help_text="Link name (e.g. Dashboard, Posts, Settings)")
+    url = blocks.CharBlock(required=False, max_length=255, default="/dashboard/", help_text="URL path (Leave # or empty if using submenus)")
+    icon = blocks.ChoiceBlock(
+        choices=[
+            ('fa-solid fa-table-cells-large', 'Dashboard / Grid'),
+            ('fa-solid fa-pen-nib', 'Pen / Posts'),
+            ('fa-solid fa-layer-group', 'Layer / Categories'),
+            ('fa-solid fa-image', 'Image / Media'),
+            ('fa-solid fa-file-lines', 'File / Pages'),
+            ('fa-regular fa-comments', 'Comments (Outline)'),
+            ('fa-solid fa-comments', 'Comments (Solid)'),
+            ('fa-solid fa-chart-line', 'Chart / Analytics'),
+            ('fa-solid fa-user', 'User / Subscribers'),
+            ('fa-solid fa-user-gear', 'User / Profile Settings'),
+            ('fa-solid fa-wand-magic-sparkles', 'Magic / Appearance'),
+            ('fa-solid fa-puzzle-piece', 'Puzzle / Plugins'),
+            ('fa-solid fa-gear', 'Gear / Settings'),
+            ('fa-solid fa-users-gear', 'Manage Users'),
+            ('fa-solid fa-code', 'Code / Integration'),
+        ],
+        default='fa-solid fa-gear',
         help_text="Choose FontAwesome Icon"
     )
     badge_text = blocks.CharBlock(required=False, max_length=10, help_text="Optional badge text (e.g. 24 or New)")
     is_active = blocks.BooleanBlock(required=False, default=False, help_text="Highlight as active/selected item")
+    
+    # Nested dynamic submenus and direct sublinks
+    submenus = blocks.ListBlock(SidebarSubmenuBlock(), label="Submenu Groups (e.g. Blog Settings)", required=False)
+    direct_sublinks = blocks.ListBlock(SidebarChildLinkBlock(), label="Direct Sublinks (e.g. Manage User Settings)", required=False)
 
     class Meta:
         icon = "link"
-        label = "Sidebar Link Item"
+        label = "Sidebar Navigation Item"
 
 
 # =========================================================================

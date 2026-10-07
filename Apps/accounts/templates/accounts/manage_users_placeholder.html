@@ -1,0 +1,89 @@
+{% extends "companies/base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}Manage User Settings | {{ page.brand_name|default:"BlogPro" }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  .settings-breadcrumb {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .settings-breadcrumb a { color: #64748b; text-decoration: none; }
+  .settings-breadcrumb a:hover { color: #2563eb; }
+  .settings-breadcrumb .active { color: #0f172a; font-weight: 600; }
+  .bp-settings-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  }
+  .bp-placeholder-icon {
+    width: 72px;
+    height: 72px;
+    background: #eff6ff;
+    color: #2563eb;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 1.25rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bp-app-wrapper" id="setting">
+  {% include "accounts/blocks/sidebar.html" %}
+
+  <div class="bp-main-container">
+    {% include "accounts/blocks/topbar.html" %}
+
+    <main class="bp-content-body">
+
+      <!-- Breadcrumb hierarchy: Settings > Manage User Settings -->
+      <div class="settings-breadcrumb">
+        <a href="/settings/"><i class="fa-solid fa-gear me-1"></i> Settings</a>
+        <span><i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></span>
+        <span class="active">Manage User Settings</span>
+      </div>
+
+      <div class="bp-page-header mb-4">
+        <div>
+          <h1 class="bp-page-title">Manage User Settings</h1>
+          <p class="bp-page-sub">Configure user roles, authentication policies, and team permissions.</p>
+        </div>
+      </div>
+
+      <div class="bp-settings-card">
+        <div class="bp-placeholder-icon">
+          <i class="fa-solid fa-users-gear"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-2">Manage User Settings</h3>
+        <p class="text-muted mx-auto" style="max-width: 480px; font-size: 0.95rem;">
+          This settings module is currently in development. You will soon be able to manage user invitations, fine-grained access levels, and workspace roles directly from here.
+        </p>
+        <div class="mt-4">
+          <a href="{% url 'blog_comments_settings' %}" class="btn btn-outline-primary px-3 rounded-pill me-2">
+            <i class="fa-solid fa-comments me-1"></i> Go to Comments Settings
+          </a>
+          <a href="/settings/#team" class="btn btn-primary px-3 rounded-pill">
+            <i class="fa-solid fa-users me-1"></i> View Team Members
+          </a>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+{% endblock %}

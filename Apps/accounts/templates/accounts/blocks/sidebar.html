@@ -34,18 +34,127 @@
               </button>
             </form>
           {% else %}
-            <a href="{% if 'profile' in title_lower %}/my-profile/{% elif link.url == '#integration' or 'integration' in title_lower or 'website' in title_lower %}/dashboard/integration/{% elif link.url == '#comment' or link.url == '#comments' or link.url == '/comments/' or link.url == 'comments' or link.url == '/dashboard/comments/' or title_lower == 'comments' %}/comments/{% elif link.url == '#overview' or title_lower == 'overview' %}/dashboard/#overview{% elif link.url == '#posts' or title_lower == 'posts' %}/blog-posts/{% elif link.url == '#settings' or link.url == '#setting' or title_lower == 'settings' %}/settings/{% elif link.url == '#dashboard' or title_lower == 'dashboard' %}/dashboard/{% else %}{{ link.url|default:'/dashboard/' }}{% endif %}" 
-               class="bp-nav-item {% if active_tab == 'my_profile' and 'profile' in title_lower %}active{% elif active_tab == 'integration' and 'integration' in title_lower or active_tab == 'integration' and 'website' in title_lower or active_tab == 'integration' and link.url == '#integration' %}active{% elif active_tab == 'comments' and title_lower == 'comments' %}active{% elif active_tab == 'comments' and 'comment' in link.url %}active{% elif active_tab == 'settings' and title_lower == 'settings' %}active{% elif active_tab == 'posts' and title_lower == 'posts' %}active{% elif not active_tab and title_lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
-              <i class="fa-solid {{ link.icon|default:'fa-file-lines' }}"></i> 
-              <span>{{ link.title }}</span>
-              {% if link.badge_text %}
-                <span class="bp-nav-badge">{{ link.badge_text }}</span>
-              {% endif %}
-            </a>
+            {% if link.submenus or link.direct_sublinks or title_lower == 'settings' and not is_employee and user.role != 'company_user' %}
+              <!-- Dynamic Dropdown Item (Wagtail StreamField Enabled) -->
+              <div class="bp-nav-dropdown-wrap">
+                <a href="javascript:void(0);" onclick="toggleSidebarMenu('sidebar-menu-{{ forloop.counter }}', 'chevron-menu-{{ forloop.counter }}')"
+                   class="bp-nav-item d-flex align-items-center justify-content-between {% if active_tab == 'settings' and not active_subtab or link.is_active %}active{% endif %}"
+                   style="cursor: pointer; {% if active_tab == 'settings' and active_subtab %}color: #ffffff; background: rgba(255,255,255,0.06);{% endif %}">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="{% if link.icon %}{{ link.icon }}{% else %}fa-solid fa-gear{% endif %}"></i>
+                    <span>{{ link.title }}</span>
+                  </div>
+                  <i class="fa-solid fa-chevron-down" id="chevron-menu-{{ forloop.counter }}" style="font-size: 0.68rem; transition: transform 0.25s ease; {% if active_tab != 'settings' and not link.is_active %}transform: rotate(-90deg);{% endif %}"></i>
+                </a>
+
+                <!-- Level 1 Subnav Menu -->
+                <div id="sidebar-menu-{{ forloop.counter }}" class="bp-subnav" style="{% if active_tab != 'settings' and not link.is_active %}display:none;{% endif %}">
+                  
+                  {% if link.submenus %}
+                    <!-- Dynamic Submenus from Wagtail -->
+                    {% for sub in link.submenus %}
+                      <div class="d-flex flex-column">
+                        <a href="javascript:void(0);" onclick="toggleSidebarMenu('sub-menu-{{ forloop.parentloop.counter }}-{{ forloop.counter }}', 'chevron-sub-{{ forloop.parentloop.counter }}-{{ forloop.counter }}')"
+                           class="bp-subnav-item {% if active_subtab == 'comments_settings' and 'blog' in sub.title|lower %}text-white fw-semibold{% endif %}">
+                          <div class="d-flex align-items-center gap-2">
+                            <i class="{{ sub.icon|default:'fa-solid fa-folder-open' }}" style="font-size: 0.8rem; color: #60a5fa;"></i>
+                            <span>{{ sub.title }}</span>
+                          </div>
+                          <i class="fa-solid fa-chevron-down" id="chevron-sub-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" style="font-size: 0.62rem; transition: transform 0.25s ease; {% if active_subtab != 'comments_settings' %}transform: rotate(-90deg);{% endif %}"></i>
+                        </a>
+
+                        <!-- Level 2 Nested Links -->
+                        <div id="sub-menu-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" class="bp-nested-subnav" style="{% if active_subtab != 'comments_settings' and 'blog' in sub.title|lower %}display:none;{% elif not active_subtab %}display:none;{% endif %}">
+                          {% for child in sub.nested_links %}
+                            <a href="{{ child.url }}" class="bp-nested-subnav-item {% if child.url == request.path or active_subtab == 'comments_settings' and 'comment' in child.url %}active{% endif %}">
+                              <i class="{{ child.icon|default:'fa-regular fa-comments' }}"></i>
+                              <span>{{ child.title }}</span>
+                            </a>
+                          {% empty %}
+                            <a href="/settings/blog/comments/" class="bp-nested-subnav-item {% if active_subtab == 'comments_settings' %}active{% endif %}">
+                              <i class="fa-regular fa-comments"></i>
+                              <span>Comments Settings</span>
+                            </a>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% endfor %}
+                  {% else %}
+                    <!-- Default Blog Settings Sub-Toggle if submenus not explicitly configured -->
+                    <div class="d-flex flex-column">
+                      <a href="javascript:void(0);" onclick="toggleSidebarMenu('sidebar-blog-settings-sub', 'chevron-blog-settings')"
+                         class="bp-subnav-item {% if active_subtab == 'comments_settings' %}text-white fw-semibold{% endif %}">
+                        <div class="d-flex align-items-center gap-2">
+                          <i class="fa-solid fa-folder-open" style="font-size: 0.8rem; color: #60a5fa;"></i>
+                          <span>Blog Settings</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down" id="chevron-blog-settings" style="font-size: 0.62rem; transition: transform 0.25s ease; {% if active_subtab != 'comments_settings' %}transform: rotate(-90deg);{% endif %}"></i>
+                      </a>
+
+                      <!-- Level 2: Inside Blog Settings -> Comments Settings -->
+                      <div id="sidebar-blog-settings-sub" class="bp-nested-subnav" style="{% if active_subtab != 'comments_settings' %}display:none;{% endif %}">
+                        <a href="/settings/blog/comments/" class="bp-nested-subnav-item {% if active_subtab == 'comments_settings' %}active{% endif %}">
+                          <i class="fa-regular fa-comments"></i>
+                          <span>Comments Settings</span>
+                        </a>
+                      </div>
+                    </div>
+                  {% endif %}
+
+                  {% if link.direct_sublinks %}
+                    <!-- Dynamic Direct Sublinks from Wagtail -->
+                    {% for child in link.direct_sublinks %}
+                      <a href="{{ child.url }}" class="bp-subnav-item {% if child.url == request.path or active_subtab == 'manage_users' and 'user' in child.url %}active{% endif %}">
+                        <div class="d-flex align-items-center gap-2">
+                          <i class="{{ child.icon|default:'fa-solid fa-users-gear' }}" style="font-size: 0.82rem; color: #a78bfa;"></i>
+                          <span>{{ child.title }}</span>
+                        </div>
+                      </a>
+                    {% endfor %}
+                  {% else %}
+                    <!-- Default Manage User Settings link -->
+                    <a href="/settings/users/" class="bp-subnav-item {% if active_subtab == 'manage_users' %}active{% endif %}">
+                      <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-users-gear" style="font-size: 0.82rem; color: #a78bfa;"></i>
+                        <span>Manage User Settings</span>
+                      </div>
+                    </a>
+                  {% endif %}
+
+                </div>
+              </div>
+
+            {% else %}
+              <a href="{% if 'profile' in title_lower %}/my-profile/{% elif link.url == '#integration' or 'integration' in title_lower or 'website' in title_lower %}/dashboard/integration/{% elif link.url == '#comment' or link.url == '#comments' or link.url == '/comments/' or link.url == 'comments' or link.url == '/dashboard/comments/' or title_lower == 'comments' %}/comments/{% elif link.url == '#overview' or title_lower == 'overview' %}/dashboard/#overview{% elif link.url == '#posts' or title_lower == 'posts' %}/blog-posts/{% elif link.url == '#dashboard' or title_lower == 'dashboard' %}/dashboard/{% else %}{{ link.url|default:'/dashboard/' }}{% endif %}" 
+                 class="bp-nav-item {% if active_tab == 'my_profile' and 'profile' in title_lower %}active{% elif active_tab == 'integration' and 'integration' in title_lower or active_tab == 'integration' and 'website' in title_lower or active_tab == 'integration' and link.url == '#integration' %}active{% elif active_tab == 'comments' and title_lower == 'comments' %}active{% elif active_tab == 'comments' and 'comment' in link.url %}active{% elif active_tab == 'posts' and title_lower == 'posts' %}active{% elif not active_tab and title_lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
+                <i class="fa-solid {{ link.icon|default:'fa-file-lines' }}"></i> 
+                <span>{{ link.title }}</span>
+                {% if link.badge_text %}
+                  <span class="bp-nav-badge">{{ link.badge_text }}</span>
+                {% endif %}
+              </a>
+            {% endif %}
           {% endif %}
         {% endwith %}
       {% endwith %}
     {% endfor %}
   </nav>
+
+  <script>
+    function toggleSidebarMenu(menuId, chevronId) {
+      var menu = document.getElementById(menuId);
+      var chevron = document.getElementById(chevronId);
+      if (!menu) return;
+
+      var isHidden = menu.style.display === 'none' || window.getComputedStyle(menu).display === 'none';
+      if (isHidden) {
+        menu.style.display = 'block';
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+      } else {
+        menu.style.display = 'none';
+        if (chevron) chevron.style.transform = 'rotate(-90deg)';
+      }
+    }
+  </script>
 
 </aside>

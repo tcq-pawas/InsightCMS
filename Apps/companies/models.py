@@ -44,6 +44,29 @@ class Company(models.Model):
     api_key        = models.CharField(max_length=64, unique=True, editable=False, verbose_name="API Key")
     domain         = models.CharField(max_length=255, blank=True, null=True, verbose_name="Domain")
     slug           = models.SlugField(max_length=255, unique=True, blank=True, null=True, verbose_name="Slug")
+    allow_comments = models.BooleanField(default=True, verbose_name="Allow Comments Globally")
+    comments_allow_replies = models.BooleanField(default=True, verbose_name="Allow Comment Replies")
+    comments_per_page = models.PositiveIntegerField(default=10, verbose_name="Comments Per Page")
+    
+    comments_require_moderation = models.BooleanField(default=True, verbose_name="Review All Comments")
+    comments_under_review_message = models.CharField(
+        max_length=255,
+        default="Your comment has been submitted and is awaiting approval.",
+        verbose_name="Under-review Message"
+    )
+    
+    comments_name_field_required = models.BooleanField(default=True, verbose_name="Name Field Required")
+    comments_email_field_mode = models.CharField(
+        max_length=20,
+        choices=[
+            ("required", "Required"),
+            ("optional", "Optional"),
+            ("hidden", "Hidden / Disabled"),
+        ],
+        default="optional",
+        verbose_name="Email Field Mode"
+    )
+
     created_at     = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at     = models.DateTimeField(auto_now=True)
 
@@ -65,8 +88,44 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.email} - {self.company.company_name}"
 
+class UserGroup(BaseModel):
+    """Permission group for a company. Users are assigned to a group; permissions are per group."""
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='user_groups',
+        verbose_name=_('Company')
+    )
+    name = models.CharField(max_length=100, verbose_name=_('Group Name'))
+    description = models.CharField(max_length=255, blank=True, default='', verbose_name=_('Description'))
+
+    # Per-group permissions
+    can_create_posts    = models.BooleanField(default=True,  verbose_name=_('Can Create Posts'))
+    can_edit_posts      = models.BooleanField(default=True,  verbose_name=_('Can Edit Posts'))
+    can_publish_posts   = models.BooleanField(default=False, verbose_name=_('Can Publish Posts'))
+    can_manage_comments = models.BooleanField(default=False, verbose_name=_('Can Manage Comments'))
+
+    class Meta:
+        verbose_name = _('User Group')
+        verbose_name_plural = _('User Groups')
+        unique_together = ('company', 'name')
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.name} ({self.company.company_name})"
+
+    def permission_labels(self):
+        labels = []
+        if self.can_create_posts:    labels.append('Create Posts')
+        if self.can_edit_posts:      labels.append('Edit Posts')
+        if self.can_publish_posts:   labels.append('Publish Posts')
+        if self.can_manage_comments: labels.append('Manage Comments')
+        return labels or ['Read Only']
+
+
 class CompanyMembership(BaseModel):
-    """Connects users to a company with role scoping (manager, editor)."""
+    """Connects users to a company with group-based permissions."""
 
     class Role(models.TextChoices):
         MANAGER = 'manager', _('Manager')
@@ -90,6 +149,14 @@ class CompanyMembership(BaseModel):
         default=Role.EDITOR,
         verbose_name=_('Role')
     )
+    group = models.ForeignKey(
+        UserGroup,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='members',
+        verbose_name=_('User Group')
+    )
 
     class Meta:
         verbose_name = _('Company Membership')
@@ -97,7 +164,9 @@ class CompanyMembership(BaseModel):
         unique_together = ('company', 'user')
 
     def __str__(self):
-        return f"{self.user.email} - {self.company.company_name} ({self.get_role_display()})"
+        group_name = self.group.name if self.group else self.get_role_display()
+        return f"{self.user.email} - {self.company.company_name} ({group_name})"
+
 
 
 

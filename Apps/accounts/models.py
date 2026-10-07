@@ -68,6 +68,7 @@ class User(AbstractUser, BaseModel):
     phone = models.CharField(max_length=20, blank=True, null=True, verbose_name=_('Phone'))
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name=_('Avatar'))
     is_approved = models.BooleanField(default=False, verbose_name=_('Approved by Super Admin'))
+    is_blocked  = models.BooleanField(default=False, verbose_name=_('Blocked by Admin'))
      
     objects = UserManager()
 
@@ -127,6 +128,16 @@ class LoginPage(Page):
             # 1. Check credentials & authenticate
             user = form.get_user()
             
+            # Check if user is blocked
+            if getattr(user, 'is_blocked', False):
+                from django.contrib import messages
+                messages.error(request, "Your account has been blocked by the administrator. Please contact support.")
+                context = self.get_context(request)
+                context["form"] = form
+                register_page = RegisterPage.objects.live().first()
+                context["register_url"] = register_page.url if register_page else "/register/"
+                return render(request, self.template, context)
+
             # Super Admin approval is ONLY required for newly registered Company Admins
             # Company Users (writers/employees created by Company Admin) or Super Admins can login directly
             is_company_admin = (user.role == User.Role.COMPANY_ADMIN)
@@ -135,7 +146,6 @@ class LoginPage(Page):
                 messages.error(request, "Your company account is pending Super Admin approval. Please wait for confirmation.")
                 context = self.get_context(request)
                 context["form"] = form
-                from Apps.accounts.models import RegisterPage
                 register_page = RegisterPage.objects.live().first()
                 context["register_url"] = register_page.url if register_page else "/register/"
                 return render(request, self.template, context)
@@ -603,6 +613,37 @@ class SettingsPage(Page):
     settings_tab_1_title = models.CharField(max_length=50, blank=True, default="Profile")
     settings_tab_4_title = models.CharField(max_length=50, blank=True, default="Security")
     settings_tab_team_title = models.CharField(max_length=50, blank=True, default="Team Members")
+    settings_tab_comments_title = models.CharField(max_length=50, blank=True, default="Blog Comments")
+
+    comments_setting_heading = models.CharField(max_length=100, blank=True, default="Comments Settings")
+    comments_setting_subtext = models.CharField(max_length=255, blank=True, default="Manage global blog comment behaviors, moderation policies, and submission form fields.")
+    comments_setting_btn_text = models.CharField(max_length=50, blank=True, default="Save Comment Settings")
+
+    # General Sub-Section
+    comments_gen_heading = models.CharField(max_length=100, blank=True, default="General")
+    comments_gen_subtext = models.CharField(max_length=255, blank=True, default="Configure core comment status, nested replies, and display limits.")
+    comments_enable_label = models.CharField(max_length=100, blank=True, default="Enable Comments")
+    comments_enable_desc = models.CharField(max_length=255, blank=True, default="Allow visitors to submit comments on blog posts.")
+    comments_replies_label = models.CharField(max_length=100, blank=True, default="Threaded Replies")
+    comments_replies_desc = models.CharField(max_length=255, blank=True, default="Allow users and staff to reply directly to existing comments.")
+    comments_per_page_label = models.CharField(max_length=100, blank=True, default="Comments Per Page")
+    comments_per_page_desc = models.CharField(max_length=255, blank=True, default="Number of root comments loaded initially per post.")
+
+    # Moderation Sub-Section
+    comments_mod_heading = models.CharField(max_length=100, blank=True, default="Moderation")
+    comments_mod_subtext = models.CharField(max_length=255, blank=True, default="Set automated review rules and visitor notices.")
+    comments_review_all_label = models.CharField(max_length=100, blank=True, default="Review All Comments")
+    comments_review_all_desc = models.CharField(max_length=255, blank=True, default="When enabled, comments go to Pending queue until approved by Admin.")
+    comments_under_review_label = models.CharField(max_length=100, blank=True, default="Under-Review Notice Message")
+    comments_under_review_ph = models.CharField(max_length=255, blank=True, default="Your comment has been submitted and is awaiting approval.")
+
+    # Form Fields Sub-Section
+    comments_fields_heading = models.CharField(max_length=100, blank=True, default="Form Fields")
+    comments_fields_subtext = models.CharField(max_length=255, blank=True, default="Configure input requirements for comment submissions.")
+    comments_name_req_label = models.CharField(max_length=100, blank=True, default="Name Field Required")
+    comments_name_req_desc = models.CharField(max_length=255, blank=True, default="Visitor must enter their name to submit a comment.")
+    comments_email_mode_label = models.CharField(max_length=100, blank=True, default="Email Field Requirement")
+    comments_email_mode_desc = models.CharField(max_length=255, blank=True, default="Choose whether Email is required, optional, or hidden.")
 
     settings_profile_heading = models.CharField(max_length=100, blank=True, default="Profile Information")
     settings_profile_subtext = models.CharField(max_length=255, blank=True, default="Update your personal details and public profile presence.")
@@ -649,6 +690,17 @@ class SettingsPage(Page):
     team_status_active_text = models.CharField(max_length=50, blank=True, default="Active")
     team_empty_text = models.CharField(max_length=100, blank=True, default="No members found.")
 
+    # Manage User Settings Page CMS Fields
+    manage_users_page_title = models.CharField(max_length=100, blank=True, default="Manage User Settings")
+    manage_users_page_subtext = models.CharField(max_length=255, blank=True, default="Add team members, configure user permissions, and manage access.")
+    manage_users_btn_add_text = models.CharField(max_length=50, blank=True, default="Add New User")
+    manage_users_card_heading = models.CharField(max_length=100, blank=True, default="Team Members")
+    manage_users_th_user = models.CharField(max_length=50, blank=True, default="User")
+    manage_users_th_email = models.CharField(max_length=50, blank=True, default="Email")
+    manage_users_th_permissions = models.CharField(max_length=50, blank=True, default="Permissions")
+    manage_users_th_status = models.CharField(max_length=50, blank=True, default="Status")
+    manage_users_th_actions = models.CharField(max_length=50, blank=True, default="Actions")
+
     content_panels = Page.content_panels + [
         MultiFieldPanel([
             FieldPanel("settings_page_title"),
@@ -656,7 +708,44 @@ class SettingsPage(Page):
             FieldPanel("settings_tab_1_title"),
             FieldPanel("settings_tab_4_title"),
             FieldPanel("settings_tab_team_title"),
+            FieldPanel("settings_tab_comments_title"),
         ], heading="Page Header & Tabs"),
+        MultiFieldPanel([
+            FieldPanel("comments_setting_heading"),
+            FieldPanel("comments_setting_subtext"),
+            FieldPanel("comments_setting_btn_text"),
+            FieldPanel("comments_gen_heading"),
+            FieldPanel("comments_gen_subtext"),
+            FieldPanel("comments_enable_label"),
+            FieldPanel("comments_enable_desc"),
+            FieldPanel("comments_replies_label"),
+            FieldPanel("comments_replies_desc"),
+            FieldPanel("comments_per_page_label"),
+            FieldPanel("comments_per_page_desc"),
+            FieldPanel("comments_mod_heading"),
+            FieldPanel("comments_mod_subtext"),
+            FieldPanel("comments_review_all_label"),
+            FieldPanel("comments_review_all_desc"),
+            FieldPanel("comments_under_review_label"),
+            FieldPanel("comments_under_review_ph"),
+            FieldPanel("comments_fields_heading"),
+            FieldPanel("comments_fields_subtext"),
+            FieldPanel("comments_name_req_label"),
+            FieldPanel("comments_name_req_desc"),
+            FieldPanel("comments_email_mode_label"),
+            FieldPanel("comments_email_mode_desc"),
+        ], heading="Blog Comments Configuration (General, Moderation, Form Fields)"),
+        MultiFieldPanel([
+            FieldPanel("manage_users_page_title"),
+            FieldPanel("manage_users_page_subtext"),
+            FieldPanel("manage_users_btn_add_text"),
+            FieldPanel("manage_users_card_heading"),
+            FieldPanel("manage_users_th_user"),
+            FieldPanel("manage_users_th_email"),
+            FieldPanel("manage_users_th_permissions"),
+            FieldPanel("manage_users_th_status"),
+            FieldPanel("manage_users_th_actions"),
+        ], heading="Manage User Settings Configuration"),
         MultiFieldPanel([
             FieldPanel("settings_profile_heading"),
             FieldPanel("settings_profile_subtext"),
@@ -723,6 +812,21 @@ class SettingsPage(Page):
 
         membership = CompanyMembership.objects.filter(user=request.user).select_related('company').first()
         company = membership.company if membership else None
+
+        if request.method == "POST" and request.POST.get("action_type") == "update_comments_setting":
+            if not company:
+                messages.error(request, "No company found for your account.")
+                return redirect(request.path + "#comments")
+
+            if request.user.role != User.Role.COMPANY_ADMIN and not request.user.is_superuser:
+                messages.error(request, "Only Company Admin can update global comment settings.")
+                return redirect(request.path + "#comments")
+
+            allow_comments_val = request.POST.get("allow_comments") == "on"
+            company.allow_comments = allow_comments_val
+            company.save()
+            messages.success(request, f"Global comment settings updated! Comments are now {'ENABLED' if allow_comments_val else 'DISABLED'} across all blogs.")
+            return redirect(request.path + "#comments")
 
         if request.method == "POST" and request.POST.get("action_type") == "add_team_member":
             if not company:
