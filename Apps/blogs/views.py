@@ -253,6 +253,9 @@ def dashboard_blog_create(request):
     dashboard_page = UserDashboardPage.objects.live().first()
     sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
 
+    from Apps.accounts.models import User as UserModel
+    is_employee = (request.user.role == UserModel.Role.COMPANY_USER)
+
     return render(request, 'blogs/blog_create.html', {
         'categories': categories,
         'page': blog_posts_page,
@@ -261,6 +264,7 @@ def dashboard_blog_create(request):
         'active_tab': 'posts',
         'user': request.user,
         'company': company,
+        'is_employee': is_employee,
     })
 
 
@@ -333,6 +337,9 @@ def dashboard_blog_edit(request, page_id):
     dashboard_page = UserDashboardPage.objects.live().first()
     sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
 
+    from Apps.accounts.models import User as UserModel
+    is_employee = (request.user.role == UserModel.Role.COMPANY_USER)
+
     return render(request, 'blogs/blog_edit.html', {
         'blog': blog_page,
         'categories': categories,
@@ -342,6 +349,7 @@ def dashboard_blog_edit(request, page_id):
         'active_tab': 'posts',
         'user': request.user,
         'company': company,
+        'is_employee': is_employee,
     })
 
 

@@ -700,6 +700,9 @@ class SettingsPage(Page):
     manage_users_th_permissions = models.CharField(max_length=50, blank=True, default="Permissions")
     manage_users_th_status = models.CharField(max_length=50, blank=True, default="Status")
     manage_users_th_actions = models.CharField(max_length=50, blank=True, default="Actions")
+    manage_users_tab_admins = models.CharField(max_length=50, blank=True, default="Administrators")
+    manage_users_tab_groups = models.CharField(max_length=50, blank=True, default="Groups")
+    manage_users_tab_users  = models.CharField(max_length=50, blank=True, default="Users")
 
     content_panels = Page.content_panels + [
         MultiFieldPanel([
@@ -739,6 +742,9 @@ class SettingsPage(Page):
             FieldPanel("manage_users_page_title"),
             FieldPanel("manage_users_page_subtext"),
             FieldPanel("manage_users_btn_add_text"),
+            FieldPanel("manage_users_tab_admins"),
+            FieldPanel("manage_users_tab_groups"),
+            FieldPanel("manage_users_tab_users"),
             FieldPanel("manage_users_card_heading"),
             FieldPanel("manage_users_th_user"),
             FieldPanel("manage_users_th_email"),
