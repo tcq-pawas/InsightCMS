@@ -364,8 +364,12 @@ def user_profile_view(request):
     notifications = request.user.notifications.all()[:10]
     unread_notifications_count = request.user.notifications.filter(is_read=False).count()
 
+    from Apps.accounts.models import SettingsPage
+    settings_page = SettingsPage.objects.live().first()
+
     context.update({
         'page': dashboard_page,
+        'settings_page': settings_page,
         'sidebar_links': sidebar_links,
         'user': request.user,
         'company': company,
@@ -399,13 +403,13 @@ def blog_comments_settings_view(request):
 
     from Apps.companies.models import UserProfile, Company
     profile = UserProfile.objects.filter(user=request.user).select_related('company').first()
-    company = profile.company if profile else None
+    company = profile.company if profile else getattr(request.user, 'company', None)
     if not company and request.user.role == UserModel.Role.SUPER_ADMIN:
         active_comp_id = request.session.get('active_company_id')
         if active_comp_id:
             company = Company.objects.filter(id=active_comp_id).first()
-        if not company:
-            company = Company.objects.first()
+
+    # Note: If Super Admin has no linked company, company remains None so platform defaults (BlogPro) render.
 
     if request.method == 'POST':
         from django.contrib import messages
@@ -476,17 +480,13 @@ def manage_users_settings_view(request):
     context = page_obj.get_context(request) if page_obj else {}
 
     profile = UserProfile.objects.filter(user=request.user).select_related('company').first()
-    company = profile.company if profile else None
+    company = profile.company if profile else getattr(request.user, 'company', None)
     if not company and request.user.role == UserModel.Role.SUPER_ADMIN:
         active_comp_id = request.session.get('active_company_id')
         if active_comp_id:
             company = Company.objects.filter(id=active_comp_id).first()
-        if not company:
-            company = Company.objects.first()
 
-    if not company:
-        messages.error(request, "No company workspace linked to your account.")
-        return redirect('/dashboard/')
+    # Note: If Super Admin has no linked company, company remains None so platform defaults (BlogPro) render.
 
     # Handle POST actions
     if request.method == 'POST':
@@ -635,10 +635,15 @@ def manage_users_settings_view(request):
 
     # GET: Fetch data
     from Apps.companies.models import UserGroup
-    groups = UserGroup.objects.filter(company=company).prefetch_related('members__user')
-    memberships = CompanyMembership.objects.filter(company=company).select_related('user', 'group')
+    if company:
+        groups = UserGroup.objects.filter(company=company).prefetch_related('members__user')
+        memberships = CompanyMembership.objects.filter(company=company).select_related('user', 'group')
+        profiles = UserProfile.objects.filter(company=company).select_related('user')
+    else:
+        groups = UserGroup.objects.none()
+        memberships = CompanyMembership.objects.all().select_related('user', 'group')
+        profiles = UserProfile.objects.all().select_related('user')
     user_memberships_map = {m.user_id: m for m in memberships}
-    profiles = UserProfile.objects.filter(company=company).select_related('user')
 
     # Build team_list
     team_list = []

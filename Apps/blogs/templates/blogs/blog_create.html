@@ -79,16 +79,16 @@
             <!-- Publish Box -->
             <div class="wp-sidebar-box">
               <div class="wp-sidebar-box-header">
-                <i class="fa-regular fa-paper-plane me-1"></i> Publish
+                <i class="fa-regular fa-paper-plane me-1"></i> {{ page.publish_box_header|default:"Publish" }}
               </div>
               <div class="wp-sidebar-box-body">
                 <div class="wp-status-row">
-                  <span>Status:</span>
-                  <span>Draft / Published</span>
+                  <span>{{ page.status_label|default:"Status:" }}</span>
+                  <span>{{ page.status_value_text|default:"Draft / Published" }}</span>
                 </div>
                 <div class="wp-status-row">
-                  <span>Visibility:</span>
-                  <span>Public</span>
+                  <span>{{ page.visibility_label|default:"Visibility:" }}</span>
+                  <span>{{ page.visibility_value_text|default:"Public" }}</span>
                 </div>
                 <div class="wp-publish-actions mt-3">
                   <button type="submit" name="action_type" value="draft"

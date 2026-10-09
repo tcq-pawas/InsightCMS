@@ -126,7 +126,7 @@
                       data-action="approve"
                       data-url="{% url 'dashboard_blog_approve' blog.id %}"
                       data-title="{{ blog.title }}">
-                <i class="fa-solid fa-check"></i> Approve
+                <i class="fa-solid fa-check"></i> {{ page.approve_btn_text|default:"Approve" }}
               </button>
 
               <!-- Reject Button (Triggers Custom Modal) -->
@@ -136,7 +136,7 @@
                       data-action="reject"
                       data-url="{% url 'dashboard_blog_reject' blog.id %}"
                       data-title="{{ blog.title }}">
-                <i class="fa-solid fa-xmark"></i> Reject
+                <i class="fa-solid fa-xmark"></i> {{ page.reject_btn_text|default:"Reject" }}
               </button>
             {% endif %}
             {% endif %}

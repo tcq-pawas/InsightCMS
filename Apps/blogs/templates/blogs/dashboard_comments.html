@@ -37,13 +37,13 @@
         <div>
           <h4 class="fw-bold mb-1" style="color:#0f172a; font-size:1.5rem;">
             {% if selected_blog %}
-              <span class="text-muted fw-normal" style="font-size:1.1rem;">Blog:</span> {{ selected_blog.title }}
+              <span class="text-muted fw-normal" style="font-size:1.1rem;">{{ dashboard_page.blog_selector_label|default:"Blog:" }}</span> {{ selected_blog.title }}
             {% else %}
               {% if dashboard_page and dashboard_page.comments_page_title %}{{ dashboard_page.comments_page_title }}{% else %}Comments Moderation{% endif %}
             {% endif %}
           </h4>
           <p class="text-muted small mb-0">
-            Moderate visitor comments on your blog posts across <strong>{% if company and company.company_name %}{{ company.company_name }}{% elif dashboard_page and dashboard_page.brand_name %}{{ dashboard_page.brand_name }}{% else %}your company{% endif %}</strong>.
+            {{ dashboard_page.comment_subtext_prefix|default:"Moderate visitor comments on your blog posts across" }} <strong>{% if company and company.company_name %}{{ company.company_name }}{% elif dashboard_page and dashboard_page.brand_name %}{{ dashboard_page.brand_name }}{% else %}your company{% endif %}</strong>.
           </p>
         </div>
 
@@ -53,9 +53,9 @@
             {% if status_filter and status_filter != 'all' %}
               <input type="hidden" name="status" value="{{ status_filter }}">
             {% endif %}
-            <label class="small text-muted fw-semibold mb-0" style="white-space:nowrap;"><i class="fas fa-filter me-1"></i> Filter Blog:</label>
+            <label class="small text-muted fw-semibold mb-0" style="white-space:nowrap;"><i class="fas fa-filter me-1"></i> {{ dashboard_page.filter_blog_label|default:"Filter Blog:" }}</label>
             <select name="blog_id" onchange="this.form.submit()" class="form-select form-select-sm" style="min-width: 230px; font-size:0.85rem; border-radius:8px; border-color:#cbd5e1;">
-              <option value="">All Blog Posts ({{ blogs_list|length }})</option>
+              <option value="">{{ dashboard_page.all_blog_posts_option|default:"All Blog Posts" }} ({{ blogs_list|length }})</option>
               {% for b in blogs_list %}
                 <option value="{{ b.id }}" {% if selected_blog_id == b.id %}selected{% endif %}>
                   {{ b.title|truncatechars:38 }}
@@ -71,7 +71,7 @@
         <div class="col-6 col-md-3">
           <div class="p-3 bg-white rounded-3 shadow-sm d-flex align-items-center justify-content-between" style="border:1px solid #e2e8f0;">
             <div>
-              <span class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Total Comments</span>
+              <span class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">{{ dashboard_page.card_total_comments_label|default:"Total Comments" }}</span>
               <h4 class="fw-bold mb-0 mt-1" style="color:#0f172a; font-size:1.4rem;">{{ total_count }}</h4>
             </div>
             <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px; height:38px; background:#EFF6FF; color:#2563EB;">
@@ -82,7 +82,7 @@
         <div class="col-6 col-md-3">
           <div class="p-3 bg-white rounded-3 shadow-sm d-flex align-items-center justify-content-between" style="border:1px solid #e2e8f0;">
             <div>
-              <span class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Pending Review</span>
+              <span class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">{{ dashboard_page.card_pending_review_label|default:"Pending Review" }}</span>
               <h4 class="fw-bold mb-0 mt-1" style="color:#D97706; font-size:1.4rem;">{{ pending_count }}</h4>
             </div>
             <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px; height:38px; background:#FEF3C7; color:#D97706;">
@@ -93,7 +93,7 @@
         <div class="col-6 col-md-3">
           <div class="p-3 bg-white rounded-3 shadow-sm d-flex align-items-center justify-content-between" style="border:1px solid #e2e8f0;">
             <div>
-              <span class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Approved</span>
+              <span class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">{{ dashboard_page.card_approved_label|default:"Approved" }}</span>
               <h4 class="fw-bold mb-0 mt-1" style="color:#059669; font-size:1.4rem;">{{ approved_count }}</h4>
             </div>
             <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px; height:38px; background:#D1FAE5; color:#059669;">
@@ -104,7 +104,7 @@
         <div class="col-6 col-md-3">
           <div class="p-3 bg-white rounded-3 shadow-sm d-flex align-items-center justify-content-between" style="border:1px solid #e2e8f0;">
             <div>
-              <span class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Rejected</span>
+              <span class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">{{ dashboard_page.card_rejected_label|default:"Rejected" }}</span>
               <h4 class="fw-bold mb-0 mt-1" style="color:#DC2626; font-size:1.4rem;">{{ rejected_count }}</h4>
             </div>
             <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px; height:38px; background:#FEE2E2; color:#DC2626;">
@@ -123,12 +123,12 @@
       <!-- Status Tabs -->
       <div class="bg-white rounded-top-3 shadow-sm" style="border-bottom:1px solid #e2e8f0;">
         <div class="px-3 d-flex gap-2">
-          <a href="?status=all{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}"      class="tab-link {% if status_filter == 'all' %}active{% endif %}">All</a>
+          <a href="?status=all{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}"      class="tab-link {% if status_filter == 'all' %}active{% endif %}">{{ dashboard_page.tab_all_label|default:"All" }}</a>
           <a href="?status=pending{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}"  class="tab-link {% if status_filter == 'pending' %}active{% endif %}">
-            Pending {% if pending_count > 0 %}<span class="badge bg-warning text-dark ms-1">{{ pending_count }}</span>{% endif %}
+            {{ dashboard_page.tab_pending_label|default:"Pending" }} {% if pending_count > 0 %}<span class="badge bg-warning text-dark ms-1">{{ pending_count }}</span>{% endif %}
           </a>
-          <a href="?status=approved{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" class="tab-link {% if status_filter == 'approved' %}active{% endif %}">Approved</a>
-          <a href="?status=rejected{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" class="tab-link {% if status_filter in 'rejected,spam' %}active{% endif %}">Rejected</a>
+          <a href="?status=approved{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" class="tab-link {% if status_filter == 'approved' %}active{% endif %}">{{ dashboard_page.tab_approved_label|default:"Approved" }}</a>
+          <a href="?status=rejected{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" class="tab-link {% if status_filter in 'rejected,spam' %}active{% endif %}">{{ dashboard_page.tab_rejected_label|default:"Rejected" }}</a>
         </div>
       </div>
 
@@ -145,13 +145,13 @@
             {% csrf_token %}
             <div id="bulkIdsContainer"></div>
             <button type="submit" name="bulk_action" value="delete" class="btn btn-sm" style="background:#FEE2E2;color:#991B1B;border:none;font-size:0.8rem;" onclick="return confirm('Delete selected comments permanently?')">
-              <i class="fas fa-trash me-1"></i> Delete Selected
+              <i class="fas fa-trash me-1"></i> {{ dashboard_page.bulk_delete_btn|default:"Delete Selected" }}
             </button>
             <button type="submit" name="bulk_action" value="reject" class="btn btn-sm" style="background:#FEF3C7;color:#92400E;border:none;font-size:0.8rem;">
-              <i class="fas fa-ban me-1"></i> Reject
+              <i class="fas fa-ban me-1"></i> {{ dashboard_page.bulk_reject_btn|default:"Reject" }}
             </button>
             <button type="submit" name="bulk_action" value="approve" class="btn btn-sm" style="background:#D1FAE5;color:#065F46;border:none;font-size:0.8rem;">
-              <i class="fas fa-check me-1"></i> Approve
+              <i class="fas fa-check me-1"></i> {{ dashboard_page.bulk_approve_btn|default:"Approve" }}
             </button>
           </form>
         </div>
@@ -194,7 +194,7 @@
             <td class="py-3 align-middle">
               <div class="fw-semibold" style="font-size:0.92rem;color:#0f172a;">
                 {{ comment.author_name }}
-                {% if comment.admin_user %}<span class="badge ms-1" style="background:#dbeafe;color:#1e40af;font-size:0.7rem;">Team</span>{% endif %}
+                {% if comment.admin_user %}<span class="badge ms-1" style="background:#dbeafe;color:#1e40af;font-size:0.7rem;">{{ dashboard_page.team_badge_text|default:"Team" }}</span>{% endif %}
               </div>
               <div class="text-muted" style="font-size:0.78rem;">{{ comment.author_email }}</div>
               {% if comment.parent %}
@@ -216,7 +216,7 @@
                         <div class="d-flex align-items-center justify-content-between">
                           <span class="fw-semibold" style="color:#0f172a; font-size:0.78rem;">
                             {{ reply.author_name }}
-                            {% if reply.admin_user %}<span class="badge ms-1" style="background:#dbeafe;color:#1e40af;font-size:0.62rem;">Team</span>{% endif %}
+                            {% if reply.admin_user %}<span class="badge ms-1" style="background:#dbeafe;color:#1e40af;font-size:0.62rem;">{{ dashboard_page.team_badge_text|default:"Team" }}</span>{% endif %}
                           </span>
                           <span class="text-muted" style="font-size:0.68rem;">{{ reply.created_at|timesince }} ago</span>
                         </div>
@@ -244,9 +244,9 @@
             <!-- Status Badge -->
             <td class="py-3 align-middle">
               <span class="badge badge-{{ comment.status }} px-2.5 py-1" style="border-radius:6px;font-size:0.78rem;">
-                {% if comment.status == "pending" %}Pending
-                {% elif comment.status == "approved" %}Approved
-                {% else %}Rejected
+                {% if comment.status == "pending" %}{{ dashboard_page.status_badge_pending|default:"Pending" }}
+                {% elif comment.status == "approved" %}{{ dashboard_page.status_badge_approved|default:"Approved" }}
+                {% else %}{{ dashboard_page.status_badge_rejected|default:"Rejected" }}
                 {% endif %}
               </span>
             </td>
@@ -258,42 +258,42 @@
                   <!-- Admin reply: Only Reply & Delete -->
                   <button class="btn btn-sm" style="background:#dbeafe;color:#1e40af;border:none;font-size:0.8rem;"
                     data-bs-toggle="modal" data-bs-target="#replyModal{{ comment.id }}">
-                    <i class="fas fa-reply"></i> Reply
+                    <i class="fas fa-reply"></i> {{ dashboard_page.action_reply_btn|default:"Reply" }}
                   </button>
                 {% elif comment.status == "rejected" or comment.status == "spam" %}
                   <!-- Rejected comment: Approve & Delete -->
                   <form method="post" action="{% url 'comment_approve' comment.id %}">{% csrf_token %}
                     <button type="submit" class="btn btn-sm" style="background:#d1fae5;color:#065f46;border:none;font-size:0.8rem;" title="Approve / Restore">
-                      <i class="fas fa-check"></i> Approve
+                      <i class="fas fa-check"></i> {{ dashboard_page.action_approve_btn|default:"Approve" }}
                     </button>
                   </form>
                 {% elif comment.status == "pending" %}
                   <!-- Pending visitor comment: Reply, Approve, Reject, Delete -->
                   <button class="btn btn-sm" style="background:#dbeafe;color:#1e40af;border:none;font-size:0.8rem;"
                     data-bs-toggle="modal" data-bs-target="#replyModal{{ comment.id }}">
-                    <i class="fas fa-reply"></i> Reply
+                    <i class="fas fa-reply"></i> {{ dashboard_page.action_reply_btn|default:"Reply" }}
                   </button>
                   <form method="post" action="{% url 'comment_approve' comment.id %}">{% csrf_token %}
                     <button type="submit" class="btn btn-sm" style="background:#d1fae5;color:#065f46;border:none;font-size:0.8rem;" title="Approve">
-                      <i class="fas fa-check"></i> Approve
+                      <i class="fas fa-check"></i> {{ dashboard_page.action_approve_btn|default:"Approve" }}
                     </button>
                   </form>
                   <form method="post" action="{% url 'comment_delete' comment.id %}">{% csrf_token %}
                     <input type="hidden" name="action" value="reject">
                     <button type="submit" class="btn btn-sm" style="background:#fef3c7;color:#92400e;border:none;font-size:0.8rem;" title="Reject">
-                      <i class="fas fa-ban"></i> Reject
+                      <i class="fas fa-ban"></i> {{ dashboard_page.action_reject_btn|default:"Reject" }}
                     </button>
                   </form>
                 {% else %}
                   <!-- Approved visitor comment: Reply, Reject, Delete -->
                   <button class="btn btn-sm" style="background:#dbeafe;color:#1e40af;border:none;font-size:0.8rem;"
                     data-bs-toggle="modal" data-bs-target="#replyModal{{ comment.id }}">
-                    <i class="fas fa-reply"></i> Reply
+                    <i class="fas fa-reply"></i> {{ dashboard_page.action_reply_btn|default:"Reply" }}
                   </button>
                   <form method="post" action="{% url 'comment_delete' comment.id %}">{% csrf_token %}
                     <input type="hidden" name="action" value="reject">
                     <button type="submit" class="btn btn-sm" style="background:#fef3c7;color:#92400e;border:none;font-size:0.8rem;" title="Reject">
-                      <i class="fas fa-ban"></i> Reject
+                      <i class="fas fa-ban"></i> {{ dashboard_page.action_reject_btn|default:"Reject" }}
                     </button>
                   </form>
                 {% endif %}
@@ -310,22 +310,22 @@
             <div class="modal-dialog modal-dialog-centered">
               <div class="modal-content border-0 shadow-lg rounded-4">
                 <div class="modal-header border-0 pb-0">
-                  <h6 class="modal-title fw-bold">Reply to {{ comment.author_name }}</h6>
+                  <h6 class="modal-title fw-bold">{{ dashboard_page.action_reply_btn|default:"Reply" }} to {{ comment.author_name }}</h6>
                   <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                   <div class="p-3 mb-3 rounded-3" style="background:#f1f5f9;font-size:0.88rem;">
-                    <strong>Their comment:</strong><br>{{ comment.content }}
+                    <strong>{{ dashboard_page.reply_modal_their_comment_label|default:"Their comment:" }}</strong><br>{{ comment.content }}
                   </div>
                   <form method="post" action="{% url 'comment_reply' comment.id %}">{% csrf_token %}
                     <div class="mb-3">
-                      <label class="form-label small fw-semibold">Your Reply</label>
-                      <textarea name="reply_content" rows="4" class="form-control" placeholder="Write your reply..." required></textarea>
+                      <label class="form-label small fw-semibold">{{ dashboard_page.reply_modal_your_reply_label|default:"Your Reply" }}</label>
+                      <textarea name="reply_content" rows="4" class="form-control" placeholder="{{ dashboard_page.reply_modal_placeholder|default:'Write your reply...' }}" required></textarea>
                     </div>
                     <div class="d-flex gap-2 justify-content-end">
-                      <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">{{ dashboard_page.reply_modal_cancel_btn|default:"Cancel" }}</button>
                       <button type="submit" class="btn btn-sm text-white" style="background:#2563eb;">
-                        <i class="fas fa-paper-plane me-1"></i> Send Reply
+                        <i class="fas fa-paper-plane me-1"></i> {{ dashboard_page.reply_modal_send_btn|default:"Send Reply" }}
                       </button>
                     </div>
                   </form>
@@ -339,7 +339,7 @@
             <div class="modal-dialog modal-dialog-centered">
               <div class="modal-content border-0 shadow-lg rounded-4">
                 <div class="modal-header border-0 pb-0">
-                  <h6 class="modal-title fw-bold text-danger">Delete Comment?</h6>
+                  <h6 class="modal-title fw-bold text-danger">{{ dashboard_page.delete_modal_title|default:"Delete Comment?" }}</h6>
                   <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -347,8 +347,8 @@
                   <form method="post" action="{% url 'comment_delete' comment.id %}">{% csrf_token %}
                     <input type="hidden" name="action" value="delete">
                     <div class="d-flex gap-2 justify-content-end">
-                      <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                      <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash me-1"></i> Delete</button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">{{ dashboard_page.delete_modal_cancel_btn|default:"Cancel" }}</button>
+                      <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash me-1"></i> {{ dashboard_page.delete_modal_confirm_btn|default:"Delete" }}</button>
                     </div>
                   </form>
                 </div>
@@ -368,8 +368,8 @@
             {% if dashboard_page and dashboard_page.comments_page_empty_heading %}{{ dashboard_page.comments_page_empty_heading }}{% else %}No comments yet{% endif %}
           </p>
           <p class="small">
-            {% if status_filter == "approved" %}No approved comments yet.
-            {% elif status_filter == "spam" %}No spam comments. 🎉
+            {% if status_filter == "approved" %}{{ dashboard_page.empty_approved_text|default:"No approved comments yet." }}
+            {% elif status_filter == "spam" %}{{ dashboard_page.empty_spam_text|default:"No spam comments. 🎉" }}
             {% else %}{% if dashboard_page and dashboard_page.comments_page_empty_subtext %}{{ dashboard_page.comments_page_empty_subtext }}{% else %}Visitor comments on your blog posts will appear here.{% endif %}
             {% endif %}
           </p>

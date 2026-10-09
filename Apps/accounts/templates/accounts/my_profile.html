@@ -102,17 +102,17 @@
 
       <div class="bp-page-header mb-4">
         <div>
-          <h1 class="bp-page-title">My Profile</h1>
-          <p class="bp-page-sub">View and update your personal profile details and password.</p>
+          <h1 class="bp-page-title">{{ settings_page.settings_tab_1_title|default:"My Profile" }}</h1>
+          <p class="bp-page-sub">{{ settings_page.settings_profile_subtext|default:"View and update your personal profile details and password." }}</p>
         </div>
       </div>
 
       <div class="bp-settings-nav">
         <button class="bp-settings-tab active" onclick="switchProfileTab('profile', this)">
-          <i class="fa-regular fa-user"></i> Profile Information
+          <i class="fa-regular fa-user"></i> {{ settings_page.settings_profile_heading|default:"Profile Information" }}
         </button>
         <button class="bp-settings-tab" onclick="switchProfileTab('security', this)">
-          <i class="fa-solid fa-shield-halved"></i> Security & Password
+          <i class="fa-solid fa-shield-halved"></i> {{ settings_page.settings_security_heading|default:"Security & Password" }}
         </button>
       </div>
 
@@ -120,8 +120,8 @@
       <div id="section-profile" class="profile-tab-pane">
         <div class="bp-settings-card">
           <div class="bp-settings-section-header">
-            <h2 class="bp-settings-title"><i class="fa-regular fa-user text-primary"></i> Personal Details</h2>
-            <p class="bp-settings-sub">Update your name and profile avatar.</p>
+            <h2 class="bp-settings-title"><i class="fa-regular fa-user text-primary"></i> {{ settings_page.settings_profile_heading|default:"Personal Details" }}</h2>
+            <p class="bp-settings-sub">{{ settings_page.settings_profile_subtext|default:"Update your name and profile avatar." }}</p>
           </div>
 
           <form method="post" action="{% url 'my_profile' %}" enctype="multipart/form-data">
@@ -140,27 +140,27 @@
                 <div class="text-muted small mb-2">{{ user.email }}</div>
                 <input type="file" name="avatar" id="avatarInput" class="d-none" accept="image/*" onchange="previewAvatar(this)">
                 <label for="avatarInput" class="btn btn-sm btn-outline-secondary" style="cursor:pointer;">
-                  <i class="fa-solid fa-camera me-1"></i> Change Avatar
+                  <i class="fa-solid fa-camera me-1"></i> {{ settings_page.settings_profile_avatar_btn_text|default:"Change Avatar" }}
                 </label>
               </div>
             </div>
 
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="bp-form-label">First Name</label>
+                <label class="bp-form-label">{{ settings_page.settings_profile_fname_label|default:"First Name" }}</label>
                 <input type="text" name="first_name" class="bp-form-control" value="{{ user.first_name|default:'' }}" placeholder="Enter first name">
               </div>
               <div class="col-md-6">
-                <label class="bp-form-label">Last Name</label>
+                <label class="bp-form-label">{{ settings_page.settings_profile_lname_label|default:"Last Name" }}</label>
                 <input type="text" name="last_name" class="bp-form-control" value="{{ user.last_name|default:'' }}" placeholder="Enter last name">
               </div>
               <div class="col-md-6">
-                <label class="bp-form-label">Email Address</label>
+                <label class="bp-form-label">{{ settings_page.settings_profile_email_label|default:"Email Address" }}</label>
                 <input type="email" class="bp-form-control" value="{{ user.email }}" readonly>
-                <div class="bp-form-hint">Email address is managed by your company administrator.</div>
+                <div class="bp-form-hint">{{ settings_page.settings_profile_email_hint|default:"Email address is managed by your company administrator." }}</div>
               </div>
               <div class="col-md-6">
-                <label class="bp-form-label">Role</label>
+                <label class="bp-form-label">{{ settings_page.settings_profile_role_label|default:"Role" }}</label>
                 <input type="text" class="bp-form-control" value="{{ user.get_role_display }}" disabled>
               </div>
               {% if company %}
@@ -171,7 +171,7 @@
               {% endif %}
               <div class="col-12 mt-3">
                 <button type="submit" class="bp-btn-save">
-                  <i class="fa-solid fa-check me-1"></i> Save Changes
+                  <i class="fa-solid fa-check me-1"></i> {{ settings_page.settings_profile_btn_text|default:"Save Changes" }}
                 </button>
               </div>
             </div>
@@ -183,8 +183,8 @@
       <div id="section-security" class="profile-tab-pane d-none">
         <div class="bp-settings-card">
           <div class="bp-settings-section-header">
-            <h2 class="bp-settings-title"><i class="fa-solid fa-shield-halved text-primary"></i> Change Password</h2>
-            <p class="bp-settings-sub">Ensure your account is using a strong password.</p>
+            <h2 class="bp-settings-title"><i class="fa-solid fa-shield-halved text-primary"></i> {{ settings_page.settings_security_heading|default:"Change Password" }}</h2>
+            <p class="bp-settings-sub">{{ settings_page.settings_security_subtext|default:"Ensure your account is using a strong password." }}</p>
           </div>
 
           <form method="post" action="{% url 'my_profile' %}">
@@ -193,20 +193,20 @@
 
             <div class="row g-3">
               <div class="col-12">
-                <label class="bp-form-label">Current Password</label>
-                <input type="password" name="old_password" class="bp-form-control" required placeholder="••••••••">
+                <label class="bp-form-label">{{ settings_page.settings_sec_curr_pass_label|default:"Current Password" }}</label>
+                <input type="password" name="old_password" class="bp-form-control" required placeholder="{{ settings_page.settings_sec_curr_pass_ph|default:'••••••••' }}">
               </div>
               <div class="col-md-6">
-                <label class="bp-form-label">New Password</label>
-                <input type="password" name="new_password1" class="bp-form-control" required placeholder="Enter new password">
+                <label class="bp-form-label">{{ settings_page.settings_sec_new_pass_label|default:"New Password" }}</label>
+                <input type="password" name="new_password1" class="bp-form-control" required placeholder="{{ settings_page.settings_sec_new_pass_ph|default:'Enter new password' }}">
               </div>
               <div class="col-md-6">
-                <label class="bp-form-label">Confirm New Password</label>
-                <input type="password" name="new_password2" class="bp-form-control" required placeholder="Confirm new password">
+                <label class="bp-form-label">{{ settings_page.settings_sec_conf_pass_label|default:"Confirm New Password" }}</label>
+                <input type="password" name="new_password2" class="bp-form-control" required placeholder="{{ settings_page.settings_sec_conf_pass_ph|default:'Confirm new password' }}">
               </div>
               <div class="col-12 mt-3">
                 <button type="submit" class="bp-btn-save">
-                  <i class="fa-solid fa-key me-1"></i> Update Password
+                  <i class="fa-solid fa-key me-1"></i> {{ settings_page.settings_security_btn_text|default:"Update Password" }}
                 </button>
               </div>
             </div>
@@ -216,13 +216,13 @@
 
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <div class="fw-semibold text-dark">Active Session</div>
-              <p class="text-muted small mb-0">Currently signed in from this browser.</p>
+              <div class="fw-semibold text-dark">{{ settings_page.settings_session_title|default:"Active Session" }}</div>
+              <p class="text-muted small mb-0">{{ settings_page.settings_session_desc|default:"Currently signed in from this browser." }}</p>
             </div>
             <form method="post" action="{% url 'logout' %}" style="margin:0;">
               {% csrf_token %}
               <button type="submit" class="btn btn-sm btn-outline-danger">
-                <i class="fa-solid fa-right-from-bracket me-1"></i> Sign Out
+                <i class="fa-solid fa-right-from-bracket me-1"></i> {{ settings_page.settings_sec_signout_btn_text|default:"Sign Out" }}
               </button>
             </form>
           </div>

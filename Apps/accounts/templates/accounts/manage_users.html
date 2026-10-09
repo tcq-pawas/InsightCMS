@@ -68,7 +68,7 @@
           </div>
           <div class="d-flex gap-2">
             <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#addGroupModal">
-              <i class="bi bi-folder-plus me-1"></i> New Group
+              <i class="bi bi-folder-plus me-1"></i> {{ page.manage_users_btn_add_group|default:"New Group" }}
             </button>
             <button class="btn btn-sm text-white" style="background:#6c63ff;" data-bs-toggle="modal" data-bs-target="#addUserModal">
               <i class="bi bi-person-plus-fill me-1"></i> {{ page.manage_users_btn_add_text|default:"Add New User" }}
@@ -390,7 +390,7 @@
         <input type="hidden" name="action_type" value="add_group">
         <div class="modal-header border-0 pb-0">
           <h5 class="modal-title fw-bold" id="addGroupModalLabel">
-            <i class="bi bi-folder-plus me-2" style="color:#6c63ff;"></i>Create New Group
+            <i class="bi bi-folder-plus me-2" style="color:#6c63ff;"></i>{{ page.manage_users_modal_add_group_title|default:"Create New Group" }}
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>

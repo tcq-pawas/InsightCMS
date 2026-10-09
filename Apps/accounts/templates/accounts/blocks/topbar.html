@@ -20,7 +20,7 @@
       {% endif %}
       <div class="bp-user-info">
         <span class="bp-user-name">{% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username|default:user.email }}{% endif %}</span>
-        <span class="bp-user-role">{% if company %}{{ company.company_name }} &bull; {% endif %}{% if user.get_role_display %}{{ user.get_role_display }}{% else %}Admin{% endif %}</span>
+        <span class="bp-user-role">{% if company %}{{ company.company_name }} &bull; {% elif user.company %}{{ user.company.company_name }} &bull; {% elif request.user.company %}{{ request.user.company.company_name }} &bull; {% endif %}{% if user.get_role_display %}{{ user.get_role_display }}{% else %}Admin{% endif %}</span>
       </div>
       <a href="{% url 'logout' %}" class="btn btn-sm btn-light ms-2 text-muted" title="Logout">
         <i class="fa-solid fa-right-from-bracket"></i>

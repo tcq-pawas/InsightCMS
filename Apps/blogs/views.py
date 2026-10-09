@@ -496,12 +496,16 @@ def dashboard_website_integration(request):
     dashboard_page = UserDashboardPage.objects.live().first()
     sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
 
+    from Apps.accounts.models import SettingsPage
+    settings_page = SettingsPage.objects.live().first()
+
     return render(request, 'blogs/website_integration.html', {
         'company': company,
         'company_slug': company_slug,
         'company_name': company_name,
         'cms_base_url': cms_base_url,
         'dashboard_page': dashboard_page,
+        'settings_page': settings_page,
         'sidebar_links': sidebar_links,
         'active_tab': 'integration',
         'user': request.user,

@@ -423,13 +423,61 @@ class UserDashboardPage(Page):
     comments_page_empty_heading = models.CharField(max_length=100, blank=True, default="No comments yet", verbose_name="Empty State Title")
     comments_page_empty_subtext = models.CharField(max_length=255, blank=True, default="Visitor comments on your blog posts will appear here.", verbose_name="Empty State Subtitle")
 
+    # Summary Cards & Filter Labels
+    filter_blog_label = models.CharField(max_length=50, blank=True, default="Filter Blog:", verbose_name="Filter Dropdown Label")
+    card_total_comments_label = models.CharField(max_length=50, blank=True, default="Total Comments", verbose_name="Summary Card 1: Total Comments")
+    card_pending_review_label = models.CharField(max_length=50, blank=True, default="Pending Review", verbose_name="Summary Card 2: Pending Review")
+    card_approved_label = models.CharField(max_length=50, blank=True, default="Approved", verbose_name="Summary Card 3: Approved")
+    card_rejected_label = models.CharField(max_length=50, blank=True, default="Rejected", verbose_name="Summary Card 4: Rejected")
+
+    # Status Tabs Labels
+    tab_all_label = models.CharField(max_length=50, blank=True, default="All", verbose_name="Tab: All")
+    tab_pending_label = models.CharField(max_length=50, blank=True, default="Pending", verbose_name="Tab: Pending")
+    tab_approved_label = models.CharField(max_length=50, blank=True, default="Approved", verbose_name="Tab: Approved")
+    tab_rejected_label = models.CharField(max_length=50, blank=True, default="Rejected", verbose_name="Tab: Rejected")
+
     # Comments Table Column Headers
     comments_th_author  = models.CharField(max_length=50, blank=True, default="Author",   verbose_name="Column: Author")
     comments_th_comment = models.CharField(max_length=50, blank=True, default="Comment",  verbose_name="Column: Comment")
     comments_th_post    = models.CharField(max_length=50, blank=True, default="Blog Post", verbose_name="Column: Blog Post")
-    comments_th_date    = models.CharField(max_length=50, blank=True, default="Date",     verbose_name="Column: Date")
+    comments_th_date    = models.CharField(max_length=50, blank=True, default="Date / Time", verbose_name="Column: Date")
     comments_th_status  = models.CharField(max_length=50, blank=True, default="Status",   verbose_name="Column: Status")
     comments_th_actions = models.CharField(max_length=50, blank=True, default="Actions",  verbose_name="Column: Actions")
+
+    # Bulk Action Bar Buttons
+    bulk_delete_btn  = models.CharField(max_length=50, blank=True, default="Delete Selected", verbose_name="Bulk: Delete Button")
+    bulk_reject_btn  = models.CharField(max_length=50, blank=True, default="Reject",          verbose_name="Bulk: Reject Button")
+    bulk_approve_btn = models.CharField(max_length=50, blank=True, default="Approve",         verbose_name="Bulk: Approve Button")
+
+    # Row Action Buttons
+    action_reply_btn   = models.CharField(max_length=50, blank=True, default="Reply",   verbose_name="Action: Reply Button")
+    action_approve_btn = models.CharField(max_length=50, blank=True, default="Approve", verbose_name="Action: Approve Button")
+    action_reject_btn  = models.CharField(max_length=50, blank=True, default="Reject",  verbose_name="Action: Reject Button")
+
+    # Status Badges
+    status_badge_pending  = models.CharField(max_length=50, blank=True, default="Pending",  verbose_name="Badge: Pending")
+    status_badge_approved = models.CharField(max_length=50, blank=True, default="Approved", verbose_name="Badge: Approved")
+    status_badge_rejected = models.CharField(max_length=50, blank=True, default="Rejected", verbose_name="Badge: Rejected")
+    team_badge_text       = models.CharField(max_length=20, blank=True, default="Team",      verbose_name="Badge: Team")
+
+    # Reply Modal
+    reply_modal_their_comment_label = models.CharField(max_length=50,  blank=True, default="Their comment:",    verbose_name="Reply Modal: Their Comment Label")
+    reply_modal_your_reply_label    = models.CharField(max_length=50,  blank=True, default="Your Reply",        verbose_name="Reply Modal: Your Reply Label")
+    reply_modal_placeholder         = models.CharField(max_length=100, blank=True, default="Write your reply...", verbose_name="Reply Modal: Textarea Placeholder")
+    reply_modal_cancel_btn          = models.CharField(max_length=50,  blank=True, default="Cancel",            verbose_name="Reply Modal: Cancel Button")
+    reply_modal_send_btn            = models.CharField(max_length=50,  blank=True, default="Send Reply",        verbose_name="Reply Modal: Send Button")
+
+    # Delete Modal
+    delete_modal_title      = models.CharField(max_length=100, blank=True, default="Delete Comment?", verbose_name="Delete Modal: Title")
+    delete_modal_cancel_btn = models.CharField(max_length=50,  blank=True, default="Cancel",          verbose_name="Delete Modal: Cancel Button")
+    delete_modal_confirm_btn = models.CharField(max_length=50, blank=True, default="Delete",          verbose_name="Delete Modal: Confirm Button")
+
+    # Misc / Empty States
+    all_blog_posts_option = models.CharField(max_length=50,  blank=True, default="All Blog Posts",         verbose_name="Dropdown: All Blog Posts Option")
+    empty_approved_text   = models.CharField(max_length=100, blank=True, default="No approved comments yet.", verbose_name="Empty State: Approved Tab")
+    empty_spam_text       = models.CharField(max_length=100, blank=True, default="No spam comments. 🎉",    verbose_name="Empty State: Spam Tab")
+    blog_selector_label   = models.CharField(max_length=20,  blank=True, default="Blog:",                  verbose_name="Header: Blog Selector Label")
+    comment_subtext_prefix = models.CharField(max_length=100, blank=True, default="Moderate visitor comments on your blog posts across", verbose_name="Header: Comment Subtext Prefix")
 
     # Comment 1
     comment_1_author = models.CharField(max_length=100, blank=True, default="Alex Johnson")
@@ -544,6 +592,15 @@ class UserDashboardPage(Page):
         MultiFieldPanel([
             FieldPanel("comments_page_title"),
             FieldPanel("comments_page_subtext"),
+            FieldPanel("filter_blog_label"),
+            FieldPanel("card_total_comments_label"),
+            FieldPanel("card_pending_review_label"),
+            FieldPanel("card_approved_label"),
+            FieldPanel("card_rejected_label"),
+            FieldPanel("tab_all_label"),
+            FieldPanel("tab_pending_label"),
+            FieldPanel("tab_approved_label"),
+            FieldPanel("tab_rejected_label"),
             FieldPanel("comments_page_empty_heading"),
             FieldPanel("comments_page_empty_subtext"),
             FieldPanel("comments_th_author"),
@@ -552,6 +609,29 @@ class UserDashboardPage(Page):
             FieldPanel("comments_th_date"),
             FieldPanel("comments_th_status"),
             FieldPanel("comments_th_actions"),
+            FieldPanel("bulk_delete_btn"),
+            FieldPanel("bulk_reject_btn"),
+            FieldPanel("bulk_approve_btn"),
+            FieldPanel("action_reply_btn"),
+            FieldPanel("action_approve_btn"),
+            FieldPanel("action_reject_btn"),
+            FieldPanel("status_badge_pending"),
+            FieldPanel("status_badge_approved"),
+            FieldPanel("status_badge_rejected"),
+            FieldPanel("team_badge_text"),
+            FieldPanel("reply_modal_their_comment_label"),
+            FieldPanel("reply_modal_your_reply_label"),
+            FieldPanel("reply_modal_placeholder"),
+            FieldPanel("reply_modal_cancel_btn"),
+            FieldPanel("reply_modal_send_btn"),
+            FieldPanel("delete_modal_title"),
+            FieldPanel("delete_modal_cancel_btn"),
+            FieldPanel("delete_modal_confirm_btn"),
+            FieldPanel("all_blog_posts_option"),
+            FieldPanel("empty_approved_text"),
+            FieldPanel("empty_spam_text"),
+            FieldPanel("blog_selector_label"),
+            FieldPanel("comment_subtext_prefix"),
         ], heading="4. Comments Moderation Page"),
         MultiFieldPanel([
             FieldPanel("footer_tagline"),
@@ -694,6 +774,9 @@ class SettingsPage(Page):
     manage_users_page_title = models.CharField(max_length=100, blank=True, default="Manage User Settings")
     manage_users_page_subtext = models.CharField(max_length=255, blank=True, default="Add team members, configure user permissions, and manage access.")
     manage_users_btn_add_text = models.CharField(max_length=50, blank=True, default="Add New User")
+    manage_users_btn_add_group = models.CharField(max_length=50, blank=True, default="New Group")
+    manage_users_modal_add_user_title = models.CharField(max_length=100, blank=True, default="Add New Team Member")
+    manage_users_modal_add_group_title = models.CharField(max_length=100, blank=True, default="Create New Group")
     manage_users_card_heading = models.CharField(max_length=100, blank=True, default="Team Members")
     manage_users_th_user = models.CharField(max_length=50, blank=True, default="User")
     manage_users_th_email = models.CharField(max_length=50, blank=True, default="Email")
@@ -703,6 +786,13 @@ class SettingsPage(Page):
     manage_users_tab_admins = models.CharField(max_length=50, blank=True, default="Administrators")
     manage_users_tab_groups = models.CharField(max_length=50, blank=True, default="Groups")
     manage_users_tab_users  = models.CharField(max_length=50, blank=True, default="Users")
+
+    # Website Integration Page CMS Fields
+    integration_page_title = models.CharField(max_length=100, blank=True, default="Website Integration Guide")
+    integration_page_subtext = models.CharField(max_length=255, blank=True, default="Step-by-step instructions for integrating blogs on any website.")
+    integration_step1_title = models.CharField(max_length=100, blank=True, default="Your Live RSS Feed Endpoint")
+    integration_step2_title = models.CharField(max_length=100, blank=True, default="Embed Blogs on Your Website")
+    integration_step3_title = models.CharField(max_length=100, blank=True, default="How It Works")
 
     content_panels = Page.content_panels + [
         MultiFieldPanel([
@@ -742,6 +832,9 @@ class SettingsPage(Page):
             FieldPanel("manage_users_page_title"),
             FieldPanel("manage_users_page_subtext"),
             FieldPanel("manage_users_btn_add_text"),
+            FieldPanel("manage_users_btn_add_group"),
+            FieldPanel("manage_users_modal_add_user_title"),
+            FieldPanel("manage_users_modal_add_group_title"),
             FieldPanel("manage_users_tab_admins"),
             FieldPanel("manage_users_tab_groups"),
             FieldPanel("manage_users_tab_users"),
@@ -799,6 +892,13 @@ class SettingsPage(Page):
             FieldPanel("team_status_active_text"),
             FieldPanel("team_empty_text"),
         ], heading="Team Members Section"),
+        MultiFieldPanel([
+            FieldPanel("integration_page_title"),
+            FieldPanel("integration_page_subtext"),
+            FieldPanel("integration_step1_title"),
+            FieldPanel("integration_step2_title"),
+            FieldPanel("integration_step3_title"),
+        ], heading="Website Integration Guide Settings"),
     ]
 
     parent_page_types = ["wagtailcore.Page", "companies.CompanyHomePage"]

@@ -304,6 +304,15 @@ class CompanyBlogPostsPage(Page):
     field_body_label = models.CharField(max_length=100, blank=True, default="Content Body")
     field_body_placeholder = models.CharField(max_length=200, blank=True, default="Write your full blog post here...")
 
+    publish_box_header = models.CharField(max_length=50, blank=True, default="Publish")
+    status_label = models.CharField(max_length=50, blank=True, default="Status:")
+    status_value_text = models.CharField(max_length=50, blank=True, default="Draft / Published")
+    visibility_label = models.CharField(max_length=50, blank=True, default="Visibility:")
+    visibility_value_text = models.CharField(max_length=50, blank=True, default="Public")
+
+    approve_btn_text = models.CharField(max_length=50, blank=True, default="Approve")
+    reject_btn_text = models.CharField(max_length=50, blank=True, default="Reject")
+
     content_panels = Page.content_panels + [
         FieldPanel("page_heading"),
         FieldPanel("page_subtext"),
@@ -331,6 +340,13 @@ class CompanyBlogPostsPage(Page):
         FieldPanel("field_short_desc_placeholder"),
         FieldPanel("field_body_label"),
         FieldPanel("field_body_placeholder"),
+        FieldPanel("publish_box_header"),
+        FieldPanel("status_label"),
+        FieldPanel("status_value_text"),
+        FieldPanel("visibility_label"),
+        FieldPanel("visibility_value_text"),
+        FieldPanel("approve_btn_text"),
+        FieldPanel("reject_btn_text"),
     ]
 
     parent_page_types = ["companies.CompanyHomePage", "wagtailcore.Page"]
