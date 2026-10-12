@@ -1,12 +1,41 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from wagtail.models import Page
-from wagtail.fields import RichTextField
+from wagtail.fields import RichTextField, StreamField
 from wagtail.admin.panels import FieldPanel
+from wagtail import blocks
 from wagtail.search import index
 from .forms import BlogPageForm
 
 from Apps.accounts.models import User
+
+
+class BlogHeaderBlock(blocks.StructBlock):
+    heading = blocks.CharBlock(required=False, default="Blog", help_text="Title shown at top")
+    subtitle = blocks.CharBlock(required=False, default="Explore our latest blog posts and articles.", help_text="Subtitle under main heading")
+
+    class Meta:
+        icon = "title"
+        label = "Header & Subtitle"
+
+
+class BlogListConfigBlock(blocks.StructBlock):
+    read_more_text = blocks.CharBlock(required=False, default="Read Article", help_text="Button text on blog cards")
+    empty_state_text = blocks.CharBlock(required=False, default="No blog posts published yet.", help_text="Message when no blogs exist")
+
+    class Meta:
+        icon = "list-ul"
+        label = "Blog Posts List Config"
+
+
+class BlogIndexBodyStreamBlock(blocks.StreamBlock):
+    header = BlogHeaderBlock()
+    blog_list = BlogListConfigBlock()
+    rich_text = blocks.RichTextBlock(required=False, icon="doc-full", label="Rich Text Content")
+    raw_html = blocks.RawHTMLBlock(required=False, icon="code", label="Custom Raw HTML")
+
+    class Meta:
+        label = "Blog Index Modular Blocks"
 
 
 class BlogIndexPage(Page):
@@ -24,18 +53,26 @@ class BlogIndexPage(Page):
     read_more_text = models.CharField(
         max_length=50,
         default="Read Article",
+        blank=True,
         help_text=_("Text for the button on each blog card")
     )
     empty_state_text = models.CharField(
         max_length=255,
         default="No blog posts published yet.",
+        blank=True,
         help_text=_("Text shown when there are no published blogs")
     )
 
+    body = StreamField(
+        BlogIndexBodyStreamBlock(),
+        use_json_field=True,
+        blank=True,
+        null=True,
+        help_text=_("Click (+) to add, reorder, or click the Trash icon (🗑️) to delete sections")
+    )
+
     content_panels = Page.content_panels + [
-        FieldPanel('subtitle'),
-        FieldPanel('read_more_text'),
-        FieldPanel('empty_state_text'),
+        FieldPanel('body', heading="Page Sections (Click + to Add, 🗑️ to Delete or Reorder)"),
     ]
 
     class Meta:

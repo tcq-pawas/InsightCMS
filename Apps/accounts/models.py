@@ -376,6 +376,21 @@ class UserDashboardPage(Page):
     empty_posts_text = models.CharField(max_length=100, blank=True, default="No writers found in your company.", verbose_name="Empty Table Message")
     empty_create_btn_text = models.CharField(max_length=50, blank=True, default="Invite Team Member", verbose_name="Empty Button Text")
 
+    # Employee Blogs Table Configuration (Employee View on Dashboard)
+    emp_blogs_heading = models.CharField(max_length=150, blank=True, default="My Blogs & Articles", verbose_name="Employee Table Heading")
+    emp_blogs_subtext = models.CharField(max_length=255, blank=True, default="Track all blogs written by you and their approval status", verbose_name="Employee Table Subtitle")
+    emp_write_blog_btn_text = models.CharField(max_length=50, blank=True, default="Write New Blog", verbose_name="Employee: Write Blog Button Text")
+    emp_write_blog_btn_url = models.CharField(max_length=255, blank=True, default="", verbose_name="Employee: Write Blog URL (leave blank for default)")
+    emp_th_blog_title = models.CharField(max_length=50, blank=True, default="BLOG TITLE", verbose_name="Employee: Column Blog Title")
+    emp_th_description = models.CharField(max_length=50, blank=True, default="DESCRIPTION", verbose_name="Employee: Column Description")
+    emp_th_status = models.CharField(max_length=50, blank=True, default="STATUS", verbose_name="Employee: Column Status")
+    emp_status_rejected = models.CharField(max_length=50, blank=True, default="Approval Rejected", verbose_name="Employee Badge: Rejected")
+    emp_status_approved = models.CharField(max_length=50, blank=True, default="Approved", verbose_name="Employee Badge: Approved")
+    emp_status_pending = models.CharField(max_length=50, blank=True, default="Waiting for Approval", verbose_name="Employee Badge: Pending")
+    emp_no_description_text = models.CharField(max_length=100, blank=True, default="No description provided", verbose_name="Employee: No Description Fallback")
+    emp_empty_blogs_text = models.CharField(max_length=150, blank=True, default="You haven't written any blogs yet.", verbose_name="Employee: Empty Message")
+    emp_empty_create_btn_text = models.CharField(max_length=50, blank=True, default="Create Your First Blog", verbose_name="Employee: Empty Create Button Text")
+
     # 6. Audience Overview
     audience_heading = models.CharField(max_length=150, blank=True, default="Audience Overview")
     audience_subtext = models.CharField(max_length=255, blank=True, default="Where your readers come from and how they browse")
@@ -566,91 +581,8 @@ class UserDashboardPage(Page):
     )
 
     content_panels = Page.content_panels + [
-        MultiFieldPanel([
-            FieldPanel("brand_name"),
-            FieldPanel("welcome_heading"),
-            FieldPanel("welcome_subtext"),
-            FieldPanel("new_post_button_text"),
-            FieldPanel("new_post_button_url"),
-        ], heading="1. Header & Action Button"),
-        FieldPanel("body", heading="2. Dashboard Modular Blocks (Click + to Add, Delete or Reorder)"),
-        FieldPanel("sidebar_links", heading="3. Dynamic Sidebar Links"),
-        MultiFieldPanel([
-            FieldPanel("recent_posts_heading"),
-            FieldPanel("recent_posts_subtext"),
-            FieldPanel("view_all_posts_text"),
-            FieldPanel("view_all_posts_url"),
-            FieldPanel("th_post_title"),
-            FieldPanel("th_category"),
-            FieldPanel("th_status"),
-            FieldPanel("th_views"),
-            FieldPanel("th_date"),
-            FieldPanel("th_actions"),
-            FieldPanel("empty_posts_text"),
-            FieldPanel("empty_create_btn_text"),
-        ], heading="3. Recent Posts Table Configuration"),
-        MultiFieldPanel([
-            FieldPanel("comments_page_title"),
-            FieldPanel("comments_page_subtext"),
-            FieldPanel("filter_blog_label"),
-            FieldPanel("card_total_comments_label"),
-            FieldPanel("card_pending_review_label"),
-            FieldPanel("card_approved_label"),
-            FieldPanel("card_rejected_label"),
-            FieldPanel("tab_all_label"),
-            FieldPanel("tab_pending_label"),
-            FieldPanel("tab_approved_label"),
-            FieldPanel("tab_rejected_label"),
-            FieldPanel("comments_page_empty_heading"),
-            FieldPanel("comments_page_empty_subtext"),
-            FieldPanel("comments_th_author"),
-            FieldPanel("comments_th_comment"),
-            FieldPanel("comments_th_post"),
-            FieldPanel("comments_th_date"),
-            FieldPanel("comments_th_status"),
-            FieldPanel("comments_th_actions"),
-            FieldPanel("bulk_delete_btn"),
-            FieldPanel("bulk_reject_btn"),
-            FieldPanel("bulk_approve_btn"),
-            FieldPanel("action_reply_btn"),
-            FieldPanel("action_approve_btn"),
-            FieldPanel("action_reject_btn"),
-            FieldPanel("status_badge_pending"),
-            FieldPanel("status_badge_approved"),
-            FieldPanel("status_badge_rejected"),
-            FieldPanel("team_badge_text"),
-            FieldPanel("reply_modal_their_comment_label"),
-            FieldPanel("reply_modal_your_reply_label"),
-            FieldPanel("reply_modal_placeholder"),
-            FieldPanel("reply_modal_cancel_btn"),
-            FieldPanel("reply_modal_send_btn"),
-            FieldPanel("delete_modal_title"),
-            FieldPanel("delete_modal_cancel_btn"),
-            FieldPanel("delete_modal_confirm_btn"),
-            FieldPanel("all_blog_posts_option"),
-            FieldPanel("empty_approved_text"),
-            FieldPanel("empty_spam_text"),
-            FieldPanel("blog_selector_label"),
-            FieldPanel("comment_subtext_prefix"),
-        ], heading="4. Comments Moderation Page"),
-        MultiFieldPanel([
-            FieldPanel("footer_tagline"),
-            FieldPanel("footer_facebook_url"),
-            FieldPanel("footer_twitter_url"),
-            FieldPanel("footer_instagram_url"),
-            FieldPanel("footer_linkedin_url"),
-            FieldPanel("footer_col1_heading"),
-            FieldPanel("footer_col1_link1_text"),
-            FieldPanel("footer_col1_link1_url"),
-            FieldPanel("footer_col1_link2_text"),
-            FieldPanel("footer_col1_link2_url"),
-            FieldPanel("footer_col2_heading"),
-            FieldPanel("footer_col2_link1_text"),
-            FieldPanel("footer_col2_link1_url"),
-            FieldPanel("footer_col2_link2_text"),
-            FieldPanel("footer_col2_link2_url"),
-            FieldPanel("copyright_text"),
-        ], heading="5. Footer Settings & Social Links"),
+        FieldPanel("body", heading="Dashboard Modular Blocks (Click + to Add, 🗑️ to Delete or Reorder)"),
+        FieldPanel("sidebar_links", heading="Sidebar Links"),
     ]
         
 
@@ -787,12 +719,30 @@ class SettingsPage(Page):
     manage_users_tab_groups = models.CharField(max_length=50, blank=True, default="Groups")
     manage_users_tab_users  = models.CharField(max_length=50, blank=True, default="Users")
 
-    # Website Integration Page CMS Fields
+    # Website Integration Page CMS Fields (Comprehensive Dynamic Customization)
     integration_page_title = models.CharField(max_length=100, blank=True, default="Website Integration Guide")
     integration_page_subtext = models.CharField(max_length=255, blank=True, default="Step-by-step instructions for integrating blogs on any website.")
+    
+    # Step 1
+    integration_step1_badge = models.CharField(max_length=30, blank=True, default="Step 1")
     integration_step1_title = models.CharField(max_length=100, blank=True, default="Your Live RSS Feed Endpoint")
+    integration_step1_desc_prefix = models.CharField(max_length=150, blank=True, default="All blogs published under")
+    integration_step1_desc_suffix = models.CharField(max_length=150, blank=True, default="are live at this RSS XML endpoint:")
+    integration_step1_copy_btn_text = models.CharField(max_length=50, blank=True, default="Copy URL")
+    integration_step1_website_active_text = models.CharField(max_length=150, blank=True, default="Using your website URL:")
+    integration_step1_website_fallback_text = models.CharField(max_length=255, blank=True, default="Showing local URL. Set your website URL in Settings to show your real domain here.")
+
+    # Step 2
+    integration_step2_badge = models.CharField(max_length=30, blank=True, default="Step 2")
     integration_step2_title = models.CharField(max_length=100, blank=True, default="Embed Blogs on Your Website")
+    integration_step2_subtext = models.CharField(max_length=200, blank=True, default="Pick your framework — copy the snippet and paste it in your project.")
+
+    # Step 3
+    integration_step3_badge = models.CharField(max_length=30, blank=True, default="Step 3")
     integration_step3_title = models.CharField(max_length=100, blank=True, default="How It Works")
+    integration_step3_point1 = models.CharField(max_length=255, blank=True, default="Copy the RSS Feed URL from Step 1.")
+    integration_step3_point2 = models.CharField(max_length=255, blank=True, default="Pick your framework tab in Step 2, copy the snippet, and paste it in your project.")
+    integration_step3_point3 = models.CharField(max_length=255, blank=True, default="Whenever you publish or update a blog here, it instantly syncs to your website!")
 
     content_panels = Page.content_panels + [
         MultiFieldPanel([
@@ -895,9 +845,21 @@ class SettingsPage(Page):
         MultiFieldPanel([
             FieldPanel("integration_page_title"),
             FieldPanel("integration_page_subtext"),
+            FieldPanel("integration_step1_badge"),
             FieldPanel("integration_step1_title"),
+            FieldPanel("integration_step1_desc_prefix"),
+            FieldPanel("integration_step1_desc_suffix"),
+            FieldPanel("integration_step1_copy_btn_text"),
+            FieldPanel("integration_step1_website_active_text"),
+            FieldPanel("integration_step1_website_fallback_text"),
+            FieldPanel("integration_step2_badge"),
             FieldPanel("integration_step2_title"),
+            FieldPanel("integration_step2_subtext"),
+            FieldPanel("integration_step3_badge"),
             FieldPanel("integration_step3_title"),
+            FieldPanel("integration_step3_point1"),
+            FieldPanel("integration_step3_point2"),
+            FieldPanel("integration_step3_point3"),
         ], heading="Website Integration Guide Settings"),
     ]
 

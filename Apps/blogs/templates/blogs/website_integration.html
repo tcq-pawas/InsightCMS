@@ -65,10 +65,10 @@
 
       <!-- Step 1 -->
       <div class="integration-card">
-        <span class="step-badge">Step 1</span>
+        <span class="step-badge">{{ settings_page.integration_step1_badge|default:"Step 1" }}</span>
         <h3 style="font-size:1.15rem;font-weight:700;color:#1F2937;margin-bottom:8px;">{{ settings_page.integration_step1_title|default:"Your Live RSS Feed Endpoint" }}</h3>
         <p style="color:#4B5563;font-size:.9rem;margin-bottom:16px;">
-          All blogs published under <strong>{{ company_name }}</strong> are live at this RSS XML endpoint:
+          {{ settings_page.integration_step1_desc_prefix|default:"All blogs published under" }} <strong>{{ company_name }}</strong> {{ settings_page.integration_step1_desc_suffix|default:"are live at this RSS XML endpoint:" }}
         </p>
         <div class="d-flex gap-2">
           <input type="text" id="rssFeedInput" readonly
@@ -76,30 +76,28 @@
                  class="form-control"
                  style="background:#F9FAFB;font-family:monospace;font-size:.9rem;font-weight:600;color:#374151;">
           <button onclick="copyRssUrl()" class="btn btn-primary px-4 fw-semibold" style="white-space:nowrap;">
-            <i class="fa-regular fa-copy me-1"></i> Copy URL
+            <i class="fa-regular fa-copy me-1"></i> {{ settings_page.integration_step1_copy_btn_text|default:"Copy URL" }}
           </button>
         </div>
         {% if company.website_url %}
         <p class="mt-2 mb-0" style="font-size:0.82rem;color:#10B981;">
           <i class="fa-solid fa-circle-check me-1"></i>
-          Using your website URL: <strong>{{ company.website_url }}</strong>
+          {{ settings_page.integration_step1_website_active_text|default:"Using your website URL:" }} <strong>{{ company.website_url }}</strong>
         </p>
         {% else %}
         <p class="mt-2 mb-0" style="font-size:0.82rem;color:#F59E0B;">
           <i class="fa-solid fa-triangle-exclamation me-1"></i>
-          Showing local URL. Set your website URL in
-          <a href="/settings/" style="color:#2563EB;font-weight:600;">Settings</a>
-          to show your real domain here.
+          {{ settings_page.integration_step1_website_fallback_text|default:"Showing local URL. Set your website URL in Settings to show your real domain here." }}
         </p>
         {% endif %}
       </div>
 
       <!-- Step 2: GFG-style language tabs -->
       <div class="integration-card">
-        <span class="step-badge">Step 2</span>
+        <span class="step-badge">{{ settings_page.integration_step2_badge|default:"Step 2" }}</span>
         <h3 style="font-size:1.15rem;font-weight:700;color:#1F2937;margin-bottom:4px;">{{ settings_page.integration_step2_title|default:"Embed Blogs on Your Website" }}</h3>
         <p style="color:#4B5563;font-size:.9rem;margin-bottom:20px;">
-          Pick your framework — copy the snippet and paste it in your project.
+          {{ settings_page.integration_step2_subtext|default:"Pick your framework — copy the snippet and paste it in your project." }}
         </p>
 
         <div class="lang-tabs-bar">
@@ -125,12 +123,12 @@
 
       <!-- Step 3 -->
       <div class="integration-card">
-        <span class="step-badge">Step 3</span>
+        <span class="step-badge">{{ settings_page.integration_step3_badge|default:"Step 3" }}</span>
         <h3 style="font-size:1.15rem;font-weight:700;color:#1F2937;margin-bottom:12px;">{{ settings_page.integration_step3_title|default:"How It Works" }}</h3>
         <ol style="color:#4B5563;font-size:.95rem;line-height:1.8;padding-left:20px;margin-bottom:0;">
-          <li>Copy the RSS Feed URL from Step 1.</li>
-          <li>Pick your framework tab in Step 2, copy the snippet, and paste it in your project.</li>
-          <li>Whenever you publish or update a blog here, it <strong>instantly syncs</strong> to your website!</li>
+          <li>{{ settings_page.integration_step3_point1|default:"Copy the RSS Feed URL from Step 1." }}</li>
+          <li>{{ settings_page.integration_step3_point2|default:"Pick your framework tab in Step 2, copy the snippet, and paste it in your project." }}</li>
+          <li>{{ settings_page.integration_step3_point3|default:"Whenever you publish or update a blog here, it instantly syncs to your website!" }}</li>
         </ol>
       </div>
 

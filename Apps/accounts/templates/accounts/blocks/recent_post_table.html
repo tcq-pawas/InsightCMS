@@ -5,12 +5,12 @@
 <div class="bp-card mb-4" id="my-blogs">
   <div class="bp-card-header d-flex justify-content-between align-items-center">
     <div>
-      <h3 class="bp-card-title">My Blogs & Articles</h3>
-      <span class="bp-card-sub">Track all blogs written by you and their approval status</span>
+      <h3 class="bp-card-title">{{ page.emp_blogs_heading|default:"My Blogs & Articles" }}</h3>
+      <span class="bp-card-sub">{{ page.emp_blogs_subtext|default:"Track all blogs written by you and their approval status" }}</span>
     </div>
     <div>
-      <a href="{% url 'dashboard_blog_create' %}" class="bp-btn-primary btn-sm rounded-pill px-3">
-        <i class="fa-solid fa-plus me-1"></i> Write New Blog
+      <a href="{{ page.emp_write_blog_btn_url|default:'/dashboard/blogs/create/' }}" class="bp-btn-primary btn-sm rounded-pill px-3">
+        <i class="fa-solid fa-plus me-1"></i> {{ page.emp_write_blog_btn_text|default:"Write New Blog" }}
       </a>
     </div>
   </div>
@@ -19,9 +19,9 @@
     <table class="table bp-table align-middle mb-0">
       <thead>
         <tr>
-          <th style="min-width: 260px;">BLOG TITLE</th>
-          <th>DESCRIPTION</th>
-          <th class="text-center">STATUS</th>
+          <th style="min-width: 260px;">{{ page.emp_th_blog_title|default:"BLOG TITLE" }}</th>
+          <th>{{ page.emp_th_description|default:"DESCRIPTION" }}</th>
+          <th class="text-center">{{ page.emp_th_status|default:"STATUS" }}</th>
         </tr>
       </thead>
       <tbody>
@@ -39,7 +39,7 @@
             <!-- Little Description -->
             <td>
               <span class="text-muted small d-inline-block text-truncate" style="max-width: 320px;" title="{{ blog.short_description|default:blog.title }}">
-                {{ blog.short_description|default:"No description provided" }}
+                {{ blog.short_description|default:page.emp_no_description_text|default:"No description provided" }}
               </span>
             </td>
 
@@ -47,15 +47,15 @@
             <td class="text-center">
               {% if blog.approval_status == 'rejected' %}
                 <span class="badge rounded-pill px-3 py-2 fw-bold" style="font-size: 0.82rem; background-color: #fde8e8 !important; color: #9b1c1c !important; border: 1px solid #f8b4b4;">
-                  <i class="fa-solid fa-circle-xmark me-1"></i> Approval Rejected
+                  <i class="fa-solid fa-circle-xmark me-1"></i> {{ page.emp_status_rejected|default:"Approval Rejected" }}
                 </span>
               {% elif blog.live and blog.approval_status == 'approved' %}
                 <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2 fw-bold" style="font-size: 0.82rem;">
-                  <i class="fa-solid fa-circle-check me-1"></i> Approved
+                  <i class="fa-solid fa-circle-check me-1"></i> {{ page.emp_status_approved|default:"Approved" }}
                 </span>
               {% else %}
                 <span class="badge rounded-pill px-3 py-2 fw-bold" style="font-size: 0.82rem; background-color: #fff8e1 !important; color: #b78103 !important; border: 1px solid #ffe082;">
-                  <i class="fa-regular fa-clock me-1"></i> Waiting for Approval
+                  <i class="fa-regular fa-clock me-1"></i> {{ page.emp_status_pending|default:"Waiting for Approval" }}
                 </span>
               {% endif %}
             </td>
@@ -63,9 +63,9 @@
         {% empty %}
           <tr>
             <td colspan="3" class="text-center py-4 text-muted">
-              <p class="mb-2">You haven't written any blogs yet.</p>
-              <a href="{% url 'dashboard_blog_create' %}" class="btn btn-primary btn-sm rounded-pill px-3">
-                <i class="fa-solid fa-plus me-1"></i> Create Your First Blog
+              <p class="mb-2">{{ page.emp_empty_blogs_text|default:"You haven't written any blogs yet." }}</p>
+              <a href="{{ page.emp_write_blog_btn_url|default:'/dashboard/blogs/create/' }}" class="btn btn-primary btn-sm rounded-pill px-3">
+                <i class="fa-solid fa-plus me-1"></i> {{ page.emp_empty_create_btn_text|default:"Create Your First Blog" }}
               </a>
             </td>
           </tr>
@@ -82,12 +82,12 @@
 <div class="bp-card mb-4" id="writers">
   <div class="bp-card-header d-flex justify-content-between align-items-center">
     <div>
-      <h3 class="bp-card-title">{{ page.recent_posts_heading|default:"Writers & Authors Summary" }}</h3>
-      <span class="bp-card-sub">{{ page.recent_posts_subtext|default:"Overview of team members and their published blog contributions" }}</span>
+      <h3 class="bp-card-title">{{ value.heading|default:page.recent_posts_heading|default:"Dashboard" }}</h3>
+      <span class="bp-card-sub">{{ value.subtext|default:page.recent_posts_subtext|default:"Welcome back! Here's what's happening with your blog" }}</span>
     </div>
     <div>
-      <a href="{{ page.view_all_posts_url|default:'/settings/#team' }}" class="bp-link-sm">
-        {{ page.view_all_posts_text|default:"Manage Team →" }}
+      <a href="{{ value.view_all_url|default:page.view_all_posts_url|default:'/settings/#team' }}" class="bp-link-sm">
+        {{ value.view_all_text|default:page.view_all_posts_text|default:"Manage Team →" }}
       </a>
     </div>
   </div>
@@ -96,11 +96,11 @@
     <table class="table bp-table align-middle mb-0">
       <thead>
         <tr>
-          <th>{{ page.th_post_title|default:"AUTHOR / WRITER" }}</th>
-          <th>{{ page.th_category|default:"EMAIL" }}</th>
-          <th class="text-center">{{ page.th_views|default:"TOTAL POSTS" }}</th>
-          <th class="text-center">{{ page.th_status|default:"PUBLISHED" }}</th>
-          <th class="text-center">{{ page.th_date|default:"UNPUBLISHED" }}</th>
+          <th>{{ value.th_post_title|default:page.th_post_title|default:"AUTHOR / WRITER" }}</th>
+          <th>{{ value.th_category|default:page.th_category|default:"EMAIL" }}</th>
+          <th class="text-center">{{ value.th_views|default:page.th_views|default:"TOTAL POSTS" }}</th>
+          <th class="text-center">{{ value.th_status|default:page.th_status|default:"PUBLISHED" }}</th>
+          <th class="text-center">{{ value.th_date|default:page.th_date|default:"UNPUBLISHED" }}</th>
         </tr>
       </thead>
       <tbody>

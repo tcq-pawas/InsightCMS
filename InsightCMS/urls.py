@@ -62,6 +62,8 @@ urlpatterns = [
         path('comments/<int:comment_id>/delete/', comment_delete, name='comment_delete_alias'),
         path('comments/<int:comment_id>/reply/', comment_reply, name='comment_reply_alias'),
     ])),
+    # Blog post creation route
+    path('blog-posts/create/', dashboard_blog_create, name='legacy_blog_create'),
     # Root level comments URL (http://127.0.0.1:8000/comments/)
     path('comments/', dashboard_comments_view, name='dashboard_comments'),
     path('comments/<int:comment_id>/approve/', comment_approve, name='comment_approve'),

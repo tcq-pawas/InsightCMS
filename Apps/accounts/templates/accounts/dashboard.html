@@ -22,20 +22,22 @@
 
     <main class="bp-content-body">
 
-      <!-- Page Header & Action Button -->
-      <div class="bp-page-header" id="dashboard">
-        <div>
-          <h1 class="bp-page-title">{{ page.welcome_heading|default:"Dashboard" }}</h1>
-          <p class="bp-page-sub">{{ page.welcome_subtext|default:"Welcome back! Here's what's happening with your blog." }}</p>
+      <!-- Page Header & Action Button (Shown only if not already added in body blocks) -->
+      {% if not page.body %}
+        <div class="bp-page-header" id="dashboard">
+          <div>
+            <h1 class="bp-page-title">{{ page.welcome_heading|default:"Dashboard" }}</h1>
+            <p class="bp-page-sub">{{ page.welcome_subtext|default:"Welcome back! Here's what's happening with your blog." }}</p>
+          </div>
+          {% if page.new_post_button_text %}
+          <div>
+            <a href="{{ page.new_post_button_url|default:'/cms/pages/' }}" class="bp-btn-primary">
+              <i class="fa-solid fa-plus me-1"></i> {{ page.new_post_button_text }}
+            </a>
+          </div>
+          {% endif %}
         </div>
-        {% if page.new_post_button_text %}
-        <div>
-          <a href="{{ page.new_post_button_url|default:'/cms/pages/' }}" class="bp-btn-primary">
-            <i class="fa-solid fa-plus me-1"></i> {{ page.new_post_button_text }}
-          </a>
-        </div>
-        {% endif %}
-      </div>
+      {% endif %}
 
       <!-- StreamField Body or Fallback -->
       {% if page.body %}

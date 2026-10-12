@@ -126,12 +126,11 @@ class RecentPostsTableBlock(blocks.StructBlock):
     view_all_text = blocks.CharBlock(required=False, default="View All ›")
     view_all_url = blocks.CharBlock(required=False, default="/cms/pages/")
 
-    th_post_title = blocks.CharBlock(required=False, default="POST TITLE")
-    th_category = blocks.CharBlock(required=False, default="CATEGORY")
-    th_status = blocks.CharBlock(required=False, default="STATUS")
-    th_views = blocks.CharBlock(required=False, default="VIEWS")
-    th_date = blocks.CharBlock(required=False, default="DATE")
-    th_actions = blocks.CharBlock(required=False, default="ACTIONS")
+    th_name = blocks.CharBlock(required=False, default="NAME")
+    th_email = blocks.CharBlock(required=False, default="EMAIL")
+    th_published = blocks.CharBlock(required=False, default="PUBLISHED")
+    th_posts = blocks.CharBlock(required=False, default="TOTAL POSTS")
+    th_unpublished = blocks.CharBlock(required=False, default="UNPUBLISHED")
 
     class Meta:
         icon = "list-ul"
@@ -235,6 +234,7 @@ class HeaderBrandBlock(blocks.StructBlock):
     class Meta:
         icon = "title"
         label = "Header & Brand"
+        template = "accounts/blocks/header_brand.html"
 
 
 # Block: Sidebar Block
@@ -270,14 +270,139 @@ class FooterBlock(blocks.StructBlock):
 
 
 # =========================================================================
+# CONFIG BLOCKS (Sections 3, 3.1, 4, 5 — appear in (+) menu with 🗑️ icon)
+# =========================================================================
+
+# Section 3: Recent Posts Table Configuration (Admin View)
+class RecentPostsConfigBlock(blocks.StructBlock):
+    heading           = blocks.CharBlock(required=False, default="Recent Posts")
+    subtext           = blocks.CharBlock(required=False, default="Manage your latest published and draft articles")
+    th_name    = blocks.CharBlock(required=False, default="NAME")
+    th_email      = blocks.CharBlock(required=False, default="EMAIL")
+    th_published       = blocks.CharBlock(required=False, default="PUBLISHED")
+    th_posts         = blocks.CharBlock(required=False, default="TOTAL POSTS")
+    th_unpublished           = blocks.CharBlock(required=False, default="UNPUBLISHED")
+    empty_posts_text       = blocks.CharBlock(required=False, default="No blog posts yet.")
+    empty_create_btn_text  = blocks.CharBlock(required=False, default="Create Your First Post")
+
+    class Meta:
+        icon = "list-ul"
+        label = "Recent Posts Table Config (Admin View)"
+        template = "accounts/blocks/recent_posts_config.html"
+
+
+# Section 3.1: Employee Blogs Table Configuration (Employee View)
+class EmployeeBlogsConfigBlock(blocks.StructBlock):
+    emp_blogs_heading         = blocks.CharBlock(required=False, default="My Blog Posts")
+    emp_blogs_subtext         = blocks.CharBlock(required=False, default="Write, manage, and track your submitted articles")
+    emp_write_blog_btn_text   = blocks.CharBlock(required=False, default="+ Write New Blog")
+    emp_write_blog_btn_url    = blocks.CharBlock(required=False, default="/dashboard/blogs/create/")
+    emp_th_blog_title         = blocks.CharBlock(required=False, default="BLOG TITLE")
+    emp_th_description        = blocks.CharBlock(required=False, default="DESCRIPTION")
+    emp_th_status             = blocks.CharBlock(required=False, default="STATUS")
+    emp_status_rejected       = blocks.CharBlock(required=False, default="Rejected")
+    emp_status_approved       = blocks.CharBlock(required=False, default="Approved")
+    emp_status_pending        = blocks.CharBlock(required=False, default="Pending")
+    emp_no_description_text   = blocks.CharBlock(required=False, default="No description")
+    emp_empty_blogs_text      = blocks.CharBlock(required=False, default="No blogs yet. Start writing!")
+    emp_empty_create_btn_text = blocks.CharBlock(required=False, default="Write Your First Blog")
+
+    class Meta:
+        icon = "edit"
+        label = "Employee Blogs Table Config (Employee View)"
+        template = "accounts/blocks/employee_blogs_config.html"
+
+
+# Section 4: Comments Moderation Page Configuration
+class CommentsModerationConfigBlock(blocks.StructBlock):
+    comments_page_title         = blocks.CharBlock(required=False, default="Comments Moderation")
+    comments_page_subtext       = blocks.CharBlock(required=False, default="Moderate visitor comments on your blog posts across")
+    filter_blog_label           = blocks.CharBlock(required=False, default="Blog:")
+    card_total_comments_label   = blocks.CharBlock(required=False, default="Total Comments")
+    card_pending_review_label   = blocks.CharBlock(required=False, default="Pending Review")
+    card_approved_label         = blocks.CharBlock(required=False, default="Approved")
+    card_rejected_label         = blocks.CharBlock(required=False, default="Rejected")
+    tab_all_label               = blocks.CharBlock(required=False, default="All")
+    tab_pending_label           = blocks.CharBlock(required=False, default="Pending")
+    tab_approved_label          = blocks.CharBlock(required=False, default="Approved")
+    tab_rejected_label          = blocks.CharBlock(required=False, default="Rejected")
+    comments_page_empty_heading = blocks.CharBlock(required=False, default="No Comments Yet")
+    comments_page_empty_subtext = blocks.CharBlock(required=False, default="When readers comment on your posts, they'll appear here.")
+    comments_th_author          = blocks.CharBlock(required=False, default="AUTHOR")
+    comments_th_comment         = blocks.CharBlock(required=False, default="COMMENT")
+    comments_th_post            = blocks.CharBlock(required=False, default="POST")
+    comments_th_date            = blocks.CharBlock(required=False, default="DATE")
+    comments_th_status          = blocks.CharBlock(required=False, default="STATUS")
+    comments_th_actions         = blocks.CharBlock(required=False, default="ACTIONS")
+    bulk_delete_btn             = blocks.CharBlock(required=False, default="Delete Selected")
+    bulk_reject_btn             = blocks.CharBlock(required=False, default="Reject Selected")
+    bulk_approve_btn            = blocks.CharBlock(required=False, default="Approve Selected")
+    action_reply_btn            = blocks.CharBlock(required=False, default="Reply")
+    action_approve_btn          = blocks.CharBlock(required=False, default="Approve")
+    action_reject_btn           = blocks.CharBlock(required=False, default="Reject")
+    status_badge_pending        = blocks.CharBlock(required=False, default="Pending")
+    status_badge_approved       = blocks.CharBlock(required=False, default="Approved")
+    status_badge_rejected       = blocks.CharBlock(required=False, default="Rejected")
+    team_badge_text             = blocks.CharBlock(required=False, default="Team")
+    reply_modal_their_comment_label = blocks.CharBlock(required=False, default="Their comment:")
+    reply_modal_your_reply_label    = blocks.CharBlock(required=False, default="Your Reply")
+    reply_modal_placeholder         = blocks.CharBlock(required=False, default="Write your reply...")
+    reply_modal_cancel_btn          = blocks.CharBlock(required=False, default="Cancel")
+    reply_modal_send_btn            = blocks.CharBlock(required=False, default="Send Reply")
+    delete_modal_title              = blocks.CharBlock(required=False, default="Delete Comment?")
+    delete_modal_cancel_btn         = blocks.CharBlock(required=False, default="Cancel")
+    delete_modal_confirm_btn        = blocks.CharBlock(required=False, default="Delete")
+    all_blog_posts_option           = blocks.CharBlock(required=False, default="All Blog Posts")
+    empty_approved_text             = blocks.CharBlock(required=False, default="No approved comments yet.")
+    empty_spam_text                 = blocks.CharBlock(required=False, default="No spam comments. 🎉")
+    blog_selector_label             = blocks.CharBlock(required=False, default="Blog:")
+    comment_subtext_prefix          = blocks.CharBlock(required=False, default="Moderate visitor comments on your blog posts across")
+
+    class Meta:
+        icon = "comment"
+        label = "Comments Moderation Config"
+        template = "accounts/blocks/comments_moderation_config.html"
+
+
+# Section 5: Footer Settings & Social Links Configuration
+class FooterSettingsConfigBlock(blocks.StructBlock):
+    footer_tagline         = blocks.TextBlock(required=False, default="The all-in-one blogging platform that helps you create, manage, and grow your blog.")
+    footer_facebook_url    = blocks.CharBlock(required=False, default="#")
+    footer_twitter_url     = blocks.CharBlock(required=False, default="#")
+    footer_instagram_url   = blocks.CharBlock(required=False, default="#")
+    footer_linkedin_url    = blocks.CharBlock(required=False, default="#")
+    footer_col1_heading    = blocks.CharBlock(required=False, default="PRODUCT")
+    footer_col1_link1_text = blocks.CharBlock(required=False, default="Features")
+    footer_col1_link1_url  = blocks.CharBlock(required=False, default="#")
+    footer_col1_link2_text = blocks.CharBlock(required=False, default="Pricing")
+    footer_col1_link2_url  = blocks.CharBlock(required=False, default="#")
+    footer_col2_heading    = blocks.CharBlock(required=False, default="SUPPORT")
+    footer_col2_link1_text = blocks.CharBlock(required=False, default="Help Center")
+    footer_col2_link1_url  = blocks.CharBlock(required=False, default="#")
+    footer_col2_link2_text = blocks.CharBlock(required=False, default="Documentation")
+    footer_col2_link2_url  = blocks.CharBlock(required=False, default="#")
+    copyright_text         = blocks.CharBlock(required=False, default="© 2024 BlogPro. All rights reserved.")
+
+    class Meta:
+        icon = "site"
+        label = "Footer Settings & Social Links"
+        template = "accounts/blocks/footer_settings_config.html"
+
+
+# =========================================================================
 # MASTER DASHBOARD STREAMBLOCK (Only Content Body Blocks)
 # =========================================================================
 class DashboardBodyStreamBlock(blocks.StreamBlock):
-    stats_row = StatsRowBlock(icon="table", label="Stat Cards Row")
-    recent_posts = RecentPostsTableBlock(icon="list-ul", label="Recent Posts Table")
-    audience_overview = AudienceOverviewBlock(icon="group", label="Audience Overview")
-    recent_comments = RecentCommentsBlock(icon="comment", label="Recent Comments")
-    upgrade_banner = UpgradeBannerBlock(icon="gem", label="Upgrade Banner")
+    header_brand        = HeaderBrandBlock(icon="title",    label="Header & Action Button")
+    stats_row           = StatsRowBlock(icon="table",       label="Stat Cards Row")
+    recent_posts        = RecentPostsTableBlock(icon="list-ul", label="Recent Posts Table")
+    audience_overview   = AudienceOverviewBlock(icon="group",   label="Audience Overview")
+    recent_comments     = RecentCommentsBlock(icon="comment",   label="Recent Comments")
+    upgrade_banner      = UpgradeBannerBlock(icon="gem",        label="Upgrade Banner")
+    recent_posts_config = RecentPostsConfigBlock(icon="list-ul", label="Recent Posts Table Config (Admin)")
+    employee_blogs_config      = EmployeeBlogsConfigBlock(icon="edit",    label="Employee Blogs Table Config")
+    comments_moderation_config = CommentsModerationConfigBlock(icon="comment", label="Comments Moderation Config")
+    footer_settings_config     = FooterSettingsConfigBlock(icon="site",   label="Footer Settings & Social Links")
 
     class Meta:
         icon = "cogs"
