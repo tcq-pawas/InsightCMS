@@ -296,7 +296,7 @@ class EmployeeBlogsConfigBlock(blocks.StructBlock):
     emp_blogs_heading         = blocks.CharBlock(required=False, default="My Blog Posts")
     emp_blogs_subtext         = blocks.CharBlock(required=False, default="Write, manage, and track your submitted articles")
     emp_write_blog_btn_text   = blocks.CharBlock(required=False, default="+ Write New Blog")
-    emp_write_blog_btn_url    = blocks.CharBlock(required=False, default="/dashboard/blogs/create/")
+    emp_write_blog_btn_url    = blocks.CharBlock(required=False, default="/blog-posts/create/")
     emp_th_blog_title         = blocks.CharBlock(required=False, default="BLOG TITLE")
     emp_th_description        = blocks.CharBlock(required=False, default="DESCRIPTION")
     emp_th_status             = blocks.CharBlock(required=False, default="STATUS")

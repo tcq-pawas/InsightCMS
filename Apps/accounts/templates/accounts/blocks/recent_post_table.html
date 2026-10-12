@@ -9,7 +9,7 @@
       <span class="bp-card-sub">{{ page.emp_blogs_subtext|default:"Track all blogs written by you and their approval status" }}</span>
     </div>
     <div>
-      <a href="{{ page.emp_write_blog_btn_url|default:'/dashboard/blogs/create/' }}" class="bp-btn-primary btn-sm rounded-pill px-3">
+      <a href="{{ page.emp_write_blog_btn_url|default:'/blog-posts/create/' }}" class="bp-btn-primary btn-sm rounded-pill px-3">
         <i class="fa-solid fa-plus me-1"></i> {{ page.emp_write_blog_btn_text|default:"Write New Blog" }}
       </a>
     </div>
@@ -64,7 +64,7 @@
           <tr>
             <td colspan="3" class="text-center py-4 text-muted">
               <p class="mb-2">{{ page.emp_empty_blogs_text|default:"You haven't written any blogs yet." }}</p>
-              <a href="{{ page.emp_write_blog_btn_url|default:'/dashboard/blogs/create/' }}" class="btn btn-primary btn-sm rounded-pill px-3">
+              <a href="{{ page.emp_write_blog_btn_url|default:'/blog-posts/create/' }}" class="btn btn-primary btn-sm rounded-pill px-3">
                 <i class="fa-solid fa-plus me-1"></i> {{ page.emp_empty_create_btn_text|default:"Create Your First Blog" }}
               </a>
             </td>

@@ -30,7 +30,7 @@
           <p class="bp-page-sub">{{ page.page_subtext|default:"Manage all blog posts across your workspace" }}</p>
         </div>
         <div>
-            <a href="{% url 'dashboard_blog_create' %}" class="bp-btn-primary">
+            <a href="/blog-posts/create/" class="bp-btn-primary">
                 <i class="fa-solid fa-plus me-1"></i> {{ page.create_button_text|default:"Create Blog Post" }}
             </a>
         </div>
@@ -152,7 +152,7 @@
         {% empty %}
         <div class="card p-5 text-center text-muted">
           <p class="fs-5 mb-2">{{ page.empty_state_text|default:"No blog posts yet." }}</p>
-          <div><a href="{% url 'dashboard_blog_create' %}" class="btn btn-primary btn-sm">{{ page.empty_state_link_text|default:"Create your first one" }}</a></div>
+          <div><a href="/blog-posts/create/" class="btn btn-primary btn-sm">{{ page.empty_state_link_text|default:"Create your first one" }}</a></div>
         </div>
         {% endfor %}
       </div>

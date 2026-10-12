@@ -581,6 +581,10 @@ class UserDashboardPage(Page):
     )
 
     content_panels = Page.content_panels + [
+        MultiFieldPanel([
+            FieldPanel("search_placeholder"),
+            FieldPanel("search_shortcut"),
+        ], heading="Topbar Settings (Search Bar)"),
         FieldPanel("body", heading="Dashboard Modular Blocks (Click + to Add, 🗑️ to Delete or Reorder)"),
         FieldPanel("sidebar_links", heading="Sidebar Links"),
     ]
@@ -719,6 +723,56 @@ class SettingsPage(Page):
     manage_users_tab_groups = models.CharField(max_length=50, blank=True, default="Groups")
     manage_users_tab_users  = models.CharField(max_length=50, blank=True, default="Users")
 
+    # Table headers
+    manage_users_th_group   = models.CharField(max_length=50, blank=True, default="Group")
+    manage_users_th_role    = models.CharField(max_length=50, blank=True, default="Role")
+
+    # Status / Role badges
+    manage_users_badge_active   = models.CharField(max_length=50, blank=True, default="Active")
+    manage_users_badge_blocked  = models.CharField(max_length=50, blank=True, default="Blocked")
+    manage_users_badge_admin    = models.CharField(max_length=50, blank=True, default="Admin")
+    manage_users_badge_you      = models.CharField(max_length=20, blank=True, default="You")
+
+    # Common buttons
+    manage_users_btn_cancel          = models.CharField(max_length=50, blank=True, default="Cancel")
+    manage_users_btn_move            = models.CharField(max_length=50, blank=True, default="Move")
+    manage_users_btn_delete          = models.CharField(max_length=50, blank=True, default="Delete")
+    manage_users_btn_save_changes    = models.CharField(max_length=50, blank=True, default="Save Changes")
+    manage_users_btn_create_group    = models.CharField(max_length=50, blank=True, default="Create Group")
+    manage_users_btn_add_user_submit = models.CharField(max_length=50, blank=True, default="Add User")
+
+    # Add User Modal form labels
+    manage_users_label_first_name       = models.CharField(max_length=50, blank=True, default="First Name")
+    manage_users_label_last_name        = models.CharField(max_length=50, blank=True, default="Last Name")
+    manage_users_label_password         = models.CharField(max_length=50, blank=True, default="Password")
+    manage_users_label_assign_group     = models.CharField(max_length=50, blank=True, default="Assign to Group")
+    manage_users_text_permissions_note  = models.CharField(max_length=200, blank=True, default="Permissions are inherited from the selected group.")
+    manage_users_option_no_group        = models.CharField(max_length=50, blank=True, default="\u2014 No Group \u2014")
+
+    # Add/Edit Group Modal form labels
+    manage_users_label_group_name       = models.CharField(max_length=50, blank=True, default="Group Name")
+    manage_users_label_group_desc       = models.CharField(max_length=50, blank=True, default="Description")
+    manage_users_label_permissions      = models.CharField(max_length=100, blank=True, default="Permissions for this Group")
+    manage_users_perm_create            = models.CharField(max_length=50, blank=True, default="Create Posts")
+    manage_users_perm_edit              = models.CharField(max_length=50, blank=True, default="Edit Posts")
+    manage_users_perm_publish           = models.CharField(max_length=50, blank=True, default="Publish Posts")
+    manage_users_perm_comments          = models.CharField(max_length=50, blank=True, default="Manage Comments")
+    manage_users_placeholder_group_name = models.CharField(max_length=100, blank=True, default="e.g. Writers, Editors")
+    manage_users_placeholder_group_desc = models.CharField(max_length=100, blank=True, default="Optional description")
+
+    # Edit / Assign / Delete Group Modal titles & texts
+    manage_users_modal_edit_group_title   = models.CharField(max_length=100, blank=True, default="Edit Group")
+    manage_users_modal_assign_group_title = models.CharField(max_length=100, blank=True, default="Assign to Group")
+    manage_users_text_moving              = models.CharField(max_length=50, blank=True, default="Moving:")
+    manage_users_modal_delete_group_title = models.CharField(max_length=100, blank=True, default="Delete Group")
+    manage_users_text_delete_confirm      = models.CharField(max_length=200, blank=True, default="Are you sure you want to delete group")
+    manage_users_text_delete_warning      = models.CharField(max_length=200, blank=True, default="Members of this group will become ungrouped.")
+
+    # Empty states
+    manage_users_text_no_groups         = models.CharField(max_length=200, blank=True, default="No permission groups created yet.")
+    manage_users_btn_create_first_group = models.CharField(max_length=100, blank=True, default="Create First Group")
+    manage_users_text_no_members        = models.CharField(max_length=200, blank=True, default="No members assigned yet.")
+
     # Website Integration Page CMS Fields (Comprehensive Dynamic Customization)
     integration_page_title = models.CharField(max_length=100, blank=True, default="Website Integration Guide")
     integration_page_subtext = models.CharField(max_length=255, blank=True, default="Step-by-step instructions for integrating blogs on any website.")
@@ -781,19 +835,67 @@ class SettingsPage(Page):
         MultiFieldPanel([
             FieldPanel("manage_users_page_title"),
             FieldPanel("manage_users_page_subtext"),
-            FieldPanel("manage_users_btn_add_text"),
-            FieldPanel("manage_users_btn_add_group"),
-            FieldPanel("manage_users_modal_add_user_title"),
-            FieldPanel("manage_users_modal_add_group_title"),
+            # Tabs
             FieldPanel("manage_users_tab_admins"),
             FieldPanel("manage_users_tab_groups"),
             FieldPanel("manage_users_tab_users"),
-            FieldPanel("manage_users_card_heading"),
+            # Header Buttons
+            FieldPanel("manage_users_btn_add_text"),
+            FieldPanel("manage_users_btn_add_group"),
+            # Table Headers
             FieldPanel("manage_users_th_user"),
             FieldPanel("manage_users_th_email"),
+            FieldPanel("manage_users_th_group"),
+            FieldPanel("manage_users_th_role"),
             FieldPanel("manage_users_th_permissions"),
             FieldPanel("manage_users_th_status"),
             FieldPanel("manage_users_th_actions"),
+            # Status Badges
+            FieldPanel("manage_users_badge_active"),
+            FieldPanel("manage_users_badge_blocked"),
+            FieldPanel("manage_users_badge_admin"),
+            FieldPanel("manage_users_badge_you"),
+            # Common Buttons
+            FieldPanel("manage_users_btn_cancel"),
+            FieldPanel("manage_users_btn_move"),
+            FieldPanel("manage_users_btn_delete"),
+            FieldPanel("manage_users_btn_save_changes"),
+            FieldPanel("manage_users_btn_create_group"),
+            FieldPanel("manage_users_btn_add_user_submit"),
+            # Add User Modal
+            FieldPanel("manage_users_modal_add_user_title"),
+            FieldPanel("manage_users_label_first_name"),
+            FieldPanel("manage_users_label_last_name"),
+            FieldPanel("manage_users_label_password"),
+            FieldPanel("manage_users_label_assign_group"),
+            FieldPanel("manage_users_option_no_group"),
+            FieldPanel("manage_users_text_permissions_note"),
+            # Add Group Modal
+            FieldPanel("manage_users_modal_add_group_title"),
+            FieldPanel("manage_users_label_group_name"),
+            FieldPanel("manage_users_label_group_desc"),
+            FieldPanel("manage_users_label_permissions"),
+            FieldPanel("manage_users_perm_create"),
+            FieldPanel("manage_users_perm_edit"),
+            FieldPanel("manage_users_perm_publish"),
+            FieldPanel("manage_users_perm_comments"),
+            FieldPanel("manage_users_placeholder_group_name"),
+            FieldPanel("manage_users_placeholder_group_desc"),
+            # Edit Group Modal
+            FieldPanel("manage_users_modal_edit_group_title"),
+            FieldPanel("manage_users_btn_save_changes"),
+            # Assign Group Modal
+            FieldPanel("manage_users_modal_assign_group_title"),
+            FieldPanel("manage_users_text_moving"),
+            # Delete Group Modal
+            FieldPanel("manage_users_modal_delete_group_title"),
+            FieldPanel("manage_users_text_delete_confirm"),
+            FieldPanel("manage_users_text_delete_warning"),
+            # Empty States
+            FieldPanel("manage_users_text_no_groups"),
+            FieldPanel("manage_users_btn_create_first_group"),
+            FieldPanel("manage_users_text_no_members"),
+            FieldPanel("manage_users_card_heading"),
         ], heading="Manage User Settings Configuration"),
         MultiFieldPanel([
             FieldPanel("settings_profile_heading"),

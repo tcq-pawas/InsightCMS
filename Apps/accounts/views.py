@@ -481,12 +481,18 @@ def manage_users_settings_view(request):
 
     profile = UserProfile.objects.filter(user=request.user).select_related('company').first()
     company = profile.company if profile else getattr(request.user, 'company', None)
+    if not company:
+        membership = CompanyMembership.objects.filter(user=request.user).select_related('company').first()
+        if membership:
+            company = membership.company
     if not company and request.user.role == UserModel.Role.SUPER_ADMIN:
         active_comp_id = request.session.get('active_company_id')
         if active_comp_id:
             company = Company.objects.filter(id=active_comp_id).first()
-
-    # Note: If Super Admin has no linked company, company remains None so platform defaults (BlogPro) render.
+        if not company and request.user.company_name:
+            company = Company.objects.filter(company_name__iexact=request.user.company_name).first()
+        if not company:
+            company = Company.objects.first()
 
     # Handle POST actions
     if request.method == 'POST':
@@ -584,6 +590,9 @@ def manage_users_settings_view(request):
 
         # 5. ADD GROUP
         elif action_type == 'add_group':
+            if not company:
+                messages.error(request, "No company found to associate with this group.")
+                return redirect(request.path)
             group_name = request.POST.get('group_name', '').strip()
             group_desc = request.POST.get('group_description', '').strip()
             if not group_name:

@@ -120,11 +120,11 @@
                 <table class="table table-hover mb-0 align-middle" style="font-size:.87rem;">
                   <thead style="background:#f8f7ff;">
                     <tr>
-                      <th class="ps-3">User</th>
-                      <th>Email</th>
-                      <th>Group</th>
-                      <th>Status</th>
-                      <th class="text-end pe-3">Actions</th>
+                      <th class="ps-3">{{ page.manage_users_th_user|default:"User" }}</th>
+                      <th>{{ page.manage_users_th_email|default:"Email" }}</th>
+                      <th>{{ page.manage_users_th_group|default:"Group" }}</th>
+                      <th>{{ page.manage_users_th_status|default:"Status" }}</th>
+                      <th class="text-end pe-3">{{ page.manage_users_th_actions|default:"Actions" }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -136,7 +136,7 @@
                           <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width:34px;height:34px;background:#6c63ff;font-size:.8rem;">
                             {{ member.name|slice:":1"|upper }}
                           </div>
-                          <span class="fw-semibold" style="color:#1a1a2e;">{{ member.name }}{% if member.is_self %} <span class="badge bg-secondary ms-1" style="font-size:.65rem;">You</span>{% endif %}</span>
+                          <span class="fw-semibold" style="color:#1a1a2e;">{{ member.name }}{% if member.is_self %} <span class="badge bg-secondary ms-1" style="font-size:.65rem;">{{ page.manage_users_badge_you|default:"You" }}</span>{% endif %}</span>
                         </div>
                       </td>
                       <td class="text-muted">{{ member.email }}</td>
@@ -144,21 +144,21 @@
                         {% if member.group %}
                         <span class="badge" style="background:#f0f0ff;color:#6c63ff;font-weight:600;"><i class="bi bi-folder2 me-1"></i>{{ member.group_name }}</span>
                         {% else %}
-                        <span class="text-muted fst-italic" style="font-size:.8rem;">— None</span>
+                        <span class="text-muted fst-italic" style="font-size:.8rem;">— {{ page.manage_users_option_no_group|default:"None" }}</span>
                         {% endif %}
                       </td>
                       <td>
                         {% if member.is_blocked %}
-                        <span class="badge bg-danger">Blocked</span>
+                        <span class="badge bg-danger">{{ page.manage_users_badge_blocked|default:"Blocked" }}</span>
                         {% else %}
-                        <span class="badge bg-success">Active</span>
+                        <span class="badge bg-success">{{ page.manage_users_badge_active|default:"Active" }}</span>
                         {% endif %}
                       </td>
                       <td class="text-end pe-3">
                         {% if not member.is_self %}
                         <div class="d-flex justify-content-end gap-2">
                           <!-- Assign to group -->
-                          <button class="btn btn-sm btn-light" title="Assign Group"
+                          <button class="btn btn-sm btn-light" title="{{ page.manage_users_modal_assign_group_title|default:'Assign Group' }}"
                             onclick="openAssignGroup({{ member.id }}, '{{ member.name|escapejs }}', {% if member.group %}{{ member.group.id }}{% else %}null{% endif %})">
                             <i class="bi bi-diagram-3" style="color:#6c63ff;"></i>
                           </button>
@@ -167,7 +167,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="action_type" value="toggle_block">
                             <input type="hidden" name="user_id" value="{{ member.id }}">
-                            <button type="submit" class="btn btn-sm btn-light" title="{% if member.is_blocked %}Unblock{% else %}Block{% endif %}">
+                            <button type="submit" class="btn btn-sm btn-light" title="{% if member.is_blocked %}{{ page.manage_users_badge_active|default:'Unblock' }}{% else %}{{ page.manage_users_badge_blocked|default:'Block' }}{% endif %}">
                               <i class="bi {% if member.is_blocked %}bi-unlock-fill text-success{% else %}bi-slash-circle text-warning{% endif %}"></i>
                             </button>
                           </form>
@@ -176,7 +176,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="action_type" value="remove_user">
                             <input type="hidden" name="user_id" value="{{ member.id }}">
-                            <button type="submit" class="btn btn-sm btn-light" title="Remove">
+                            <button type="submit" class="btn btn-sm btn-light" title="{{ page.manage_users_btn_delete|default:'Remove' }}">
                               <i class="bi bi-person-x-fill text-danger"></i>
                             </button>
                           </form>
@@ -213,7 +213,7 @@
                       <div class="d-flex gap-1">
                         <!-- Edit group btn -->
                         <button type="button" class="btn btn-sm btn-light p-1 btn-edit-group"
-                          title="Edit Group"
+                          title="{{ page.manage_users_modal_edit_group_title|default:'Edit Group' }}"
                           data-id="{{ gd.group.id }}"
                           data-name="{{ gd.group.name }}"
                           data-desc="{{ gd.group.description }}"
@@ -225,7 +225,7 @@
                         </button>
                         <!-- Delete group btn -->
                         <button type="button" class="btn btn-sm btn-light p-1 btn-delete-group"
-                          title="Delete Group"
+                          title="{{ page.manage_users_btn_delete|default:'Delete Group' }}"
                           data-id="{{ gd.group.id }}"
                           data-name="{{ gd.group.name }}">
                           <i class="bi bi-trash" style="font-size:.85rem;color:#dc3545;"></i>
@@ -254,7 +254,7 @@
                               {{ member.name|slice:":1"|upper }}
                             </div>
                             <div>
-                              <div class="fw-semibold" style="color:#1a1a2e;">{{ member.name }}{% if member.is_self %} <span class="badge bg-secondary" style="font-size:.65rem;">You</span>{% endif %}</div>
+                              <div class="fw-semibold" style="color:#1a1a2e;">{{ member.name }}{% if member.is_self %} <span class="badge bg-secondary" style="font-size:.65rem;">{{ page.manage_users_badge_you|default:"You" }}</span>{% endif %}</div>
                               <div class="text-muted" style="font-size:.75rem;">{{ member.email }}</div>
                             </div>
                           </div>
@@ -262,7 +262,7 @@
                         {% endfor %}
                       </ul>
                       {% else %}
-                      <p class="text-muted mb-0" style="font-size:.78rem;"><i class="bi bi-inbox me-1"></i>No members assigned yet.</p>
+                      <p class="text-muted mb-0" style="font-size:.78rem;"><i class="bi bi-inbox me-1"></i>{{ page.manage_users_text_no_members|default:"No members assigned yet." }}</p>
                       {% endif %}
                     </div>
                   </div>
@@ -273,9 +273,9 @@
             {% else %}
             <div class="text-center py-5 bg-white rounded shadow-sm">
               <i class="bi bi-diagram-3" style="font-size:2.5rem;color:#ccc;"></i>
-              <p class="text-muted mt-2 mb-3">No permission groups created yet.</p>
+              <p class="text-muted mt-2 mb-3">{{ page.manage_users_text_no_groups|default:"No permission groups created yet." }}</p>
               <button class="btn btn-sm text-white" style="background:#6c63ff;" data-bs-toggle="modal" data-bs-target="#addGroupModal">
-                <i class="bi bi-folder-plus me-1"></i> Create First Group
+                <i class="bi bi-folder-plus me-1"></i> {{ page.manage_users_btn_create_first_group|default:"Create First Group" }}
               </button>
             </div>
             {% endif %}
@@ -288,10 +288,10 @@
                 <table class="table table-hover mb-0 align-middle" style="font-size:.87rem;">
                   <thead style="background:#f8f7ff;">
                     <tr>
-                      <th class="ps-3">User</th>
-                      <th>Email</th>
-                      <th>Role</th>
-                      <th>Status</th>
+                      <th class="ps-3">{{ page.manage_users_th_user|default:"User" }}</th>
+                      <th>{{ page.manage_users_th_email|default:"Email" }}</th>
+                      <th>{{ page.manage_users_th_role|default:"Role" }}</th>
+                      <th>{{ page.manage_users_th_status|default:"Status" }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -302,12 +302,12 @@
                           <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width:34px;height:34px;background:#e8a838;font-size:.8rem;">
                             {{ member.name|slice:":1"|upper }}
                           </div>
-                          <span class="fw-semibold" style="color:#1a1a2e;">{{ member.name }}{% if member.is_self %} <span class="badge bg-secondary ms-1" style="font-size:.65rem;">You</span>{% endif %}</span>
+                          <span class="fw-semibold" style="color:#1a1a2e;">{{ member.name }}{% if member.is_self %} <span class="badge bg-secondary ms-1" style="font-size:.65rem;">{{ page.manage_users_badge_you|default:"You" }}</span>{% endif %}</span>
                         </div>
                       </td>
                       <td class="text-muted">{{ member.email }}</td>
-                      <td><span class="badge" style="background:#fff3cd;color:#856404;">Admin</span></td>
-                      <td><span class="badge bg-success">Active</span></td>
+                      <td><span class="badge" style="background:#fff3cd;color:#856404;">{{ page.manage_users_badge_admin|default:"Admin" }}</span></td>
+                      <td><span class="badge bg-success">{{ page.manage_users_badge_active|default:"Active" }}</span></td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -336,44 +336,44 @@
         <input type="hidden" name="action_type" value="add_user">
         <div class="modal-header border-0 pb-0">
           <h5 class="modal-title fw-bold" id="addUserModalLabel">
-            <i class="bi bi-person-plus-fill me-2" style="color:#6c63ff;"></i>{{ page.manage_users_btn_add_text|default:"Add New User" }}
+            <i class="bi bi-person-plus-fill me-2" style="color:#6c63ff;"></i>{{ page.manage_users_modal_add_user_title|default:"Add New User" }}
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body pt-2">
           <div class="row g-3">
             <div class="col-6">
-              <label class="form-label small fw-semibold">First Name</label>
+              <label class="form-label small fw-semibold">{{ page.manage_users_label_first_name|default:"First Name" }}</label>
               <input type="text" name="member_first_name" class="form-control form-control-sm" placeholder="John">
             </div>
             <div class="col-6">
-              <label class="form-label small fw-semibold">Last Name</label>
+              <label class="form-label small fw-semibold">{{ page.manage_users_label_last_name|default:"Last Name" }}</label>
               <input type="text" name="member_last_name" class="form-control form-control-sm" placeholder="Doe">
             </div>
             <div class="col-12">
-              <label class="form-label small fw-semibold">Email <span class="text-danger">*</span></label>
+              <label class="form-label small fw-semibold">{{ page.manage_users_th_email|default:"Email" }} <span class="text-danger">*</span></label>
               <input type="email" name="member_email" class="form-control form-control-sm" placeholder="user@example.com" required>
             </div>
             <div class="col-12">
-              <label class="form-label small fw-semibold">Password <span class="text-danger">*</span></label>
+              <label class="form-label small fw-semibold">{{ page.manage_users_label_password|default:"Password" }} <span class="text-danger">*</span></label>
               <input type="password" name="member_password" class="form-control form-control-sm" placeholder="Set a password" required>
             </div>
             <div class="col-12">
-              <label class="form-label small fw-semibold">Assign to Group</label>
+              <label class="form-label small fw-semibold">{{ page.manage_users_label_assign_group|default:"Assign to Group" }}</label>
               <select name="group_id" class="form-select form-select-sm">
-                <option value="">— No Group —</option>
+                <option value="">{{ page.manage_users_option_no_group|default:"— No Group —" }}</option>
                 {% for group in groups %}
                 <option value="{{ group.id }}">{{ group.name }}</option>
                 {% endfor %}
               </select>
-              <div class="form-text">Permissions are inherited from the selected group.</div>
+              <div class="form-text">{{ page.manage_users_text_permissions_note|default:"Permissions are inherited from the selected group." }}</div>
             </div>
           </div>
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">{{ page.manage_users_btn_cancel|default:"Cancel" }}</button>
           <button type="submit" class="btn btn-sm text-white" style="background:#6c63ff;">
-            <i class="bi bi-person-check me-1"></i>Add User
+            <i class="bi bi-person-check me-1"></i>{{ page.manage_users_btn_add_user_submit|default:"Add User" }}
           </button>
         </div>
       </form>
@@ -396,47 +396,47 @@
         </div>
         <div class="modal-body pt-2">
           <div class="mb-3">
-            <label class="form-label small fw-semibold">Group Name <span class="text-danger">*</span></label>
-            <input type="text" name="group_name" class="form-control form-control-sm" placeholder="e.g. Writers, Editors" required>
+            <label class="form-label small fw-semibold">{{ page.manage_users_label_group_name|default:"Group Name" }} <span class="text-danger">*</span></label>
+            <input type="text" name="group_name" class="form-control form-control-sm" placeholder="{{ page.manage_users_placeholder_group_name|default:'e.g. Writers, Editors' }}" required>
           </div>
           <div class="mb-3">
-            <label class="form-label small fw-semibold">Description</label>
-            <input type="text" name="group_description" class="form-control form-control-sm" placeholder="Optional description">
+            <label class="form-label small fw-semibold">{{ page.manage_users_label_group_desc|default:"Description" }}</label>
+            <input type="text" name="group_description" class="form-control form-control-sm" placeholder="{{ page.manage_users_placeholder_group_desc|default:'Optional description' }}">
           </div>
           <div class="mb-1">
-            <label class="form-label small fw-semibold mb-2">Permissions for this Group</label>
+            <label class="form-label small fw-semibold mb-2">{{ page.manage_users_label_permissions|default:"Permissions for this Group" }}</label>
             <div class="border rounded p-3 bg-light">
               <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" name="can_create_posts" id="ag_create" checked>
                 <label class="form-check-label small" for="ag_create">
-                  <i class="bi bi-plus-circle me-1 text-success"></i><strong>Create Posts</strong>
+                  <i class="bi bi-plus-circle me-1 text-success"></i><strong>{{ page.manage_users_perm_create|default:"Create Posts" }}</strong>
                 </label>
               </div>
               <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" name="can_edit_posts" id="ag_edit" checked>
                 <label class="form-check-label small" for="ag_edit">
-                  <i class="bi bi-pencil me-1 text-primary"></i><strong>Edit Posts</strong>
+                  <i class="bi bi-pencil me-1 text-primary"></i><strong>{{ page.manage_users_perm_edit|default:"Edit Posts" }}</strong>
                 </label>
               </div>
               <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" name="can_publish_posts" id="ag_publish">
                 <label class="form-check-label small" for="ag_publish">
-                  <i class="bi bi-send me-1 text-warning"></i><strong>Publish Posts</strong>
+                  <i class="bi bi-send me-1 text-warning"></i><strong>{{ page.manage_users_perm_publish|default:"Publish Posts" }}</strong>
                 </label>
               </div>
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" name="can_manage_comments" id="ag_comments">
                 <label class="form-check-label small" for="ag_comments">
-                  <i class="bi bi-chat-dots me-1 text-info"></i><strong>Manage Comments</strong>
+                  <i class="bi bi-chat-dots me-1 text-info"></i><strong>{{ page.manage_users_perm_comments|default:"Manage Comments" }}</strong>
                 </label>
               </div>
             </div>
           </div>
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">{{ page.manage_users_btn_cancel|default:"Cancel" }}</button>
           <button type="submit" class="btn btn-sm text-white" style="background:#6c63ff;">
-            <i class="bi bi-check2-circle me-1"></i>Create Group
+            <i class="bi bi-check2-circle me-1"></i>{{ page.manage_users_btn_create_group|default:"Create Group" }}
           </button>
         </div>
       </form>
@@ -454,53 +454,53 @@
         <input type="hidden" name="group_id" id="eg_group_id">
         <div class="modal-header border-0 pb-0">
           <h5 class="modal-title fw-bold" id="editGroupModalLabel">
-            <i class="bi bi-pencil-square me-2" style="color:#6c63ff;"></i>Edit Group
+            <i class="bi bi-pencil-square me-2" style="color:#6c63ff;"></i>{{ page.manage_users_modal_edit_group_title|default:"Edit Group" }}
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body pt-2">
           <div class="mb-3">
-            <label class="form-label small fw-semibold">Group Name <span class="text-danger">*</span></label>
+            <label class="form-label small fw-semibold">{{ page.manage_users_label_group_name|default:"Group Name" }} <span class="text-danger">*</span></label>
             <input type="text" name="group_name" id="eg_group_name" class="form-control form-control-sm" required>
           </div>
           <div class="mb-3">
-            <label class="form-label small fw-semibold">Description</label>
+            <label class="form-label small fw-semibold">{{ page.manage_users_label_group_desc|default:"Description" }}</label>
             <input type="text" name="group_description" id="eg_group_desc" class="form-control form-control-sm">
           </div>
           <div class="mb-1">
-            <label class="form-label small fw-semibold mb-2">Permissions</label>
+            <label class="form-label small fw-semibold mb-2">{{ page.manage_users_label_permissions|default:"Permissions" }}</label>
             <div class="border rounded p-3 bg-light">
               <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" name="can_create_posts" id="eg_create">
                 <label class="form-check-label small" for="eg_create">
-                  <i class="bi bi-plus-circle me-1 text-success"></i><strong>Create Posts</strong>
+                  <i class="bi bi-plus-circle me-1 text-success"></i><strong>{{ page.manage_users_perm_create|default:"Create Posts" }}</strong>
                 </label>
               </div>
               <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" name="can_edit_posts" id="eg_edit">
                 <label class="form-check-label small" for="eg_edit">
-                  <i class="bi bi-pencil me-1 text-primary"></i><strong>Edit Posts</strong>
+                  <i class="bi bi-pencil me-1 text-primary"></i><strong>{{ page.manage_users_perm_edit|default:"Edit Posts" }}</strong>
                 </label>
               </div>
               <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" name="can_publish_posts" id="eg_publish">
                 <label class="form-check-label small" for="eg_publish">
-                  <i class="bi bi-send me-1 text-warning"></i><strong>Publish Posts</strong>
+                  <i class="bi bi-send me-1 text-warning"></i><strong>{{ page.manage_users_perm_publish|default:"Publish Posts" }}</strong>
                 </label>
               </div>
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" name="can_manage_comments" id="eg_comments">
                 <label class="form-check-label small" for="eg_comments">
-                  <i class="bi bi-chat-dots me-1 text-info"></i><strong>Manage Comments</strong>
+                  <i class="bi bi-chat-dots me-1 text-info"></i><strong>{{ page.manage_users_perm_comments|default:"Manage Comments" }}</strong>
                 </label>
               </div>
             </div>
           </div>
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">{{ page.manage_users_btn_cancel|default:"Cancel" }}</button>
           <button type="submit" class="btn btn-sm text-white" style="background:#6c63ff;">
-            <i class="bi bi-check2-circle me-1"></i>Save Changes
+            <i class="bi bi-check2-circle me-1"></i>{{ page.manage_users_btn_save_changes|default:"Save Changes" }}
           </button>
         </div>
       </form>
@@ -518,22 +518,22 @@
         <input type="hidden" name="user_id" id="assign_user_id">
         <div class="modal-header border-0 pb-0">
           <h5 class="modal-title fw-bold" style="font-size:1rem;">
-            <i class="bi bi-arrow-left-right me-2" style="color:#6c63ff;"></i>Assign to Group
+            <i class="bi bi-arrow-left-right me-2" style="color:#6c63ff;"></i>{{ page.manage_users_modal_assign_group_title|default:"Assign to Group" }}
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body pt-2">
-          <p class="text-muted small mb-3">Moving: <strong id="assign_user_name"></strong></p>
+          <p class="text-muted small mb-3">{{ page.manage_users_text_moving|default:"Moving:" }} <strong id="assign_user_name"></strong></p>
           <select name="group_id" class="form-select form-select-sm">
-            <option value="">— No Group —</option>
+            <option value="">{{ page.manage_users_option_no_group|default:"— No Group —" }}</option>
             {% for group in groups %}
             <option value="{{ group.id }}">{{ group.name }}</option>
             {% endfor %}
           </select>
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-sm text-white" style="background:#6c63ff;">Move</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">{{ page.manage_users_btn_cancel|default:"Cancel" }}</button>
+          <button type="submit" class="btn btn-sm text-white" style="background:#6c63ff;">{{ page.manage_users_btn_move|default:"Move" }}</button>
         </div>
       </form>
     </div>
@@ -550,18 +550,18 @@
         <input type="hidden" name="group_id" id="dg_group_id">
         <div class="modal-header border-0 pb-0">
           <h5 class="modal-title fw-bold text-danger" style="font-size:1.05rem;">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Group
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ page.manage_users_modal_delete_group_title|default:"Delete Group" }}
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body pt-2">
-          <p class="mb-1" style="font-size:.9rem;">Are you sure you want to delete group <strong id="dg_group_name"></strong>?</p>
-          <p class="text-muted small mb-0">Members of this group will become ungrouped.</p>
+          <p class="mb-1" style="font-size:.9rem;">{{ page.manage_users_text_delete_confirm|default:"Are you sure you want to delete group" }} <strong id="dg_group_name"></strong>?</p>
+          <p class="text-muted small mb-0">{{ page.manage_users_text_delete_warning|default:"Members of this group will become ungrouped." }}</p>
         </div>
         <div class="modal-footer border-0 pt-2">
-          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">{{ page.manage_users_btn_cancel|default:"Cancel" }}</button>
           <button type="submit" class="btn btn-sm btn-danger px-3">
-            <i class="bi bi-trash me-1"></i>Delete
+            <i class="bi bi-trash me-1"></i>{{ page.manage_users_btn_delete|default:"Delete" }}
           </button>
         </div>
       </form>
