@@ -155,7 +155,12 @@ def _get_request_company(user):
         return membership.company
     if user.is_superuser:
         from Apps.companies.models import Company
-        return Company.objects.first()
+        if getattr(user, 'company_name', None):
+            comp = Company.objects.filter(company_name__iexact=user.company_name).first()
+            if comp:
+                return comp
+        # Return BlogPro company if exists, else None (so platform defaults apply)
+        return Company.objects.filter(company_name__iexact="BlogPro").first()
     return None
 
 

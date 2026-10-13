@@ -153,10 +153,15 @@ class LoginPage(Page):
             auth_login(request, user)
 
             # 2. Find user's company (for session / verification)
+            from Apps.accounts.models import User as UserModel
             profile = UserProfile.objects.filter(user=user).select_related('company').first()
             if profile and profile.company:
                 request.session['active_company_id'] = str(profile.company.id)
                 request.session['active_company_name'] = profile.company.company_name
+            elif user.role == UserModel.Role.SUPER_ADMIN:
+                # Clear any leftover session from a previously logged-in company user
+                request.session.pop('active_company_id', None)
+                request.session.pop('active_company_name', None)
 
             # 3. Open dashboard of that company
             return redirect("/dashboard/")

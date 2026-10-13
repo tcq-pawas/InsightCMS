@@ -393,6 +393,7 @@ class CompanyBlogPostsPage(Page):
             'dashboard_page': dashboard_page,
             'sidebar_links': sidebar_links,
             'user': request.user,
+            'company': membership.company if membership else None,
             'is_employee': is_employee,
             'notifications': notifications,
             'unread_notifications_count': unread_notifications_count,

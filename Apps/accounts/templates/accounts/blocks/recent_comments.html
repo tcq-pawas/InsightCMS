@@ -1,70 +1,87 @@
 <div class="bp-card mb-4" id="comment">
   <div class="bp-card-header">
     <div>
-      <h3 class="bp-card-title">{{ page.comments_heading|default:"Recent Comments" }}</h3>
-      <span class="bp-card-sub">{{ page.comments_subtext|default:"Latest reader interactions" }}</span>
+      <h3 class="bp-card-title">{{ value.heading|default:page.comments_heading|default:"Recent Comments" }}</h3>
+      <span class="bp-card-sub">{{ value.subtext|default:page.comments_subtext|default:"Latest reader interactions" }}</span>
     </div>
-    <a href="{{ page.view_all_comments_url|default:'/cms/' }}" class="bp-link-sm">
-      {{ value.view_all_comments_text }} 
+    {% if value.view_all_text %}
+    <a href="{{ value.view_all_url|default:'/comments/' }}" class="bp-link-sm">
+      {{ value.view_all_text }}
     </a>
+    {% endif %}
   </div>
 
   <div class="bp-comments-list">
-    <!-- Comment 1 -->
-    {% if page.comment_1_author or page.comment_1_text %}
-    <div class="bp-comment-item">
-      <div class="bp-comment-avatar bg-primary text-white">
-        {{ page.comment_1_author|slice:":1"|default:"A" }}
-      </div>
-      <div class="bp-comment-content">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <span class="bp-comment-author">{{ page.comment_1_author|default:"Alex Johnson" }}</span>
-          <span class="bp-comment-time">{{ page.comment_1_time|default:"10m ago" }}</span>
+    {% if value.comments %}
+      {% for comment in value.comments %}
+      <div class="bp-comment-item">
+        <div class="bp-comment-avatar {% cycle 'bg-primary' 'bg-success' 'bg-warning text-dark' %} text-white">
+          {{ comment.author|slice:":1"|default:"U" }}
         </div>
-        <p class="bp-comment-text">"{{ page.comment_1_text|default:'Great insights!' }}"</p>
-        {% if page.comment_1_post %}
-          <span class="bp-comment-on">on <em>{{ page.comment_1_post }}</em></span>
-        {% endif %}
+        <div class="bp-comment-content">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="bp-comment-author">{{ comment.author }}</span>
+            {% if comment.time %}<span class="bp-comment-time">{{ comment.time }}</span>{% endif %}
+          </div>
+          <p class="bp-comment-text">"{{ comment.text }}"</p>
+          {% if comment.post_title %}
+            <span class="bp-comment-on">on <em>{{ comment.post_title }}</em></span>
+          {% endif %}
+        </div>
       </div>
-    </div>
-    {% endif %}
+      {% endfor %}
+    {% else %}
+      <!-- Default Sample Comments -->
+      <!-- Comment 1 -->
+      {% if page.comment_1_author or page.comment_1_text %}
+      <div class="bp-comment-item">
+        <div class="bp-comment-avatar bg-primary text-white">
+          {{ page.comment_1_author|slice:":1"|default:"A" }}
+        </div>
+        <div class="bp-comment-content">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="bp-comment-author">{{ page.comment_1_author|default:"Alex Johnson" }}</span>
+            <span class="bp-comment-time">{{ page.comment_1_time|default:"10m ago" }}</span>
+          </div>
+          <p class="bp-comment-text">"{{ page.comment_1_text|default:'Great insights on Wagtail StreamFields! Really helped my team configure modular pages.' }}"</p>
+          <span class="bp-comment-on">on <em>{{ page.comment_1_post|default:'Getting Started with Wagtail CMS' }}</em></span>
+        </div>
+      </div>
+      {% endif %}
 
-    <!-- Comment 2 -->
-    {% if page.comment_2_author or page.comment_2_text %}
-    <div class="bp-comment-item">
-      <div class="bp-comment-avatar bg-success text-white">
-        {{ page.comment_2_author|slice:":1"|default:"S" }}
-      </div>
-      <div class="bp-comment-content">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <span class="bp-comment-author">{{ page.comment_2_author|default:"Sarah Miller" }}</span>
-          <span class="bp-comment-time">{{ page.comment_2_time|default:"2h ago" }}</span>
+      <!-- Comment 2 -->
+      {% if page.comment_2_author or page.comment_2_text %}
+      <div class="bp-comment-item">
+        <div class="bp-comment-avatar bg-success text-white">
+          {{ page.comment_2_author|slice:":1"|default:"S" }}
         </div>
-        <p class="bp-comment-text">"{{ page.comment_2_text|default:'Very helpful tutorial!' }}"</p>
-        {% if page.comment_2_post %}
-          <span class="bp-comment-on">on <em>{{ page.comment_2_post }}</em></span>
-        {% endif %}
+        <div class="bp-comment-content">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="bp-comment-author">{{ page.comment_2_author|default:"Sarah Miller" }}</span>
+            <span class="bp-comment-time">{{ page.comment_2_time|default:"2h ago" }}</span>
+          </div>
+          <p class="bp-comment-text">"{{ page.comment_2_text|default:'Could you cover custom block migrations in the next tutorial? Highly requested!' }}"</p>
+          <span class="bp-comment-on">on <em>{{ page.comment_2_post|default:'10 Tips for Better Web Performance' }}</em></span>
+        </div>
       </div>
-    </div>
-    {% endif %}
+      {% endif %}
 
-    <!-- Comment 3 -->
-    {% if page.comment_3_author or page.comment_3_text %}
-    <div class="bp-comment-item">
-      <div class="bp-comment-avatar bg-warning text-dark">
-        {{ page.comment_3_author|slice:":1"|default:"D" }}
-      </div>
-      <div class="bp-comment-content">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <span class="bp-comment-author">{{ page.comment_3_author|default:"David Lee" }}</span>
-          <span class="bp-comment-time">{{ page.comment_3_time|default:"1d ago" }}</span>
+      <!-- Comment 3 -->
+      {% if page.comment_3_author or page.comment_3_text %}
+      <div class="bp-comment-item">
+        <div class="bp-comment-avatar bg-warning text-dark">
+          {{ page.comment_3_author|slice:":1"|default:"D" }}
         </div>
-        <p class="bp-comment-text">"{{ page.comment_3_text|default:'Great layout and responsiveness!' }}"</p>
-        {% if page.comment_3_post %}
-          <span class="bp-comment-on">on <em>{{ page.comment_3_post }}</em></span>
-        {% endif %}
+        <div class="bp-comment-content">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="bp-comment-author">{{ page.comment_3_author|default:"David Lee" }}</span>
+            <span class="bp-comment-time">{{ page.comment_3_time|default:"1d ago" }}</span>
+          </div>
+          <p class="bp-comment-text">"{{ page.comment_3_text|default:'Clean layout and great responsiveness on mobile devices. Well done!' }}"</p>
+          <span class="bp-comment-on">on <em>{{ page.comment_3_post|default:'The Future of AI in Blogging' }}</em></span>
+        </div>
       </div>
-    </div>
+      {% endif %}
     {% endif %}
   </div>
 </div>

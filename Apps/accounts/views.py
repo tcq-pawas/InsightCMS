@@ -405,11 +405,13 @@ def blog_comments_settings_view(request):
     profile = UserProfile.objects.filter(user=request.user).select_related('company').first()
     company = profile.company if profile else getattr(request.user, 'company', None)
     if not company and request.user.role == UserModel.Role.SUPER_ADMIN:
-        active_comp_id = request.session.get('active_company_id')
-        if active_comp_id:
-            company = Company.objects.filter(id=active_comp_id).first()
-
-    # Note: If Super Admin has no linked company, company remains None so platform defaults (BlogPro) render.
+        # Priority: own company_name > session (don't let another user's session bleed in)
+        if request.user.company_name:
+            company = Company.objects.filter(company_name__iexact=request.user.company_name).first()
+        if not company:
+            active_comp_id = request.session.get('active_company_id')
+            if active_comp_id:
+                company = Company.objects.filter(id=active_comp_id).first()
 
     if request.method == 'POST':
         from django.contrib import messages
@@ -486,13 +488,13 @@ def manage_users_settings_view(request):
         if membership:
             company = membership.company
     if not company and request.user.role == UserModel.Role.SUPER_ADMIN:
-        active_comp_id = request.session.get('active_company_id')
-        if active_comp_id:
-            company = Company.objects.filter(id=active_comp_id).first()
-        if not company and request.user.company_name:
+        # Priority: own company_name first (e.g. "BlogPro"), then session fallback
+        if request.user.company_name:
             company = Company.objects.filter(company_name__iexact=request.user.company_name).first()
         if not company:
-            company = Company.objects.first()
+            active_comp_id = request.session.get('active_company_id')
+            if active_comp_id:
+                company = Company.objects.filter(id=active_comp_id).first()
 
     # Handle POST actions
     if request.method == 'POST':
