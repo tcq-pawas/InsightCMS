@@ -184,9 +184,14 @@ def settings_view(request):
 
             # 3. Form Fields
             company.comments_name_field_required = request.POST.get('comments_name_field_required') == 'on'
-            email_mode = request.POST.get('comments_email_field_mode', 'optional')
-            if email_mode in ['required', 'optional', 'hidden']:
-                company.comments_email_field_mode = email_mode
+            if 'comments_email_field_required' in request.POST:
+                company.comments_email_field_mode = 'required' if request.POST.get('comments_email_field_required') == 'on' else 'optional'
+            else:
+                email_mode = request.POST.get('comments_email_field_mode')
+                if email_mode in ['required', 'optional', 'hidden']:
+                    company.comments_email_field_mode = email_mode
+                else:
+                    company.comments_email_field_mode = 'optional'
 
             company.save()
             messages.success(request, "Comments settings saved successfully!")
@@ -286,18 +291,92 @@ def settings_view(request):
     return render(request, 'accounts/settings.html', context)
 
 
+def set_password_confirm_view(request, uidb64, token):
+    from django.contrib import messages
+    from django.contrib.auth import login as auth_login
+    from django.contrib.auth.tokens import default_token_generator
+    from django.utils.http import urlsafe_base64_decode
+    from Apps.accounts.models import User as UserModel, LoginPage
+
+    login_page = LoginPage.objects.live().first()
+    login_url = login_page.url if login_page else '/login/'
+
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        target_user = UserModel.objects.filter(pk=uid).first()
+    except (TypeError, ValueError, OverflowError):
+        target_user = None
+
+    if not target_user or not default_token_generator.check_token(target_user, token):
+        messages.error(request, "This invitation / password reset link has expired or is invalid. Please request a new one.")
+        return redirect(login_url)
+
+    company_name = getattr(target_user, 'company_name', 'InsightCMS')
+    is_invite = not target_user.has_usable_password()
+
+    if request.method == 'POST':
+        new_pass = request.POST.get('new_password', '').strip()
+        confirm_pass = request.POST.get('confirm_password', '').strip()
+
+        if not new_pass or len(new_pass) < 6:
+            messages.error(request, "Password must be at least 6 characters long.")
+        elif new_pass != confirm_pass:
+            messages.error(request, "Passwords do not match. Please re-enter.")
+        else:
+            target_user.set_password(new_pass)
+            target_user.is_active = True
+            target_user.is_approved = True
+            target_user.save()
+
+            # Automatically log the user in
+            auth_login(request, target_user)
+            messages.success(request, f"Welcome to {company_name}! Your password has been set successfully.")
+            return redirect('/dashboard/')
+
+    return render(request, 'accounts/set_password.html', {
+        'target_user': target_user,
+        'company_name': company_name,
+        'is_invite': is_invite,
+        'login_url': login_url,
+    })
+
+
 def forgot_password_view(request):
     from django.contrib import messages
-    from Apps.accounts.models import LoginPage
-    from Apps.accounts.models import User
+    from django.contrib.auth.tokens import default_token_generator
+    from django.core.mail import send_mail
+    from django.utils.http import urlsafe_base64_encode
+    from django.utils.encoding import force_bytes
+    from Apps.accounts.models import LoginPage, User as UserModel
 
     login_page = LoginPage.objects.live().first()
     login_url = login_page.url if login_page else '/login/'
 
     submitted = False
     if request.method == 'POST':
-        email = request.POST.get('email', '').strip()
-        # Even if user does not exist, show success message for security best practice
+        email = request.POST.get('email', '').strip().lower()
+        user_obj = UserModel.objects.filter(email=email).first()
+        if user_obj:
+            token = default_token_generator.make_token(user_obj)
+            uidb64 = urlsafe_base64_encode(force_bytes(user_obj.pk))
+            reset_url = request.build_absolute_uri(f"/set-password/{uidb64}/{token}/")
+
+            try:
+                send_mail(
+                    subject="Reset Your Password - InsightCMS",
+                    message=(
+                        f"Hello {user_obj.get_full_name() or user_obj.email},\n\n"
+                        f"You requested to reset your password.\n"
+                        f"Click the link below to set a new password:\n{reset_url}\n\n"
+                        f"If you did not request this, please ignore this email.\n"
+                    ),
+                    from_email="noreply@insightcms.com",
+                    recipient_list=[email],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
+
         messages.success(request, f"If an account exists with {email}, a password reset link has been sent.")
         submitted = True
 
@@ -435,9 +514,14 @@ def blog_comments_settings_view(request):
 
         # 3. Form Fields
         company.comments_name_field_required = request.POST.get('comments_name_field_required') == 'on'
-        email_mode = request.POST.get('comments_email_field_mode', 'optional')
-        if email_mode in ['required', 'optional', 'hidden']:
-            company.comments_email_field_mode = email_mode
+        if 'comments_email_field_required' in request.POST:
+            company.comments_email_field_mode = 'required' if request.POST.get('comments_email_field_required') == 'on' else 'optional'
+        else:
+            email_mode = request.POST.get('comments_email_field_mode')
+            if email_mode in ['required', 'optional', 'hidden']:
+                company.comments_email_field_mode = email_mode
+            else:
+                company.comments_email_field_mode = 'optional'
 
         company.save()
         messages.success(request, "Comments settings saved successfully!")
@@ -501,40 +585,81 @@ def manage_users_settings_view(request):
         from Apps.companies.models import UserGroup
         action_type = request.POST.get('action_type', '').strip()
 
-        # 1. ADD USER (with group)
+        # 1. ADD USER / SEND INVITATION
         if action_type == 'add_user':
             member_email    = request.POST.get('member_email', '').strip().lower()
             member_fname    = request.POST.get('member_first_name', '').strip()
             member_lname    = request.POST.get('member_last_name', '').strip()
-            member_password = request.POST.get('member_password', '')
             group_id        = request.POST.get('group_id', '').strip()
 
-            if not member_email or not member_password:
-                messages.error(request, "Email and password are required to add a user.")
+            if not member_email:
+                messages.error(request, "Email address is required to invite a user.")
                 return redirect(request.path)
 
             if UserModel.objects.filter(email=member_email).exists():
                 messages.error(request, f"A user with email '{member_email}' already exists.")
                 return redirect(request.path)
 
+            # Create user without password (user sets password via email link)
+            company_title = company.company_name if company else "InsightCMS"
             new_user = UserModel.objects.create_user(
-                email=member_email, password=member_password,
-                first_name=member_fname, last_name=member_lname,
-                company_name=company.company_name,
+                email=member_email,
+                first_name=member_fname,
+                last_name=member_lname,
+                company_name=company_title,
                 role=UserModel.Role.COMPANY_USER,
-                is_staff=True, is_active=True, is_approved=True, is_blocked=False
+                is_staff=True,
+                is_active=True,
+                is_approved=True,
+                is_blocked=False
             )
+            new_user.set_unusable_password()
+            new_user.save()
 
-            group_obj = UserGroup.objects.filter(id=group_id, company=company).first() if group_id else None
-            CompanyMembership.objects.create(
-                user=new_user, company=company,
-                role=CompanyMembership.Role.EDITOR,
-                group=group_obj
-            )
-            UserProfile.objects.create(user=new_user, company=company)
+            group_obj = UserGroup.objects.filter(id=group_id, company=company).first() if (group_id and company) else None
+            if company:
+                CompanyMembership.objects.create(
+                    user=new_user, company=company,
+                    role=CompanyMembership.Role.EDITOR,
+                    group=group_obj
+                )
+                UserProfile.objects.create(user=new_user, company=company)
+
+            # Generate invite token & link
+            from django.contrib.auth.tokens import default_token_generator
+            from django.core.mail import send_mail
+            from django.utils.http import urlsafe_base64_encode
+            from django.utils.encoding import force_bytes
+
+            token = default_token_generator.make_token(new_user)
+            uidb64 = urlsafe_base64_encode(force_bytes(new_user.pk))
+            invite_url = request.build_absolute_uri(f"/set-password/{uidb64}/{token}/")
+
+            # Send Invitation Email
+            try:
+                inviter_name = request.user.get_full_name() or request.user.email
+                email_subject = f"You're invited to join {company_title} on InsightCMS"
+                email_body = (
+                    f"Hello {new_user.get_full_name() or member_email},\n\n"
+                    f"{inviter_name} has invited you to join {company_title} as a team member.\n\n"
+                    f"To activate your account and set your password, please click the link below:\n"
+                    f"{invite_url}\n\n"
+                    f"This link is valid for 3 days.\n\n"
+                    f"Best regards,\n"
+                    f"{company_title} Team"
+                )
+                send_mail(
+                    subject=email_subject,
+                    message=email_body,
+                    from_email="noreply@insightcms.com",
+                    recipient_list=[member_email],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
 
             group_txt = group_obj.name if group_obj else "No Group"
-            messages.success(request, f"User '{new_user.get_full_name() or member_email}' added to group: {group_txt}.")
+            messages.success(request, f"Invitation sent to '{member_email}' successfully! They can set their password and log in.")
             return redirect(request.path)
 
         # 2. REMOVE USER
@@ -630,18 +755,53 @@ def manage_users_settings_view(request):
                 messages.error(request, "Group not found.")
             return redirect(request.path)
 
-        # 7. DELETE GROUP
-        elif action_type == 'delete_group':
-            group_id = request.POST.get('group_id', '').strip()
-            group_obj = UserGroup.objects.filter(id=group_id, company=company).first()
-            if group_obj:
-                group_name = group_obj.name
-                # Remove group assignment from members, keep users
-                group_obj.members.update(group=None)
-                group_obj.delete()
-                messages.success(request, f"Group '{group_name}' deleted.")
-            else:
-                messages.error(request, "Group not found.")
+        # 8. EDIT USER
+        elif action_type == 'edit_user':
+            target_user_id = request.POST.get('user_id')
+            target_user = UserModel.objects.filter(pk=target_user_id).first()
+            if not target_user:
+                messages.error(request, "User not found.")
+                return redirect(request.path)
+
+            first_name = request.POST.get('first_name', '').strip()
+            last_name  = request.POST.get('last_name', '').strip()
+            email      = request.POST.get('email', '').strip().lower()
+            group_id   = request.POST.get('group_id', '').strip()
+            role       = request.POST.get('role', '').strip()
+            password   = request.POST.get('password', '').strip()
+
+            if email:
+                if UserModel.objects.filter(email=email).exclude(pk=target_user.pk).exists():
+                    messages.error(request, f"Another user with email '{email}' already exists.")
+                    return redirect(request.path)
+                target_user.email = email
+
+            target_user.first_name = first_name
+            target_user.last_name  = last_name
+
+            if role in [UserModel.Role.COMPANY_ADMIN, UserModel.Role.COMPANY_USER]:
+                # Don't let users downgrade the super admin
+                if target_user.role != UserModel.Role.SUPER_ADMIN:
+                    target_user.role = role
+
+            if password:
+                if len(password) < 6:
+                    messages.error(request, "Password must be at least 6 characters long.")
+                    return redirect(request.path)
+                target_user.set_password(password)
+
+            target_user.save()
+
+            # Update Group
+            group_obj = UserGroup.objects.filter(id=group_id, company=company).first() if group_id else None
+            membership = CompanyMembership.objects.filter(user=target_user, company=company).first()
+            if membership:
+                membership.group = group_obj
+                membership.save()
+            elif company:
+                CompanyMembership.objects.create(user=target_user, company=company, group=group_obj)
+
+            messages.success(request, f"User '{target_user.get_full_name() or target_user.email}' details updated successfully!")
             return redirect(request.path)
 
     # GET: Fetch data
@@ -671,7 +831,10 @@ def manage_users_settings_view(request):
             'user': u,
             'id': u.id,
             'name': u.get_full_name() or u.admin_username or u.email.split('@')[0],
+            'first_name': u.first_name,
+            'last_name': u.last_name,
             'email': u.email,
+            'role': u.role,
             'group': group_obj,
             'group_name': group_name,
             'is_admin': (u.role in [UserModel.Role.COMPANY_ADMIN, UserModel.Role.SUPER_ADMIN]),

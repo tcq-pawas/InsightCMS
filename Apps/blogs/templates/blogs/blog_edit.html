@@ -108,26 +108,7 @@
               </div>
             </div>
 
-            <!-- Featured Image Box -->
-            <div class="wp-sidebar-box">
-              <div class="wp-sidebar-box-header">
-                <i class="fa-regular fa-image me-1"></i> {{ page.field_featured_image_label|default:"Featured Image" }}
-              </div>
-              <div class="wp-sidebar-box-body">
-                {% if blog.featured_image %}
-                  {% image blog.featured_image fill-300x180 as current_img %}
-                  <img src="{{ current_img.url }}" alt="Current Image"
-                       class="img-fluid rounded mb-2" style="width:100%; object-fit:cover; max-height:140px;">
-                  <small class="text-muted d-block mb-2">Current: {{ blog.featured_image.title }}</small>
-                {% endif %}
-                <input type="file" name="featured_image" id="featured_image"
-                       class="form-control" accept="image/*">
-                <div id="image-preview-wrap" class="mt-2 d-none">
-                  <img id="image-preview" src="#" alt="New Preview"
-                       class="img-fluid rounded" style="max-height:140px; width:100%; object-fit:cover;">
-                </div>
-              </div>
-            </div>
+
 
             <!-- Short Description Box -->
             <div class="wp-sidebar-box">
@@ -218,17 +199,5 @@
     actionInput.value = clickedAction;
   });
 
-  // ── Featured image live preview ──
-  document.getElementById('featured_image').addEventListener('change', function () {
-    const file = this.files[0];
-    const wrap = document.getElementById('image-preview-wrap');
-    const preview = document.getElementById('image-preview');
-    if (file) {
-      preview.src = URL.createObjectURL(file);
-      wrap.classList.remove('d-none');
-    } else {
-      wrap.classList.add('d-none');
-    }
-  });
 </script>
 {% endblock %}

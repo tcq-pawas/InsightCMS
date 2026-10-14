@@ -157,6 +157,16 @@
                       <td class="text-end pe-3">
                         {% if not member.is_self %}
                         <div class="d-flex justify-content-end gap-2">
+                          <!-- Edit User -->
+                          <button class="btn btn-sm btn-light btn-edit-user" title="{{ page.manage_users_btn_edit|default:'Edit User' }}"
+                            data-id="{{ member.id }}"
+                            data-first-name="{{ member.first_name }}"
+                            data-last-name="{{ member.last_name }}"
+                            data-email="{{ member.email }}"
+                            data-group-id="{% if member.group %}{{ member.group.id }}{% endif %}"
+                            data-role="{{ member.role }}">
+                            <i class="bi bi-pencil-square" style="color:#6c63ff;"></i>
+                          </button>
                           <!-- Assign to group -->
                           <button class="btn btn-sm btn-light" title="{{ page.manage_users_modal_assign_group_title|default:'Assign Group' }}"
                             onclick="openAssignGroup({{ member.id }}, '{{ member.name|escapejs }}', {% if member.group %}{{ member.group.id }}{% else %}null{% endif %})">
@@ -292,6 +302,7 @@
                       <th>{{ page.manage_users_th_email|default:"Email" }}</th>
                       <th>{{ page.manage_users_th_role|default:"Role" }}</th>
                       <th>{{ page.manage_users_th_status|default:"Status" }}</th>
+                      <th class="text-end pe-3">{{ page.manage_users_th_actions|default:"Actions" }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -308,6 +319,20 @@
                       <td class="text-muted">{{ member.email }}</td>
                       <td><span class="badge" style="background:#fff3cd;color:#856404;">{{ page.manage_users_badge_admin|default:"Admin" }}</span></td>
                       <td><span class="badge bg-success">{{ page.manage_users_badge_active|default:"Active" }}</span></td>
+                      <td class="text-end pe-3">
+                        <div class="d-flex justify-content-end gap-2">
+                          <!-- Edit Admin -->
+                          <button class="btn btn-sm btn-light btn-edit-user" title="{{ page.manage_users_btn_edit|default:'Edit Admin' }}"
+                            data-id="{{ member.id }}"
+                            data-first-name="{{ member.first_name }}"
+                            data-last-name="{{ member.last_name }}"
+                            data-email="{{ member.email }}"
+                            data-group-id="{% if member.group %}{{ member.group.id }}{% endif %}"
+                            data-role="{{ member.role }}">
+                            <i class="bi bi-pencil-square" style="color:#6c63ff;"></i>
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -355,10 +380,6 @@
               <input type="email" name="member_email" class="form-control form-control-sm" placeholder="user@example.com" required>
             </div>
             <div class="col-12">
-              <label class="form-label small fw-semibold">{{ page.manage_users_label_password|default:"Password" }} <span class="text-danger">*</span></label>
-              <input type="password" name="member_password" class="form-control form-control-sm" placeholder="Set a password" required>
-            </div>
-            <div class="col-12">
               <label class="form-label small fw-semibold">{{ page.manage_users_label_assign_group|default:"Assign to Group" }}</label>
               <select name="group_id" class="form-select form-select-sm">
                 <option value="">{{ page.manage_users_option_no_group|default:"— No Group —" }}</option>
@@ -366,14 +387,14 @@
                 <option value="{{ group.id }}">{{ group.name }}</option>
                 {% endfor %}
               </select>
-              <div class="form-text">{{ page.manage_users_text_permissions_note|default:"Permissions are inherited from the selected group." }}</div>
+              <div class="form-text">{{ page.manage_users_text_permissions_note|default:"An invitation email will be sent to the user to set their password and login." }}</div>
             </div>
           </div>
         </div>
         <div class="modal-footer border-0 pt-0">
           <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">{{ page.manage_users_btn_cancel|default:"Cancel" }}</button>
           <button type="submit" class="btn btn-sm text-white" style="background:#6c63ff;">
-            <i class="bi bi-person-check me-1"></i>{{ page.manage_users_btn_add_user_submit|default:"Add User" }}
+            <i class="bi bi-send-fill me-1"></i>{{ page.manage_users_btn_add_user_submit|default:"Send Invitation" }}
           </button>
         </div>
       </form>
@@ -568,11 +589,93 @@
     </div>
   </div>
 </div>
+<!-- EDIT USER MODAL -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action_type" value="edit_user">
+        <input type="hidden" name="user_id" id="eu_user_id">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" id="editUserModalLabel">
+            <i class="bi bi-pencil-square me-2" style="color:#6c63ff;"></i>{{ page.manage_users_modal_edit_user_title|default:"Edit User Details" }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-semibold" style="color:#1a1a2e;">{{ page.manage_users_field_first_name|default:"First Name" }}</label>
+              <input type="text" name="first_name" id="eu_first_name" class="form-control form-control-sm" style="border-radius:8px;">
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-semibold" style="color:#1a1a2e;">{{ page.manage_users_field_last_name|default:"Last Name" }}</label>
+              <input type="text" name="last_name" id="eu_last_name" class="form-control form-control-sm" style="border-radius:8px;">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold" style="color:#1a1a2e;">{{ page.manage_users_field_email|default:"Email Address" }} <span class="text-danger">*</span></label>
+            <input type="email" name="email" id="eu_email" class="form-control form-control-sm" required style="border-radius:8px;">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold" style="color:#1a1a2e;">{{ page.manage_users_field_role|default:"Role" }}</label>
+            <select name="role" id="eu_role" class="form-select form-select-sm" style="border-radius:8px;">
+              <option value="company_user">{{ page.manage_users_option_editor|default:"Employee (Company User)" }}</option>
+              <option value="company_admin">{{ page.manage_users_badge_admin|default:"Company Admin" }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold" style="color:#1a1a2e;">{{ page.manage_users_modal_assign_group_title|default:"Group" }}</label>
+            <select name="group_id" id="eu_group_id" class="form-select form-select-sm" style="border-radius:8px;">
+              <option value="">{{ page.manage_users_option_no_group|default:"-- No Group --" }}</option>
+              {% for grp in groups %}
+              <option value="{{ grp.id }}">{{ grp.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-1">
+            <label class="form-label small fw-semibold" style="color:#1a1a2e;">{{ page.manage_users_field_password|default:"Reset Password" }} <span class="text-muted fw-normal">({{ page.manage_users_text_leave_blank|default:"Leave blank to keep current" }})</span></label>
+            <input type="password" name="password" id="eu_password" class="form-control form-control-sm" placeholder="••••••••" style="border-radius:8px;">
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">{{ page.manage_users_btn_cancel|default:"Cancel" }}</button>
+          <button type="submit" class="btn btn-sm text-white px-3" style="background:#6c63ff;">
+            <i class="bi bi-check2 me-1"></i>{{ page.manage_users_btn_save_changes|default:"Save Changes" }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // Edit User Buttons
+  document.querySelectorAll('.btn-edit-user').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var id = this.getAttribute('data-id');
+      var fname = this.getAttribute('data-first-name') || '';
+      var lname = this.getAttribute('data-last-name') || '';
+      var email = this.getAttribute('data-email') || '';
+      var groupId = this.getAttribute('data-group-id') || '';
+      var role = this.getAttribute('data-role') || 'company_user';
+
+      document.getElementById('eu_user_id').value = id;
+      document.getElementById('eu_first_name').value = fname;
+      document.getElementById('eu_last_name').value = lname;
+      document.getElementById('eu_email').value = email;
+      document.getElementById('eu_group_id').value = groupId;
+      document.getElementById('eu_role').value = role;
+      document.getElementById('eu_password').value = '';
+
+      var modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+      modal.show();
+    });
+  });
   // Edit Group Buttons
   document.querySelectorAll('.btn-edit-group').forEach(function(btn) {
     btn.addEventListener('click', function() {

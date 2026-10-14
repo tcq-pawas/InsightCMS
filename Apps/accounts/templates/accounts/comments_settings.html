@@ -165,16 +165,6 @@
               </div>
             </div>
 
-            <!-- Comments Per Page -->
-            <div class="bp-toggle-row">
-              <div>
-                <div class="bp-toggle-label">{{ page.comments_per_page_label|default:"Comments Per Page" }}</div>
-                <p class="bp-toggle-desc">{{ page.comments_per_page_desc|default:"Number of root comments loaded initially per post." }}</p>
-              </div>
-              <div style="width: 140px;">
-                <input type="number" min="1" max="100" name="comments_per_page" class="bp-form-control text-center fw-bold" value="{{ company.comments_per_page|default:10 }}" required>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -228,15 +218,11 @@
             <!-- Email Field Requirement -->
             <div class="bp-toggle-row">
               <div>
-                <div class="bp-toggle-label">{{ page.comments_email_mode_label|default:"Email Field Requirement" }}</div>
-                <p class="bp-toggle-desc">{{ page.comments_email_mode_desc|default:"Choose whether Email is required, optional, or hidden." }}</p>
+                <div class="bp-toggle-label">{{ page.comments_email_mode_label|default:"Email Field Required" }}</div>
+                <p class="bp-toggle-desc">{{ page.comments_email_mode_desc|default:"Visitor must enter their email address to submit a comment." }}</p>
               </div>
-              <div style="min-width: 200px;">
-                <select name="comments_email_field_mode" class="form-select bp-form-control fw-medium">
-                  <option value="required" {% if company.comments_email_field_mode == "required" %}selected{% endif %}>Required</option>
-                  <option value="optional" {% if company.comments_email_field_mode == "optional" %}selected{% endif %}>Optional</option>
-                  <option value="hidden"   {% if company.comments_email_field_mode == "hidden" %}selected{% endif %}>Hidden / Disabled</option>
-                </select>
+              <div class="form-check form-switch ms-3" style="font-size: 1.35rem;">
+                <input class="form-check-input" type="checkbox" name="comments_email_field_required" id="emailRequired" {% if company.comments_email_field_mode == "required" or company.comments_email_field_required %}checked{% endif %} style="cursor:pointer;">
               </div>
             </div>
           </div>
