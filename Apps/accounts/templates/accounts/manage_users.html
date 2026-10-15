@@ -108,6 +108,18 @@
               <span class="badge bg-secondary tab-badge">{{ team_list|length }}</span>
             </button>
           </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="email-settings-tab" data-bs-toggle="tab" data-bs-target="#email-settings-pane" type="button" role="tab">
+              <i class="bi bi-envelope-at me-1"></i> {{ page.manage_users_tab_email|default:"Email Integration" }}
+              {% if company.email_provider == 'google' and company.google_refresh_token %}
+                <span class="badge bg-success tab-badge"><i class="bi bi-google"></i> Google Connected</span>
+              {% elif company.smtp_user %}
+                <span class="badge bg-success tab-badge"><i class="bi bi-check2"></i> SMTP Active</span>
+              {% else %}
+                <span class="badge bg-warning text-dark tab-badge"><i class="bi bi-exclamation-triangle"></i> Not Set</span>
+              {% endif %}
+            </button>
+          </li>
         </ul>
 
         <!-- Tab Contents -->
@@ -338,6 +350,219 @@
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+
+          <!-- 4. EMAIL SETTINGS (SMTP) TAB PANE -->
+          <!-- 4. EMAIL SETTINGS (GOOGLE OAUTH & MANUAL SMTP) TAB PANE -->
+          <div class="tab-pane fade" id="email-settings-pane" role="tabpanel">
+            <div class="card border-0 shadow-sm p-4" style="border-radius: 12px; background: #ffffff;">
+              <div class="d-flex align-items-center justify-content-between pb-3 mb-4 border-bottom flex-wrap gap-2">
+                <div>
+                  <h5 class="fw-bold mb-1" style="color: #1a1a2e;">
+                    <i class="bi bi-envelope-gear-fill me-2" style="color: #6c63ff;"></i>{{ page.smtp_settings_heading|default:"Email / SMTP Integration" }}
+                  </h5>
+                  <p class="text-muted small mb-0">
+                    {{ page.smtp_settings_subtext|default:"Connect an email provider to automatically send invitation and system notification emails." }}
+                  </p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  {% if company.email_provider == 'google' and company.google_refresh_token %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+                      <i class="bi bi-google me-1"></i> Active: Google Account ({{ company.google_email }})
+                    </span>
+                    <a href="{% url 'google_oauth_disconnect' %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Disconnect connected Google Account?');" style="border-radius: 8px;">
+                      <i class="bi bi-x-circle me-1"></i> Disconnect
+                    </a>
+                  {% elif company.smtp_user %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+                      <i class="bi bi-check-circle-fill me-1"></i> Active: Manual SMTP ({{ company.smtp_user }})
+                    </span>
+                    <form method="POST" class="d-inline" onsubmit="return confirm('Reset and clear current SMTP configuration?');">
+                      {% csrf_token %}
+                      <input type="hidden" name="action_type" value="reset_email_settings">
+                      <button type="submit" class="btn btn-sm btn-outline-secondary" style="border-radius: 8px;">
+                        <i class="bi bi-trash3 me-1"></i> Clear / Reset
+                      </button>
+                    </form>
+                  {% else %}
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2">
+                      <i class="bi bi-exclamation-triangle-fill me-1"></i> Not Configured Yet
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- OPTION 1: ONE-CLICK SETUP WITH GOOGLE (RECOMMENDED) -->
+              <div class="card mb-4 border-2" style="border-color: #e0e7ff; background: #fafbff; border-radius: 12px;">
+                <div class="card-body p-4">
+                  <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="rounded-circle d-flex align-items-center justify-content-center bg-white shadow-sm" style="width: 42px; height: 42px;">
+                        <svg width="22" height="22" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.66-5.2 3.66-9.12z"/>
+                          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.13C3.25 21.31 7.31 24 12 24z"/>
+                          <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.27C.46 8.2.01 10.04.01 12s.45 3.8 1.26 5.42l4.01-3.13z"/>
+                          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.27 6.58l4.01 3.13c.95-2.83 3.6-4.96 6.72-4.96z"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <h6 class="fw-bold mb-0 text-dark" style="font-size: 1.05rem;">
+                          Connect with Google
+                        </h6>
+                        <p class="text-muted small mb-0">Authorize your Gmail account securely with 1-click. No passwords or port setup needed.</p>
+                      </div>
+                    </div>
+                    <span class="badge text-white px-2 py-1" style="background:#10b981; font-size:0.75rem; letter-spacing:0.3px;">
+                      <i class="bi bi-star-fill me-1" style="font-size:0.7rem;"></i> RECOMMENDED
+                    </span>
+                  </div>
+
+                  {% if company.email_provider == 'google' and company.google_refresh_token %}
+                    <!-- Connected State -->
+                    <div class="alert alert-success border-0 bg-white shadow-sm d-flex align-items-center justify-content-between p-3 mb-0 flex-wrap gap-2" style="border-radius:10px;">
+                      <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div>
+                          <div class="fw-bold text-dark" style="font-size:0.92rem;">Connected as {{ company.google_email }}</div>
+                          <div class="text-muted small" style="font-size:0.78rem;">Emails will be dispatched via your Google Gmail account.</div>
+                        </div>
+                      </div>
+                      <div class="d-flex gap-2">
+                        <a href="{% url 'google_oauth_connect' %}" class="btn btn-sm btn-outline-primary" style="border-radius:8px;">
+                          <i class="bi bi-arrow-repeat me-1"></i> Reconnect
+                        </a>
+                        <a href="{% url 'google_oauth_disconnect' %}" class="btn btn-sm btn-outline-danger" style="border-radius:8px;" onclick="return confirm('Disconnect your Google Account?');">
+                          <i class="bi bi-x-circle me-1"></i> Disconnect
+                        </a>
+                      </div>
+                    </div>
+                  {% else %}
+                    <!-- Not Connected State -->
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-2">
+                      <div class="text-muted small" style="font-size: 0.85rem; max-width: 520px;">
+                        Clicking below opens Google's secure authorization screen to grant email sending permission (<code>gmail.send</code>).
+                      </div>
+                      <a href="{% url 'google_oauth_connect' %}" class="btn text-dark fw-semibold px-4 py-2 d-inline-flex align-items-center gap-2 shadow-sm" style="background: #ffffff; border: 1px solid #dadce0; border-radius: 8px; font-size: 0.9rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.66-5.2 3.66-9.12z"/>
+                          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.13C3.25 21.31 7.31 24 12 24z"/>
+                          <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.27C.46 8.2.01 10.04.01 12s.45 3.8 1.26 5.42l4.01-3.13z"/>
+                          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.27 6.58l4.01 3.13c.95-2.83 3.6-4.96 6.72-4.96z"/>
+                        </svg>
+                        Connect with Google (One Click)
+                      </a>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- OPTION 2: MANUAL SMTP SETUP -->
+              <div class="card border rounded-3" style="border-color:#e2e8f0!important; background:#ffffff;">
+                <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#manualSmtpCollapse" aria-expanded="{% if company.email_provider == 'manual' or not company.google_refresh_token %}true{% else %}false{% endif %}">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-sliders2 text-secondary fs-5"></i>
+                    <div>
+                      <h6 class="fw-bold mb-0 text-dark" style="font-size:0.98rem;">Manual SMTP Setup</h6>
+                      <p class="text-muted small mb-0">Use custom SMTP credentials (for custom domain, Outlook, or Amazon SES).</p>
+                    </div>
+                  </div>
+                  <i class="bi bi-chevron-down text-muted"></i>
+                </div>
+
+                <div class="collapse {% if company.email_provider == 'manual' or not company.google_refresh_token %}show{% endif %}" id="manualSmtpCollapse">
+                  <div class="card-body p-4">
+                    <form method="POST">
+                      {% csrf_token %}
+                      <input type="hidden" name="action_type" value="save_smtp_settings">
+
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold" style="font-size: 0.85rem;">{{ page.smtp_sender_name_label|default:"Sender Display Name" }}</label>
+                          <input type="text" name="smtp_from_name" class="form-control" 
+                                 value="{% if company.smtp_from_name %}{{ company.smtp_from_name }}{% elif company.company_name %}{{ company.company_name }}{% endif %}" 
+                                 placeholder="e.g. BlogPro Team">
+                          <div class="form-text small">{{ page.smtp_sender_name_hint|default:"Name shown in receiver's inbox." }}</div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold" style="font-size: 0.85rem;">{{ page.smtp_sender_email_label|default:"Sender Email (SMTP User)" }} <span class="text-danger">*</span></label>
+                          <input type="email" name="smtp_user" class="form-control" 
+                                 value="{{ company.smtp_user }}" 
+                                 placeholder="e.g. yourcompany@gmail.com" required>
+                          <div class="form-text small">{{ page.smtp_sender_email_hint|default:"Your company email address." }}</div>
+                        </div>
+
+                        <div class="col-md-12">
+                          <label class="form-label fw-semibold" style="font-size: 0.85rem;">{{ page.smtp_password_label|default:"SMTP Password / Google App Password" }} <span class="text-danger">*</span></label>
+                          <div class="input-group">
+                            <input type="password" id="smtp_password_input" name="smtp_password" class="form-control" 
+                                   value="{{ company.smtp_password }}" 
+                                   placeholder="16-character App Password" required>
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('smtp_password_input', 'eye_icon_smtp')">
+                              <i class="bi bi-eye" id="eye_icon_smtp"></i>
+                            </button>
+                          </div>
+                          <div class="form-text small">
+                            {{ page.smtp_password_hint|default:"For Gmail, use a 16-digit App Password (from Google Account > Security > 2-Step Verification > App Passwords)." }}
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold" style="font-size: 0.85rem;">{{ page.smtp_host_label|default:"SMTP Host" }}</label>
+                          <input type="text" name="smtp_host" class="form-control" 
+                                 value="{{ company.smtp_host|default:'smtp.gmail.com' }}">
+                          <div class="form-text small">Default: <code>smtp.gmail.com</code></div>
+                        </div>
+
+                        <div class="col-md-3">
+                          <label class="form-label fw-semibold" style="font-size: 0.85rem;">{{ page.smtp_port_label|default:"SMTP Port" }}</label>
+                          <input type="number" name="smtp_port" class="form-control" 
+                                 value="{{ company.smtp_port|default:587 }}">
+                          <div class="form-text small">Default: <code>587</code></div>
+                        </div>
+
+                        <div class="col-md-3 d-flex align-items-center">
+                          <div class="form-check form-switch mt-3">
+                            <input class="form-check-input" type="checkbox" name="smtp_use_tls" id="smtp_use_tls" {% if company.smtp_use_tls %}checked{% endif %}>
+                            <label class="form-check-label fw-semibold small" for="smtp_use_tls">{{ page.smtp_tls_label|default:"Use TLS" }}</label>
+                          </div>
+                        </div>
+
+                        <div class="col-12 pt-2">
+                          <button type="submit" class="btn text-white px-4 py-2" style="background:#6c63ff; border-radius:8px;">
+                            <i class="bi bi-floppy me-1"></i> {{ page.smtp_save_btn_text|default:"Save Manual Settings" }}
+                          </button>
+                        </div>
+
+                        <!-- Instructions below Save Email Settings button -->
+                        <div class="col-12 mt-4">
+                          <div class="p-3 border rounded-3" style="background:#fcfcff; border-color:#e0e0ff!important;">
+                            <h6 class="fw-bold text-dark mb-2" style="font-size:0.88rem;">
+                              <i class="bi bi-info-circle-fill text-info me-1"></i> {{ page.smtp_instructions_heading|default:"Gmail Setup Instructions:" }}
+                            </h6>
+                            <div class="small text-muted ps-1 mb-0" style="line-height:1.6; font-size:0.8rem;">
+                              {% if page.smtp_instructions_body %}
+                                {{ page.smtp_instructions_body|richtext }}
+                              {% else %}
+                                <ol class="ps-3 mb-0">
+                                  <li>Go to your <strong>Google Account</strong> &gt; <strong>Security</strong>.</li>
+                                  <li>Turn on <strong>2-Step Verification</strong> if not already active.</li>
+                                  <li>Search for <strong>"App passwords"</strong> in Google settings.</li>
+                                  <li>Create an app named <code>InsightCMS</code> and copy the 16-character code.</li>
+                                  <li>Paste the code in <strong>SMTP Password</strong> above and click Save!</li>
+                                </ol>
+                              {% endif %}
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -713,7 +938,31 @@ document.addEventListener('DOMContentLoaded', function() {
       modal.show();
     });
   });
+  // Check if URL has ?tab=email or other tab param
+  var urlParams = new URLSearchParams(window.location.search);
+  var activeTab = urlParams.get('tab');
+  if (activeTab === 'email') {
+    var emailTabBtn = document.getElementById('email-settings-tab');
+    if (emailTabBtn) {
+      var tab = new bootstrap.Tab(emailTabBtn);
+      tab.show();
+    }
+  }
 });
+
+function togglePasswordVisibility(inputId, iconId) {
+  var input = document.getElementById(inputId);
+  var icon = document.getElementById(iconId);
+  if (input && icon) {
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.className = 'bi bi-eye-slash';
+    } else {
+      input.type = 'password';
+      icon.className = 'bi bi-eye';
+    }
+  }
+}
 
 function openAssignGroup(userId, userName, currentGroupId) {
   document.getElementById('assign_user_id').value = userId;

@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from Apps.common.models import BaseModel
 from wagtail.models import Page
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
-from wagtail.fields import StreamField
+from wagtail.fields import StreamField, RichTextField
 from django.shortcuts import redirect, render
 from django.contrib.auth import login as auth_login
 
@@ -778,6 +778,33 @@ class SettingsPage(Page):
     manage_users_btn_create_first_group = models.CharField(max_length=100, blank=True, default="Create First Group")
     manage_users_text_no_members        = models.CharField(max_length=200, blank=True, default="No members assigned yet.")
 
+    # Email Settings (SMTP) Tab & Section CMS Fields
+    manage_users_tab_email              = models.CharField(max_length=60, blank=True, default="Email Settings (SMTP)")
+    smtp_settings_heading               = models.CharField(max_length=100, blank=True, default="Company Email Configuration (SMTP)")
+    smtp_settings_subtext               = models.CharField(max_length=255, blank=True, default="Configure your company's email server (e.g. Gmail, Outlook, Amazon SES) to send invitation emails to new users.")
+    smtp_sender_name_label              = models.CharField(max_length=60, blank=True, default="Sender Display Name")
+    smtp_sender_name_hint               = models.CharField(max_length=100, blank=True, default="Name shown in receiver's inbox.")
+    smtp_sender_email_label             = models.CharField(max_length=60, blank=True, default="Sender Email (SMTP User)")
+    smtp_sender_email_hint              = models.CharField(max_length=100, blank=True, default="Your company Gmail / email address.")
+    smtp_password_label                 = models.CharField(max_length=60, blank=True, default="SMTP Password / Google App Password")
+    smtp_password_hint                  = models.CharField(max_length=255, blank=True, default="For Gmail, use a 16-digit App Password (from Google Account > Security > 2-Step Verification > App Passwords).")
+    smtp_host_label                     = models.CharField(max_length=60, blank=True, default="SMTP Host")
+    smtp_port_label                     = models.CharField(max_length=60, blank=True, default="SMTP Port")
+    smtp_tls_label                      = models.CharField(max_length=60, blank=True, default="Use TLS")
+    smtp_save_btn_text                  = models.CharField(max_length=60, blank=True, default="Save Email Settings")
+    smtp_instructions_heading           = models.CharField(max_length=100, blank=True, default="Gmail Setup Instructions:")
+    smtp_instructions_body              = RichTextField(blank=True, default="<ol><li>Go to your <strong>Google Account</strong> &gt; <strong>Security</strong>.</li><li>Turn on <strong>2-Step Verification</strong> if not already active.</li><li>Search for <strong>\"App passwords\"</strong> in Google settings.</li><li>Create an app named <code>InsightCMS</code> and copy the 16-character code.</li><li>Paste the code in <strong>SMTP Password</strong> above and click Save!</li></ol>", verbose_name="Gmail Setup Instructions Content")
+
+    # Edit User Modal Labels
+    manage_users_modal_edit_user_title  = models.CharField(max_length=100, blank=True, default="Edit User Details")
+    manage_users_field_first_name       = models.CharField(max_length=60, blank=True, default="First Name")
+    manage_users_field_last_name        = models.CharField(max_length=60, blank=True, default="Last Name")
+    manage_users_field_email            = models.CharField(max_length=60, blank=True, default="Email Address")
+    manage_users_field_role             = models.CharField(max_length=60, blank=True, default="Role")
+    manage_users_field_password         = models.CharField(max_length=60, blank=True, default="Reset Password")
+    manage_users_option_editor          = models.CharField(max_length=60, blank=True, default="Employee (Company User)")
+    manage_users_text_leave_blank       = models.CharField(max_length=100, blank=True, default="Leave blank to keep current")
+
     # Website Integration Page CMS Fields (Comprehensive Dynamic Customization)
     integration_page_title = models.CharField(max_length=100, blank=True, default="Website Integration Guide")
     integration_page_subtext = models.CharField(max_length=255, blank=True, default="Step-by-step instructions for integrating blogs on any website.")
@@ -901,6 +928,31 @@ class SettingsPage(Page):
             FieldPanel("manage_users_btn_create_first_group"),
             FieldPanel("manage_users_text_no_members"),
             FieldPanel("manage_users_card_heading"),
+            # Email Settings (SMTP) Section
+            FieldPanel("manage_users_tab_email"),
+            FieldPanel("smtp_settings_heading"),
+            FieldPanel("smtp_settings_subtext"),
+            FieldPanel("smtp_sender_name_label"),
+            FieldPanel("smtp_sender_name_hint"),
+            FieldPanel("smtp_sender_email_label"),
+            FieldPanel("smtp_sender_email_hint"),
+            FieldPanel("smtp_password_label"),
+            FieldPanel("smtp_password_hint"),
+            FieldPanel("smtp_host_label"),
+            FieldPanel("smtp_port_label"),
+            FieldPanel("smtp_tls_label"),
+            FieldPanel("smtp_save_btn_text"),
+            FieldPanel("smtp_instructions_heading"),
+            FieldPanel("smtp_instructions_body"),
+            # Edit User Modal
+            FieldPanel("manage_users_modal_edit_user_title"),
+            FieldPanel("manage_users_field_first_name"),
+            FieldPanel("manage_users_field_last_name"),
+            FieldPanel("manage_users_field_email"),
+            FieldPanel("manage_users_field_role"),
+            FieldPanel("manage_users_field_password"),
+            FieldPanel("manage_users_option_editor"),
+            FieldPanel("manage_users_text_leave_blank"),
         ], heading="Manage User Settings Configuration"),
         MultiFieldPanel([
             FieldPanel("settings_profile_heading"),

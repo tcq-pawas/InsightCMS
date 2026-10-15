@@ -257,3 +257,14 @@ LOGGING = {
 DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
 
+# Google OAuth 2.0 Integration for 1-Click Gmail Sending
+GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='').strip('"\'')
+GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET', default='').strip('"\'')
+GOOGLE_OAUTH_SCOPES = [
+    'https://www.googleapis.com/auth/gmail.send',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'openid',
+]
+# Allow HTTP for local OAuth testing
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+

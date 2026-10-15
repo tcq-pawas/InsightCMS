@@ -17,6 +17,9 @@ from Apps.accounts.views import (
     user_profile_view,
     blog_comments_settings_view,
     manage_users_settings_view,
+    google_oauth_connect_view,
+    google_oauth_callback_view,
+    google_oauth_disconnect_view,
 )
 from Apps.blogs.views import (
     dashboard_blog_create,
@@ -86,8 +89,10 @@ urlpatterns = [
     path('set-password/<uidb64>/<token>/', set_password_confirm_view, name='set_password_confirm'),
     path('documents/', include(wagtaildocs_urls)),
     path("api/v1/", include("Apps.blogs.urls")),
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path('dashboard/integration/', dashboard_website_integration, name='company_integration_docs'),
+    path('integrations/google/connect/', google_oauth_connect_view, name='google_oauth_connect'),
+    path('integrations/google/callback/', google_oauth_callback_view, name='google_oauth_callback'),
+    path('integrations/google/disconnect/', google_oauth_disconnect_view, name='google_oauth_disconnect'),
     path('', include(wagtail_urls)),  
 ]
 

@@ -1,4 +1,5 @@
 from django.contrib.auth import logout
+from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.db import models
 from Apps.accounts.models import UserDashboardPage
@@ -22,14 +23,20 @@ def user_dashboard_view(request):
     # 1. Logged-in user ki company find karein
     profile = UserProfile.objects.filter(user=request.user).select_related('company').first()
     company = profile.company if profile else None
+    if not company:
+        membership = CompanyMembership.objects.filter(user=request.user).select_related('company').first()
+        if membership:
+            company = membership.company
+    if not company and request.user.role == User.Role.SUPER_ADMIN:
+        if request.user.company_name:
+            from Apps.companies.models import Company
+            company = Company.objects.filter(company_name__iexact=request.user.company_name).first()
 
     dashboard_page = UserDashboardPage.objects.live().first()
     context = dashboard_page.get_context(request) if dashboard_page else {}
     sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
 
     # 2. Scope blogs according to user role:
-    # - If Super Admin / Company Admin -> View all blogs across company
-    # - If Employee (Company User) -> View ONLY their own written blogs
     is_employee = (request.user.role == User.Role.COMPANY_USER)
     
     if is_employee:
@@ -52,7 +59,6 @@ def user_dashboard_view(request):
     ).count()
 
     # 3. Writers / Authors data calculation (for Company Admin view)
-    # Fetch team members of this company or all authors who wrote blogs
     writers_data = []
     if not is_employee:
         if company:
@@ -82,10 +88,8 @@ def user_dashboard_view(request):
                 'unpublished': user_unpublished,
             })
 
-        # Sort writers by total posts descending
         writers_data.sort(key=lambda x: x['total_posts'], reverse=True)
 
-    # For employee view: fetch their own blogs with full details
     employee_blogs = dashboard_blogs_qs.select_related('category', 'featured_image').order_by('-latest_revision_created_at')
 
     notifications = request.user.notifications.all()[:10]
@@ -627,7 +631,7 @@ def manage_users_settings_view(request):
 
             # Generate invite token & link
             from django.contrib.auth.tokens import default_token_generator
-            from django.core.mail import send_mail
+            from django.core.mail import EmailMessage, get_connection
             from django.utils.http import urlsafe_base64_encode
             from django.utils.encoding import force_bytes
 
@@ -635,31 +639,39 @@ def manage_users_settings_view(request):
             uidb64 = urlsafe_base64_encode(force_bytes(new_user.pk))
             invite_url = request.build_absolute_uri(f"/set-password/{uidb64}/{token}/")
 
-            # Send Invitation Email
+            # Send Invitation Email using Company SMTP if configured, else fallback
+            email_sent = False
+            email_error = None
+            inviter_name = request.user.get_full_name() or request.user.email
+            email_subject = f"You're invited to join {company_title} on InsightCMS"
+            email_body = (
+                f"Hello {new_user.get_full_name() or member_email},\n\n"
+                f"{inviter_name} has invited you to join {company_title} as a team member.\n\n"
+                f"To activate your account and set your password, please click the link below:\n"
+                f"{invite_url}\n\n"
+                f"This link is valid for 3 days.\n\n"
+                f"Best regards,\n"
+                f"{company_title} Team"
+            )
+
             try:
-                inviter_name = request.user.get_full_name() or request.user.email
-                email_subject = f"You're invited to join {company_title} on InsightCMS"
-                email_body = (
-                    f"Hello {new_user.get_full_name() or member_email},\n\n"
-                    f"{inviter_name} has invited you to join {company_title} as a team member.\n\n"
-                    f"To activate your account and set your password, please click the link below:\n"
-                    f"{invite_url}\n\n"
-                    f"This link is valid for 3 days.\n\n"
-                    f"Best regards,\n"
-                    f"{company_title} Team"
-                )
-                send_mail(
-                    subject=email_subject,
-                    message=email_body,
-                    from_email="noreply@insightcms.com",
+                from Apps.common.email_service import send_company_email
+                send_company_email(
+                    company=company,
                     recipient_list=[member_email],
-                    fail_silently=True,
+                    subject=email_subject,
+                    html_message="",
+                    text_message=email_body
                 )
-            except Exception:
-                pass
+                email_sent = True
+            except Exception as e:
+                email_error = str(e)
 
             group_txt = group_obj.name if group_obj else "No Group"
-            messages.success(request, f"Invitation sent to '{member_email}' successfully! They can set their password and log in.")
+            if email_sent:
+                messages.success(request, f"User created and invitation email sent to '{member_email}' successfully!")
+            else:
+                messages.warning(request, f"User created, but email could not be sent: {email_error}. Please configure Email Settings in the 'Email Settings' tab.")
             return redirect(request.path)
 
         # 2. REMOVE USER
@@ -670,11 +682,13 @@ def manage_users_settings_view(request):
                 return redirect(request.path)
             target_user = UserModel.objects.filter(pk=target_user_id).first()
             if target_user:
-                CompanyMembership.objects.filter(user=target_user, company=company).delete()
-                UserProfile.objects.filter(user=target_user, company=company).delete()
-                target_user.is_active = False
-                target_user.save()
-                messages.success(request, f"User '{target_user.get_full_name() or target_user.email}' removed.")
+                # Delete company associations first
+                CompanyMembership.objects.filter(user=target_user).delete()
+                UserProfile.objects.filter(user=target_user).delete()
+                user_ident = target_user.get_full_name() or target_user.email
+                # Permanently delete the user from Database
+                target_user.delete()
+                messages.success(request, f"User '{user_ident}' has been permanently deleted from database.")
             else:
                 messages.error(request, "User not found.")
             return redirect(request.path)
@@ -804,6 +818,78 @@ def manage_users_settings_view(request):
             messages.success(request, f"User '{target_user.get_full_name() or target_user.email}' details updated successfully!")
             return redirect(request.path)
 
+        # 9. SAVE SMTP / EMAIL SETTINGS
+        elif action_type == 'save_smtp_settings':
+            if not company:
+                messages.error(request, "Company not found.")
+                return redirect(request.path)
+
+            company.smtp_host      = request.POST.get('smtp_host', 'smtp.gmail.com').strip()
+            company.smtp_port      = int(request.POST.get('smtp_port', 587) or 587)
+            company.smtp_use_tls   = (request.POST.get('smtp_use_tls') == 'on')
+            company.smtp_user      = request.POST.get('smtp_user', '').strip()
+            company.smtp_password  = request.POST.get('smtp_password', '').strip()
+            company.smtp_from_name = request.POST.get('smtp_from_name', '').strip()
+            company.email_provider = 'manual'
+            company.save()
+
+            messages.success(request, f"Manual SMTP updated successfully! Active Sender: {company.smtp_user}")
+            return redirect(f"{request.path}?tab=email")
+
+        # 10. TEST SMTP / SEND TEST EMAIL
+        elif action_type == 'test_smtp_settings':
+            if not company:
+                messages.error(request, "Company not found.")
+                return redirect(request.path)
+
+            test_to_email = request.POST.get('test_to_email', '').strip() or request.user.email
+            if not company.smtp_user or not company.smtp_password:
+                messages.error(request, "Please enter and save Sender Email and App Password first before testing.")
+                return redirect(f"{request.path}?tab=email")
+
+            try:
+                from django.core.mail import EmailMessage, get_connection
+                conn = get_connection(
+                    backend='django.core.mail.backends.smtp.EmailBackend',
+                    host=company.smtp_host or 'smtp.gmail.com',
+                    port=company.smtp_port or 587,
+                    username=company.smtp_user,
+                    password=company.smtp_password,
+                    use_tls=company.smtp_use_tls,
+                    fail_silently=False,
+                )
+                from_addr = f"{company.smtp_from_name or company.company_name} <{company.smtp_user}>"
+                test_msg = EmailMessage(
+                    subject=f"Test Email from {company.company_name} - InsightCMS",
+                    body=f"Hello!\n\nThis is a test email sent from your InsightCMS Email Settings for {company.company_name}.\nYour SMTP configuration is working properly!\n\nBest regards,\nInsightCMS Team",
+                    from_email=from_addr,
+                    to=[test_to_email],
+                    connection=conn,
+                )
+                test_msg.send(fail_silently=False)
+                messages.success(request, f"Test email sent successfully to '{test_to_email}'! Your SMTP settings are working.")
+            except Exception as e:
+                messages.error(request, f"Failed to send test email: {str(e)}")
+
+            return redirect(f"{request.path}?tab=email")
+
+        # 11. RESET / CLEAR EMAIL SETTINGS
+        elif action_type == 'reset_email_settings':
+            if company:
+                company.email_provider = 'manual'
+                company.google_email = ''
+                company.google_refresh_token = ''
+                company.google_access_token = ''
+                company.google_token_expiry = None
+                company.smtp_user = ''
+                company.smtp_password = ''
+                company.smtp_from_name = ''
+                company.save()
+                messages.success(request, "Email configuration has been cleared. You can now connect a new Google Account or enter new SMTP credentials.")
+            else:
+                messages.error(request, "Company not found.")
+            return redirect(f"{request.path}?tab=email")
+
     # GET: Fetch data
     from Apps.companies.models import UserGroup
     if company:
@@ -877,4 +963,185 @@ def manage_users_settings_view(request):
         'active_subtab': 'manage_users',
     })
     return render(request, 'accounts/manage_users.html', context)
+
+
+# =========================================================================
+# Google OAuth 2.0 Integration Views (One-Click Gmail Setup)
+# =========================================================================
+def google_oauth_connect_view(request):
+    """
+    Step 1: Initiates Google OAuth 2.0 flow for Gmail API sending.
+    Redirects user to Google Consent Screen.
+    """
+    if not request.user.is_authenticated:
+        return redirect('/login/')
+
+    from django.conf import settings
+    from google_auth_oauthlib.flow import Flow
+    import secrets
+
+    client_id = getattr(settings, 'GOOGLE_CLIENT_ID', '').strip()
+    client_secret = getattr(settings, 'GOOGLE_CLIENT_SECRET', '').strip()
+
+    if not client_id or not client_secret:
+        messages.error(
+            request, 
+            "Google OAuth is not configured yet. Please configure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in settings or .env"
+        )
+        return redirect('/settings/users/?tab=email')
+
+    # Build client config dict
+    client_config = {
+        "web": {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+        }
+    }
+
+    redirect_uri = request.build_absolute_uri('/integrations/google/callback/')
+
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=getattr(settings, 'GOOGLE_OAUTH_SCOPES', ['https://www.googleapis.com/auth/gmail.send', 'https://www.googleapis.com/auth/userinfo.email', 'openid']),
+        redirect_uri=redirect_uri
+    )
+
+    state = secrets.token_urlsafe(16)
+    request.session['google_oauth_state'] = state
+
+    authorization_url, _ = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true',
+        prompt='consent',
+        state=state
+    )
+
+    return redirect(authorization_url)
+
+
+def google_oauth_callback_view(request):
+    """
+    Step 2: Handles redirect from Google OAuth consent screen.
+    Exchanges code for tokens, extracts user's Gmail, and saves to Company model.
+    """
+    if not request.user.is_authenticated:
+        return redirect('/login/')
+
+    from django.conf import settings
+    from google_auth_oauthlib.flow import Flow
+    from googleapiclient.discovery import build
+    from Apps.companies.models import UserProfile, CompanyMembership, Company
+
+    # Check for error parameter from Google
+    if 'error' in request.GET:
+        err = request.GET.get('error', 'Google authorization cancelled')
+        messages.error(request, f"Google authorization failed: {err}")
+        return redirect('/settings/users/?tab=email')
+
+    code = request.GET.get('code')
+    state = request.GET.get('state')
+    saved_state = request.session.pop('google_oauth_state', None)
+
+    if not code:
+        messages.error(request, "Authorization code missing from Google response.")
+        return redirect('/settings/users/?tab=email')
+
+    # Fetch active company
+    profile = UserProfile.objects.filter(user=request.user).select_related('company').first()
+    company = profile.company if profile else getattr(request.user, 'company', None)
+    if not company:
+        membership = CompanyMembership.objects.filter(user=request.user).select_related('company').first()
+        if membership:
+            company = membership.company
+    if not company and request.user.role == 'super_admin':
+        active_comp_id = request.session.get('active_company_id')
+        if active_comp_id:
+            company = Company.objects.filter(id=active_comp_id).first()
+
+    if not company:
+        messages.error(request, "Could not determine company to bind Google Account.")
+        return redirect('/settings/users/?tab=email')
+
+    try:
+        client_id = getattr(settings, 'GOOGLE_CLIENT_ID', '').strip()
+        client_secret = getattr(settings, 'GOOGLE_CLIENT_SECRET', '').strip()
+
+        client_config = {
+            "web": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        }
+
+        redirect_uri = request.build_absolute_uri('/integrations/google/callback/')
+
+        flow = Flow.from_client_config(
+            client_config,
+            scopes=getattr(settings, 'GOOGLE_OAUTH_SCOPES', ['https://www.googleapis.com/auth/gmail.send', 'https://www.googleapis.com/auth/userinfo.email', 'openid']),
+            redirect_uri=redirect_uri,
+            state=state
+        )
+
+        flow.fetch_token(code=code)
+        credentials = flow.credentials
+
+        # Fetch connected Google user profile email
+        oauth2_service = build('oauth2', 'v2', credentials=credentials)
+        user_info = oauth2_service.userinfo().get().execute()
+        connected_email = user_info.get('email', '')
+
+        # Save tokens in Company model
+        company.email_provider = 'google'
+        company.google_email = connected_email
+        if credentials.refresh_token:
+            company.google_refresh_token = credentials.refresh_token
+        company.google_access_token = credentials.token
+        if credentials.expiry:
+            company.google_token_expiry = credentials.expiry
+        company.save()
+
+        messages.success(
+            request, 
+            f"Successfully connected Google account ({connected_email})! One-click email sending is now active."
+        )
+    except Exception as e:
+        messages.error(request, f"Error completing Google connection: {str(e)}")
+
+    return redirect('/settings/users/?tab=email')
+
+
+def google_oauth_disconnect_view(request):
+    """
+    Step 3: Disconnects Google OAuth for the company and reverts provider to manual.
+    """
+    if not request.user.is_authenticated:
+        return redirect('/login/')
+
+    from Apps.companies.models import UserProfile, CompanyMembership, Company
+
+    profile = UserProfile.objects.filter(user=request.user).select_related('company').first()
+    company = profile.company if profile else getattr(request.user, 'company', None)
+    if not company:
+        membership = CompanyMembership.objects.filter(user=request.user).select_related('company').first()
+        if membership:
+            company = membership.company
+
+    if company:
+        old_email = company.google_email
+        company.email_provider = 'manual'
+        company.google_email = ''
+        company.google_refresh_token = ''
+        company.google_access_token = ''
+        company.google_token_expiry = None
+        company.save()
+        messages.info(request, f"Google account ({old_email or 'OAuth'}) has been disconnected.")
+    else:
+        messages.error(request, "Company not found.")
+
+    return redirect('/settings/users/?tab=email')
+
 

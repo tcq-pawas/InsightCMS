@@ -67,6 +67,27 @@ class Company(models.Model):
         verbose_name="Email Field Mode"
     )
 
+    # Email Integration per Company (Google One-Click OAuth & Manual SMTP)
+    PROVIDER_CHOICES = [
+        ('google', 'Google OAuth (One-Click)'),
+        ('manual', 'Manual SMTP'),
+    ]
+    email_provider   = models.CharField(max_length=20, choices=PROVIDER_CHOICES, default='manual', verbose_name="Email Integration Provider")
+    
+    # Google OAuth 2.0 Credentials
+    google_email          = models.EmailField(max_length=255, blank=True, default="", verbose_name="Connected Google Account")
+    google_refresh_token  = models.TextField(blank=True, default="", verbose_name="Google OAuth Refresh Token")
+    google_access_token   = models.TextField(blank=True, default="", verbose_name="Google OAuth Access Token")
+    google_token_expiry   = models.DateTimeField(null=True, blank=True, verbose_name="Google Access Token Expiry")
+
+    # Manual SMTP Configuration
+    smtp_host        = models.CharField(max_length=255, blank=True, default="smtp.gmail.com", verbose_name="SMTP Host")
+    smtp_port        = models.PositiveIntegerField(default=587, verbose_name="SMTP Port")
+    smtp_use_tls     = models.BooleanField(default=True, verbose_name="Use TLS")
+    smtp_user        = models.EmailField(max_length=255, blank=True, default="", verbose_name="Sender Email (SMTP User)")
+    smtp_password    = models.CharField(max_length=255, blank=True, default="", verbose_name="SMTP Password / App Password")
+    smtp_from_name   = models.CharField(max_length=255, blank=True, default="", verbose_name="Sender Display Name")
+
     created_at     = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at     = models.DateTimeField(auto_now=True)
 
