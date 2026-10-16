@@ -1018,6 +1018,10 @@ def google_oauth_connect_view(request):
         state=state
     )
 
+    # In modern google-auth-oauthlib, PKCE code_verifier is generated on flow and must be preserved for fetch_token
+    if hasattr(flow, 'code_verifier') and flow.code_verifier:
+        request.session['google_oauth_code_verifier'] = flow.code_verifier
+
     return redirect(authorization_url)
 
 
@@ -1077,6 +1081,7 @@ def google_oauth_callback_view(request):
             }
         }
 
+        # Use same redirect uri host/port as incoming request
         redirect_uri = request.build_absolute_uri('/integrations/google/callback/')
 
         flow = Flow.from_client_config(
@@ -1085,6 +1090,10 @@ def google_oauth_callback_view(request):
             redirect_uri=redirect_uri,
             state=state
         )
+
+        code_verifier = request.session.pop('google_oauth_code_verifier', None)
+        if code_verifier:
+            flow.code_verifier = code_verifier
 
         flow.fetch_token(code=code)
         credentials = flow.credentials
@@ -1099,7 +1108,8 @@ def google_oauth_callback_view(request):
         company.google_email = connected_email
         if credentials.refresh_token:
             company.google_refresh_token = credentials.refresh_token
-        company.google_access_token = credentials.token
+        if credentials.token:
+            company.google_access_token = credentials.token
         if credentials.expiry:
             company.google_token_expiry = credentials.expiry
         company.save()
@@ -1109,6 +1119,8 @@ def google_oauth_callback_view(request):
             f"Successfully connected Google account ({connected_email})! One-click email sending is now active."
         )
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         messages.error(request, f"Error completing Google connection: {str(e)}")
 
     return redirect('/settings/users/?tab=email')

@@ -111,7 +111,7 @@
           <li class="nav-item" role="presentation">
             <button class="nav-link" id="email-settings-tab" data-bs-toggle="tab" data-bs-target="#email-settings-pane" type="button" role="tab">
               <i class="bi bi-envelope-at me-1"></i> {{ page.manage_users_tab_email|default:"Email Integration" }}
-              {% if company.email_provider == 'google' and company.google_refresh_token %}
+              {% if company.email_provider == 'google' and company.google_email %}
                 <span class="badge bg-success tab-badge"><i class="bi bi-google"></i> Google Connected</span>
               {% elif company.smtp_user %}
                 <span class="badge bg-success tab-badge"><i class="bi bi-check2"></i> SMTP Active</span>
@@ -367,7 +367,7 @@
                   </p>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                  {% if company.email_provider == 'google' and company.google_refresh_token %}
+                  {% if company.email_provider == 'google' and company.google_email %}
                     <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
                       <i class="bi bi-google me-1"></i> Active: Google Account ({{ company.google_email }})
                     </span>
@@ -408,17 +408,17 @@
                       </div>
                       <div>
                         <h6 class="fw-bold mb-0 text-dark" style="font-size: 1.05rem;">
-                          Connect with Google
+                          {{ page.google_card_title|default:"Connect with Google" }}
                         </h6>
-                        <p class="text-muted small mb-0">Authorize your Gmail account securely with 1-click. No passwords or port setup needed.</p>
+                        <p class="text-muted small mb-0">{{ page.google_card_subtext|default:"Authorize your Gmail account securely with 1-click. No passwords or port setup needed." }}</p>
                       </div>
                     </div>
                     <span class="badge text-white px-2 py-1" style="background:#10b981; font-size:0.75rem; letter-spacing:0.3px;">
-                      <i class="bi bi-star-fill me-1" style="font-size:0.7rem;"></i> RECOMMENDED
+                      <i class="bi bi-star-fill me-1" style="font-size:0.7rem;"></i> {{ page.google_card_badge_text|default:"RECOMMENDED" }}
                     </span>
                   </div>
 
-                  {% if company.email_provider == 'google' and company.google_refresh_token %}
+                  {% if company.email_provider == 'google' and company.google_email %}
                     <!-- Connected State -->
                     <div class="alert alert-success border-0 bg-white shadow-sm d-flex align-items-center justify-content-between p-3 mb-0 flex-wrap gap-2" style="border-radius:10px;">
                       <div class="d-flex align-items-center gap-2">
@@ -441,7 +441,7 @@
                     <!-- Not Connected State -->
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-2">
                       <div class="text-muted small" style="font-size: 0.85rem; max-width: 520px;">
-                        Clicking below opens Google's secure authorization screen to grant email sending permission (<code>gmail.send</code>).
+                        {{ page.google_auth_note|default:"Clicking below opens Google's secure authorization screen to grant email sending permission (gmail.send)." }}
                       </div>
                       <a href="{% url 'google_oauth_connect' %}" class="btn text-dark fw-semibold px-4 py-2 d-inline-flex align-items-center gap-2 shadow-sm" style="background: #ffffff; border: 1px solid #dadce0; border-radius: 8px; font-size: 0.9rem;">
                         <svg width="18" height="18" viewBox="0 0 24 24">
@@ -450,7 +450,7 @@
                           <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.27C.46 8.2.01 10.04.01 12s.45 3.8 1.26 5.42l4.01-3.13z"/>
                           <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.27 6.58l4.01 3.13c.95-2.83 3.6-4.96 6.72-4.96z"/>
                         </svg>
-                        Connect with Google (One Click)
+                        {{ page.google_btn_text|default:"Connect with Google (One Click)" }}
                       </a>
                     </div>
                   {% endif %}
@@ -463,8 +463,8 @@
                   <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-sliders2 text-secondary fs-5"></i>
                     <div>
-                      <h6 class="fw-bold mb-0 text-dark" style="font-size:0.98rem;">Manual SMTP Setup</h6>
-                      <p class="text-muted small mb-0">Use custom SMTP credentials (for custom domain, Outlook, or Amazon SES).</p>
+                      <h6 class="fw-bold mb-0 text-dark" style="font-size:0.98rem;">{{ page.manual_smtp_card_title|default:"Manual SMTP Setup" }}</h6>
+                      <p class="text-muted small mb-0">{{ page.manual_smtp_card_subtext|default:"Use custom SMTP credentials (for custom domain, Outlook, or Amazon SES)." }}</p>
                     </div>
                   </div>
                   <i class="bi bi-chevron-down text-muted"></i>

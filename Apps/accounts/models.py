@@ -782,6 +782,18 @@ class SettingsPage(Page):
     manage_users_tab_email              = models.CharField(max_length=60, blank=True, default="Email Settings (SMTP)")
     smtp_settings_heading               = models.CharField(max_length=100, blank=True, default="Company Email Configuration (SMTP)")
     smtp_settings_subtext               = models.CharField(max_length=255, blank=True, default="Configure your company's email server (e.g. Gmail, Outlook, Amazon SES) to send invitation emails to new users.")
+    
+    # One-Click Google OAuth Card (Dynamic CMS Fields)
+    google_card_title                   = models.CharField(max_length=100, blank=True, default="Connect with Google")
+    google_card_subtext                 = models.CharField(max_length=255, blank=True, default="Authorize your Gmail account securely with 1-click. No passwords or port setup needed.")
+    google_card_badge_text              = models.CharField(max_length=50, blank=True, default="RECOMMENDED")
+    google_btn_text                     = models.CharField(max_length=80, blank=True, default="Connect with Google (One Click)")
+    google_auth_note                    = models.CharField(max_length=255, blank=True, default="Clicking below opens Google's secure authorization screen to grant email sending permission (gmail.send).")
+    
+    # Manual SMTP Card (Dynamic CMS Fields)
+    manual_smtp_card_title              = models.CharField(max_length=100, blank=True, default="Manual SMTP Setup")
+    manual_smtp_card_subtext            = models.CharField(max_length=255, blank=True, default="Use custom SMTP credentials (for custom domain, Outlook, or Amazon SES).")
+
     smtp_sender_name_label              = models.CharField(max_length=60, blank=True, default="Sender Display Name")
     smtp_sender_name_hint               = models.CharField(max_length=100, blank=True, default="Name shown in receiver's inbox.")
     smtp_sender_email_label             = models.CharField(max_length=60, blank=True, default="Sender Email (SMTP User)")
@@ -928,10 +940,19 @@ class SettingsPage(Page):
             FieldPanel("manage_users_btn_create_first_group"),
             FieldPanel("manage_users_text_no_members"),
             FieldPanel("manage_users_card_heading"),
-            # Email Settings (SMTP) Section
+            # Email Settings (SMTP & Google OAuth) Section
             FieldPanel("manage_users_tab_email"),
             FieldPanel("smtp_settings_heading"),
             FieldPanel("smtp_settings_subtext"),
+            # Google One-Click Card
+            FieldPanel("google_card_title"),
+            FieldPanel("google_card_subtext"),
+            FieldPanel("google_card_badge_text"),
+            FieldPanel("google_btn_text"),
+            FieldPanel("google_auth_note"),
+            # Manual SMTP Card
+            FieldPanel("manual_smtp_card_title"),
+            FieldPanel("manual_smtp_card_subtext"),
             FieldPanel("smtp_sender_name_label"),
             FieldPanel("smtp_sender_name_hint"),
             FieldPanel("smtp_sender_email_label"),

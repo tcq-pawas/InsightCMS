@@ -95,7 +95,7 @@ def send_company_email(company, recipient_list, subject, html_message, text_mess
         recipient_list = [recipient_list]
 
     # Mode 1: Google OAuth (One-Click)
-    if company and company.email_provider == 'google' and company.google_refresh_token:
+    if company and company.email_provider == 'google' and (company.google_refresh_token or company.google_access_token):
         try:
             return send_via_gmail_api(company, recipient_list, subject, html_message, text_message)
         except Exception as e:
