@@ -39,6 +39,20 @@
     border-radius: 12px;
     margin-left: 0.4rem;
   }
+  .email-mode-pill {
+    color: #64748b;
+    border: none;
+    transition: all 0.25s ease;
+  }
+  .email-mode-pill:hover {
+    color: #1e293b;
+    background: #e2e8f0;
+  }
+  .email-mode-pill.active-pill {
+    background: #ffffff !important;
+    color: #6c63ff !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
 </style>
 {% endblock %}
 
@@ -393,84 +407,104 @@
                 </div>
               </div>
 
-              <!-- OPTION 1: ONE-CLICK SETUP WITH GOOGLE (RECOMMENDED) -->
-              <div class="card mb-4 border-2" style="border-color: #e0e7ff; background: #fafbff; border-radius: 12px;">
-                <div class="card-body p-4">
-                  <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="rounded-circle d-flex align-items-center justify-content-center bg-white shadow-sm" style="width: 42px; height: 42px;">
-                        <svg width="22" height="22" viewBox="0 0 24 24">
-                          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.66-5.2 3.66-9.12z"/>
-                          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.13C3.25 21.31 7.31 24 12 24z"/>
-                          <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.27C.46 8.2.01 10.04.01 12s.45 3.8 1.26 5.42l4.01-3.13z"/>
-                          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.27 6.58l4.01 3.13c.95-2.83 3.6-4.96 6.72-4.96z"/>
-                        </svg>
-                      </div>
-                      <div>
-                        <h6 class="fw-bold mb-0 text-dark" style="font-size: 1.05rem;">
-                          {{ page.google_card_title|default:"Connect with Google" }}
-                        </h6>
-                        <p class="text-muted small mb-0">{{ page.google_card_subtext|default:"Authorize your Gmail account securely with 1-click. No passwords or port setup needed." }}</p>
-                      </div>
-                    </div>
-                    <span class="badge text-white px-2 py-1" style="background:#10b981; font-size:0.75rem; letter-spacing:0.3px;">
-                      <i class="bi bi-star-fill me-1" style="font-size:0.7rem;"></i> {{ page.google_card_badge_text|default:"RECOMMENDED" }}
-                    </span>
-                  </div>
-
-                  {% if company.email_provider == 'google' and company.google_email %}
-                    <!-- Connected State -->
-                    <div class="alert alert-success border-0 bg-white shadow-sm d-flex align-items-center justify-content-between p-3 mb-0 flex-wrap gap-2" style="border-radius:10px;">
-                      <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                        <div>
-                          <div class="fw-bold text-dark" style="font-size:0.92rem;">Connected as {{ company.google_email }}</div>
-                          <div class="text-muted small" style="font-size:0.78rem;">Emails will be dispatched via your Google Gmail account.</div>
-                        </div>
-                      </div>
-                      <div class="d-flex gap-2">
-                        <a href="{% url 'google_oauth_connect' %}" class="btn btn-sm btn-outline-primary" style="border-radius:8px;">
-                          <i class="bi bi-arrow-repeat me-1"></i> Reconnect
-                        </a>
-                        <a href="{% url 'google_oauth_disconnect' %}" class="btn btn-sm btn-outline-danger" style="border-radius:8px;" onclick="return confirm('Disconnect your Google Account?');">
-                          <i class="bi bi-x-circle me-1"></i> Disconnect
-                        </a>
-                      </div>
-                    </div>
-                  {% else %}
-                    <!-- Not Connected State -->
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-2">
-                      <div class="text-muted small" style="font-size: 0.85rem; max-width: 520px;">
-                        {{ page.google_auth_note|default:"Clicking below opens Google's secure authorization screen to grant email sending permission (gmail.send)." }}
-                      </div>
-                      <a href="{% url 'google_oauth_connect' %}" class="btn text-dark fw-semibold px-4 py-2 d-inline-flex align-items-center gap-2 shadow-sm" style="background: #ffffff; border: 1px solid #dadce0; border-radius: 8px; font-size: 0.9rem;">
-                        <svg width="18" height="18" viewBox="0 0 24 24">
-                          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.66-5.2 3.66-9.12z"/>
-                          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.13C3.25 21.31 7.31 24 12 24z"/>
-                          <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.27C.46 8.2.01 10.04.01 12s.45 3.8 1.26 5.42l4.01-3.13z"/>
-                          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.27 6.58l4.01 3.13c.95-2.83 3.6-4.96 6.72-4.96z"/>
-                        </svg>
-                        {{ page.google_btn_text|default:"Connect with Google (One Click)" }}
-                      </a>
-                    </div>
-                  {% endif %}
+              <!-- OPTION SELECTOR (Pill Tabs for Google 1-Click vs Manual SMTP) -->
+              <div class="d-flex align-items-center justify-content-center mb-4">
+                <div class="bg-light p-1 rounded-pill border d-inline-flex gap-1 shadow-sm" style="background:#f1f5f9!important;">
+                  <button type="button" class="btn btn-sm rounded-pill px-4 py-2 fw-semibold email-mode-pill {% if company.email_provider != 'manual' %}active-pill{% endif %}" id="pill-google-btn" onclick="switchEmailMode('google')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" class="me-1">
+                      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.66-5.2 3.66-9.12z"/>
+                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.13C3.25 21.31 7.31 24 12 24z"/>
+                      <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.27C.46 8.2.01 10.04.01 12s.45 3.8 1.26 5.42l4.01-3.13z"/>
+                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.27 6.58l4.01 3.13c.95-2.83 3.6-4.96 6.72-4.96z"/>
+                    </svg>
+                    Google 1-Click (Recommended)
+                  </button>
+                  <button type="button" class="btn btn-sm rounded-pill px-4 py-2 fw-semibold email-mode-pill {% if company.email_provider == 'manual' %}active-pill{% endif %}" id="pill-manual-btn" onclick="switchEmailMode('manual')">
+                    <i class="bi bi-sliders2 me-1"></i>
+                    Manual SMTP Setup
+                  </button>
                 </div>
               </div>
 
-              <!-- OPTION 2: MANUAL SMTP SETUP -->
-              <div class="card border rounded-3" style="border-color:#e2e8f0!important; background:#ffffff;">
-                <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#manualSmtpCollapse" aria-expanded="{% if company.email_provider == 'manual' or not company.google_refresh_token %}true{% else %}false{% endif %}">
-                  <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-sliders2 text-secondary fs-5"></i>
-                    <div>
-                      <h6 class="fw-bold mb-0 text-dark" style="font-size:0.98rem;">{{ page.manual_smtp_card_title|default:"Manual SMTP Setup" }}</h6>
-                      <p class="text-muted small mb-0">{{ page.manual_smtp_card_subtext|default:"Use custom SMTP credentials (for custom domain, Outlook, or Amazon SES)." }}</p>
+              <!-- VIEW 1: ONE-CLICK SETUP WITH GOOGLE -->
+              <div id="email-google-panel" class="email-mode-panel {% if company.email_provider == 'manual' %}d-none{% endif %}">
+                <div class="card mb-4 border-2" style="border-color: #e0e7ff; background: #fafbff; border-radius: 12px;">
+                  <div class="card-body p-4">
+                    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-white shadow-sm" style="width: 42px; height: 42px;">
+                          <svg width="22" height="22" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.66-5.2 3.66-9.12z"/>
+                            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.13C3.25 21.31 7.31 24 12 24z"/>
+                            <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.27C.46 8.2.01 10.04.01 12s.45 3.8 1.26 5.42l4.01-3.13z"/>
+                            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.27 6.58l4.01 3.13c.95-2.83 3.6-4.96 6.72-4.96z"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <h6 class="fw-bold mb-0 text-dark" style="font-size: 1.05rem;">
+                            {{ page.google_card_title|default:"Connect with Google" }}
+                          </h6>
+                          <p class="text-muted small mb-0">{{ page.google_card_subtext|default:"Authorize your Gmail account securely with 1-click. No passwords or port setup needed." }}</p>
+                        </div>
+                      </div>
+                      <span class="badge text-white px-2 py-1" style="background:#10b981; font-size:0.75rem; letter-spacing:0.3px;">
+                        <i class="bi bi-star-fill me-1" style="font-size:0.7rem;"></i> {{ page.google_card_badge_text|default:"RECOMMENDED" }}
+                      </span>
+                    </div>
+
+                    {% if company.email_provider == 'google' and company.google_email %}
+                      <!-- Connected State -->
+                      <div class="alert alert-success border-0 bg-white shadow-sm d-flex align-items-center justify-content-between p-3 mb-0 flex-wrap gap-2" style="border-radius:10px;">
+                        <div class="d-flex align-items-center gap-2">
+                          <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                          <div>
+                            <div class="fw-bold text-dark" style="font-size:0.92rem;">Connected as {{ company.google_email }}</div>
+                            <div class="text-muted small" style="font-size:0.78rem;">Emails will be dispatched via your Google Gmail account.</div>
+                          </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                          <a href="{% url 'google_oauth_connect' %}" class="btn btn-sm btn-outline-primary" style="border-radius:8px;">
+                            <i class="bi bi-arrow-repeat me-1"></i> Reconnect
+                          </a>
+                          <a href="{% url 'google_oauth_disconnect' %}" class="btn btn-sm btn-outline-danger" style="border-radius:8px;" onclick="return confirm('Disconnect your Google Account?');">
+                            <i class="bi bi-x-circle me-1"></i> Disconnect
+                          </a>
+                        </div>
+                      </div>
+                    {% else %}
+                      <!-- Not Connected State -->
+                      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-2">
+                        <div class="text-muted small" style="font-size: 0.85rem; max-width: 520px;">
+                          {{ page.google_auth_note|default:"Clicking below opens Google's secure authorization screen to grant email sending permission (gmail.send)." }}
+                        </div>
+                        <a href="{% url 'google_oauth_connect' %}" class="btn text-dark fw-semibold px-4 py-2 d-inline-flex align-items-center gap-2 shadow-sm" style="background: #ffffff; border: 1px solid #dadce0; border-radius: 8px; font-size: 0.9rem;">
+                          <svg width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.28-2.1 3.66-5.2 3.66-9.12z"/>
+                            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.13C3.25 21.31 7.31 24 12 24z"/>
+                            <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.27C.46 8.2.01 10.04.01 12s.45 3.8 1.26 5.42l4.01-3.13z"/>
+                            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.27 6.58l4.01 3.13c.95-2.83 3.6-4.96 6.72-4.96z"/>
+                          </svg>
+                          {{ page.google_btn_text|default:"Connect with Google (One Click)" }}
+                        </a>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <!-- VIEW 2: MANUAL SMTP SETUP -->
+              <div id="email-manual-panel" class="email-mode-panel {% if company.email_provider != 'manual' %}d-none{% endif %}">
+                <div class="card border rounded-3" style="border-color:#e2e8f0!important; background:#ffffff;">
+                  <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="bi bi-sliders2 text-secondary fs-5"></i>
+                      <div>
+                        <h6 class="fw-bold mb-0 text-dark" style="font-size:0.98rem;">{{ page.manual_smtp_card_title|default:"Manual SMTP Setup" }}</h6>
+                        <p class="text-muted small mb-0">{{ page.manual_smtp_card_subtext|default:"Use custom SMTP credentials (for custom domain, Outlook, or Amazon SES)." }}</p>
+                      </div>
                     </div>
                   </div>
-                  <i class="bi bi-chevron-down text-muted"></i>
-                </div>
 
-                <div class="collapse {% if company.email_provider == 'manual' or not company.google_refresh_token %}show{% endif %}" id="manualSmtpCollapse">
                   <div class="card-body p-4">
                     <form method="POST">
                       {% csrf_token %}
@@ -975,6 +1009,25 @@ function openAssignGroup(userId, userName, currentGroupId) {
   }
   var modal = new bootstrap.Modal(document.getElementById('assignGroupModal'));
   modal.show();
+}
+
+function switchEmailMode(mode) {
+  var googlePanel = document.getElementById('email-google-panel');
+  var manualPanel = document.getElementById('email-manual-panel');
+  var pillGoogle = document.getElementById('pill-google-btn');
+  var pillManual = document.getElementById('pill-manual-btn');
+
+  if (mode === 'google') {
+    if (googlePanel) googlePanel.classList.remove('d-none');
+    if (manualPanel) manualPanel.classList.add('d-none');
+    if (pillGoogle) pillGoogle.classList.add('active-pill');
+    if (pillManual) pillManual.classList.remove('active-pill');
+  } else {
+    if (googlePanel) googlePanel.classList.add('d-none');
+    if (manualPanel) manualPanel.classList.remove('d-none');
+    if (pillGoogle) pillGoogle.classList.remove('active-pill');
+    if (pillManual) pillManual.classList.add('active-pill');
+  }
 }
 </script>
 {% endblock %}
