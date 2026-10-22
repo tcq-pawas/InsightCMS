@@ -1,0 +1,356 @@
+{% extends "companies/base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}Analytics & Reports | {{ dashboard_page.brand_name|default:"BlogPro" }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  .analytics-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    height: 100%;
+  }
+  .stat-badge-trend {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .filter-btn-group .btn {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bp-app-wrapper">
+
+  <!-- Sidebar -->
+  {% include "accounts/blocks/sidebar.html" with page=dashboard_page %}
+
+  <div class="bp-main-container">
+
+    <!-- Topbar -->
+    {% include "accounts/blocks/topbar.html" with page=dashboard_page %}
+
+    <main class="bp-content-body">
+
+      <!-- Header & Time Filter -->
+      <div class="bp-page-header d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+          <h1 class="bp-page-title mb-1"><i class="fa-solid fa-chart-line text-primary me-2"></i> Analytics & Reports</h1>
+          <p class="bp-page-sub mb-0">Track reader views, unique visitors, referral sources, and popular articles</p>
+        </div>
+
+        <div class="btn-group filter-btn-group bg-white p-1 rounded-pill shadow-sm border" role="group">
+          <a href="?range=today" class="btn {% if time_range == 'today' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">Today</a>
+          <a href="?range=7days" class="btn {% if time_range == '7days' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">7 Days</a>
+          <a href="?range=30days" class="btn {% if time_range == '30days' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">30 Days</a>
+          <a href="?range=all" class="btn {% if time_range == 'all' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">All Time</a>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- 4 Top KPI Cards -->
+      <div class="row g-3 mb-4">
+        
+        <!-- Total Views -->
+        <div class="col-sm-6 col-lg-3">
+          <div class="analytics-card">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Total Views</span>
+              <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #eff6ff; color: #2563eb;">
+                <i class="fa-solid fa-eye"></i>
+              </div>
+            </div>
+            <div class="fs-3 fw-bold text-dark">{{ total_views }}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">Recorded pageviews</div>
+          </div>
+        </div>
+
+        <!-- Unique Visitors -->
+        <div class="col-sm-6 col-lg-3">
+          <div class="analytics-card">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Unique Visitors</span>
+              <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #fdf4ff; color: #c026d3;">
+                <i class="fa-solid fa-users"></i>
+              </div>
+            </div>
+            <div class="fs-3 fw-bold text-dark">{{ unique_visitors }}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">Distinct visitor sessions</div>
+          </div>
+        </div>
+
+        <!-- Avg Views per Post -->
+        <div class="col-sm-6 col-lg-3">
+          <div class="analytics-card">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Avg Views / Post</span>
+              <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #ecfdf5; color: #059669;">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+              </div>
+            </div>
+            <div class="fs-3 fw-bold text-dark">{{ avg_views_per_post }}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">Across published articles</div>
+          </div>
+        </div>
+
+        <!-- Published Articles -->
+        <div class="col-sm-6 col-lg-3">
+          <div class="analytics-card">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Live Articles</span>
+              <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #fffbeb; color: #d97706;">
+                <i class="fa-solid fa-newspaper"></i>
+              </div>
+            </div>
+            <div class="fs-3 fw-bold text-dark">{{ published_posts }} <span class="fs-6 fw-normal text-muted">/ {{ total_posts }}</span></div>
+            <div class="text-muted" style="font-size: 0.75rem;">Total articles published</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Main Traffic Chart -->
+      <div class="analytics-card mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 class="fw-bold mb-0">Daily Pageviews Trend</h5>
+            <small class="text-muted">Visitor readership performance over selected period</small>
+          </div>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill">
+            <i class="fa-solid fa-chart-simple me-1"></i> Blogger-Style Stats
+          </span>
+        </div>
+        <div style="height: 280px; position: relative;">
+          <canvas id="analyticsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Bottom Grid: Left Popular Articles, Right Referrers & Tech -->
+      <div class="row g-4">
+
+        <!-- Left: Popular Articles -->
+        <div class="col-lg-8">
+          <div class="analytics-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-fire text-danger me-2"></i> Popular Articles</h5>
+                <small class="text-muted">Top articles ranked by visitor pageviews</small>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr style="font-size: 0.8rem; color: #64748b;">
+                    <th scope="col" style="width: 50px;">#</th>
+                    <th scope="col">Article</th>
+                    <th scope="col">Author</th>
+                    <th scope="col" class="text-center">Views</th>
+                    <th scope="col" class="text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for post in popular_blogs %}
+                    <tr>
+                      <td class="fw-bold text-muted" style="font-size: 0.85rem;">{{ forloop.counter }}</td>
+                      <td>
+                        <div class="d-flex flex-column">
+                          <span class="fw-semibold text-dark text-truncate" style="max-width: 320px;">{{ post.title }}</span>
+                          <small class="text-muted">
+                            {% if post.category %}<span class="badge bg-light text-secondary border me-1">{{ post.category.name }}</span>{% endif %}
+                            {{ post.first_published_at|default:post.latest_revision_created_at|date:"M d, Y" }}
+                          </small>
+                        </div>
+                      </td>
+                      <td class="text-muted" style="font-size: 0.82rem;">
+                        {% if post.author %}
+                          {{ post.author.get_full_name|default:post.author.username }}
+                        {% else %}
+                          Admin
+                        {% endif %}
+                      </td>
+                      <td class="text-center">
+                        <span class="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill fw-bold">
+                          {{ post.views_count|default:0 }}
+                        </span>
+                      </td>
+                      <td class="text-end">
+                        <a href="{{ post.url }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-3" style="font-size: 0.75rem;">
+                          <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> View
+                        </a>
+                      </td>
+                    </tr>
+                  {% empty %}
+                    <tr>
+                      <td colspan="5" class="text-center py-4 text-muted">
+                        <i class="fa-solid fa-chart-pie fa-2x mb-2 text-secondary opacity-50"></i>
+                        <div>No blog views recorded yet for this period.</div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right: Traffic Sources & Technology -->
+        <div class="col-lg-4">
+          
+          <!-- Referral Sources -->
+          <div class="analytics-card mb-4">
+            <h5 class="fw-bold mb-1"><i class="fa-solid fa-route text-success me-2"></i> Traffic Sources</h5>
+            <small class="text-muted d-block mb-3">Where your visitors came from</small>
+
+            {% if referrers_list %}
+              <div class="d-flex flex-column gap-3">
+                {% for ref in referrers_list %}
+                  <div>
+                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.82rem;">
+                      <span class="fw-semibold text-dark">
+                        {% if 'Google' in ref.referrer_domain %}<i class="fa-brands fa-google text-danger me-1"></i>
+                        {% elif 'Twitter' in ref.referrer_domain %}<i class="fa-brands fa-x-twitter text-dark me-1"></i>
+                        {% elif 'Facebook' in ref.referrer_domain %}<i class="fa-brands fa-facebook text-primary me-1"></i>
+                        {% elif 'LinkedIn' in ref.referrer_domain %}<i class="fa-brands fa-linkedin text-info me-1"></i>
+                        {% elif 'Direct' in ref.referrer_domain %}<i class="fa-solid fa-link text-muted me-1"></i>
+                        {% else %}<i class="fa-solid fa-globe text-secondary me-1"></i>{% endif %}
+                        {{ ref.referrer_domain }}
+                      </span>
+                      <span class="text-muted">{{ ref.count }} <small>({{ ref.percentage }}%)</small></span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-primary" role="progressbar" style="width: {{ ref.percentage }}%;"></div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-center py-3 text-muted" style="font-size: 0.82rem;">
+                No referrer data yet. Visits will appear here.
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Devices Breakdown -->
+          <div class="analytics-card">
+            <h5 class="fw-bold mb-1"><i class="fa-solid fa-mobile-screen text-info me-2"></i> Devices & Browsers</h5>
+            <small class="text-muted d-block mb-3">Visitor hardware & software</small>
+
+            <div class="mb-3">
+              <label class="form-label text-muted fw-semibold mb-2" style="font-size: 0.78rem;">DEVICE USAGE</label>
+              {% for dev in devices_list %}
+                <div class="d-flex justify-content-between align-items-center mb-2" style="font-size: 0.82rem;">
+                  <span>
+                    {% if dev.device_type == 'Mobile' %}<i class="fa-solid fa-mobile-screen-button text-muted me-1"></i>
+                    {% elif dev.device_type == 'Tablet' %}<i class="fa-solid fa-tablet-screen-button text-muted me-1"></i>
+                    {% else %}<i class="fa-solid fa-desktop text-muted me-1"></i>{% endif %}
+                    {{ dev.device_type }}
+                  </span>
+                  <span class="badge bg-light text-dark border">{{ dev.percentage }}%</span>
+                </div>
+              {% empty %}
+                <span class="text-muted" style="font-size: 0.8rem;">Desktop (100%)</span>
+              {% endfor %}
+            </div>
+
+            <hr class="my-3 opacity-25">
+
+            <div>
+              <label class="form-label text-muted fw-semibold mb-2" style="font-size: 0.78rem;">TOP BROWSERS</label>
+              <div class="d-flex flex-wrap gap-2">
+                {% for b in browsers_list %}
+                  <span class="badge bg-light text-secondary border px-2 py-1 rounded-pill" style="font-size: 0.78rem;">
+                    {{ b.browser }}: {{ b.count }}
+                  </span>
+                {% empty %}
+                  <span class="text-muted" style="font-size: 0.8rem;">Chrome, Safari</span>
+                {% endfor %}
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  const ctx = document.getElementById('analyticsChart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: {{ chart_labels|safe|default:"['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']" }},
+        datasets: [{
+          label: 'Views',
+          data: {{ chart_views|safe|default:"[0, 0, 0, 0, 0, 0, 0]" }},
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37, 99, 235, 0.08)',
+          tension: 0.35,
+          fill: true,
+          pointBackgroundColor: '#2563eb',
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleFont: { size: 12 },
+            bodyFont: { size: 12 },
+            padding: 10,
+            cornerRadius: 8
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f1f5f9' },
+            ticks: {
+              precision: 0
+            }
+          }
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}

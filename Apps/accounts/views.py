@@ -58,6 +58,49 @@ def user_dashboard_view(request):
         latest_revision_created_at__date=today
     ).count()
 
+    # Real Analytics Data (Blogger-style Stats)
+    from datetime import timedelta
+    from django.db.models import Count
+    from Apps.blogs.models import BlogPostView
+
+    views_qs = BlogPostView.objects.all()
+    if company:
+        views_qs = views_qs.filter(company=company)
+    if is_employee:
+        views_qs = views_qs.filter(blog__author=request.user)
+
+    total_views_count = views_qs.count()
+    unique_visitors_count = views_qs.values('session_key').distinct().count()
+    today_views_count = views_qs.filter(created_at__date=today).count()
+
+    # 7-day daily traffic chart
+    chart_labels = []
+    chart_views = []
+    for i in range(6, -1, -1):
+        d = today - timedelta(days=i)
+        chart_labels.append(d.strftime('%b %d'))
+        chart_views.append(views_qs.filter(created_at__date=d).count())
+
+    # Top popular articles by view count
+    popular_blogs = list(dashboard_blogs_qs.filter(live=True).annotate(
+        views_total=Count('page_views')
+    ).order_by('-views_total')[:5])
+
+    # Top Referral sources
+    top_referrals = list(views_qs.values('referrer_domain').annotate(
+        count=Count('id')
+    ).order_by('-count')[:5])
+
+    # Device breakdown
+    top_devices = list(views_qs.values('device_type').annotate(
+        count=Count('id')
+    ).order_by('-count')[:4])
+
+    # Top Browsers
+    top_browsers = list(views_qs.values('browser').annotate(
+        count=Count('id')
+    ).order_by('-count')[:4])
+
     # 3. Writers / Authors data calculation (for Company Admin view)
     writers_data = []
     if not is_employee:
@@ -107,6 +150,15 @@ def user_dashboard_view(request):
         'today_blogs_count': today_blogs_count,
         'published_blogs_count': published_blogs_count,
         'unpublished_blogs_count': unpublished_blogs_count,
+        'total_views_count': total_views_count,
+        'unique_visitors_count': unique_visitors_count,
+        'today_views_count': today_views_count,
+        'chart_labels': chart_labels,
+        'chart_views': chart_views,
+        'popular_blogs': popular_blogs,
+        'top_referrals': top_referrals,
+        'top_devices': top_devices,
+        'top_browsers': top_browsers,
         'writers_data': writers_data,
         'employee_blogs': employee_blogs,
         'recent_blogs': dashboard_blogs_qs.order_by('-latest_revision_created_at')[:5]

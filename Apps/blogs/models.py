@@ -184,6 +184,44 @@ class BlogPage(Page):
         verbose_name=_('Publish Date')
     )
 
+    # SEO & Growth Metadata
+    meta_title = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name=_('SEO Meta Title'),
+        help_text=_('Custom title for search engines. Defaults to post title if left empty.')
+    )
+    meta_description = models.CharField(
+        max_length=320,
+        blank=True,
+        default='',
+        verbose_name=_('SEO Meta Description'),
+        help_text=_('Search engine snippet (recommended 150-160 characters).')
+    )
+    canonical_url = models.URLField(
+        blank=True,
+        default='',
+        verbose_name=_('Canonical URL'),
+        help_text=_('Specify original URL if article is republished from another source.')
+    )
+    meta_keywords = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name=_('SEO Keywords'),
+        help_text=_('Comma-separated focus keywords.')
+    )
+    og_image = models.ForeignKey(
+        'wagtailimages.Image',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        verbose_name=_('Social Share Image (OG Image)'),
+        help_text=_('Custom image for social media sharing cards. Defaults to featured image.')
+    )
+
     search_fields = Page.search_fields + [
         index.SearchField('title'),
         index.SearchField('short_description'),
@@ -206,6 +244,14 @@ class BlogPage(Page):
         FieldPanel('allow_comments'),
         FieldPanel('publish_date'),
     ]
+
+    promote_panels = Page.promote_panels + [
+        FieldPanel('meta_title'),
+        FieldPanel('meta_description'),
+        FieldPanel('canonical_url'),
+        FieldPanel('meta_keywords'),
+        FieldPanel('og_image'),
+    ]
     
     settings_panels = Page.settings_panels
     
@@ -225,6 +271,32 @@ class BlogPage(Page):
     def intro(self):
         """Alias property for short_description."""
         return self.short_description
+
+    @property
+    def effective_meta_title(self):
+        return self.meta_title.strip() if self.meta_title else (self.seo_title or self.title)
+
+    @property
+    def effective_meta_description(self):
+        return self.meta_description.strip() if self.meta_description else (self.search_description or self.short_description)
+
+    @property
+    def effective_og_image(self):
+        return self.og_image or self.featured_image
+
+    @property
+    def total_views_count(self):
+        return self.page_views.count()
+
+    @property
+    def unique_visitors_count(self):
+        return self.page_views.values('session_key').distinct().count()
+
+    def serve(self, request, *args, **kwargs):
+        """Serve public view and record blog visit for Blogger-style analytics."""
+        from Apps.blogs.analytics import track_blog_view
+        track_blog_view(request, self)
+        return super().serve(request, *args, **kwargs)
 
     def save(self, *args, **kwargs):
         """Auto-derive company from parent page if not set."""
@@ -380,3 +452,42 @@ class BlogComment(models.Model):
     @property
     def is_reply(self):
         return self.parent is not None
+
+
+class BlogPostView(models.Model):
+    """Tracks visits/views per blog post for Blogger-style Analytics & Reports."""
+    blog = models.ForeignKey(
+        'blogs.BlogPage',
+        on_delete=models.CASCADE,
+        related_name='page_views',
+        verbose_name=_('Blog Post')
+    )
+    company = models.ForeignKey(
+        'companies.Company',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='blog_views',
+        verbose_name=_('Company')
+    )
+    session_key = models.CharField(max_length=64, db_index=True, blank=True, default='')
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    referrer = models.TextField(blank=True, default='')
+    referrer_domain = models.CharField(max_length=150, blank=True, default='Direct')
+    device_type = models.CharField(max_length=30, blank=True, default='Desktop')  # Desktop, Mobile, Tablet
+    browser = models.CharField(max_length=50, blank=True, default='Other')        # Chrome, Safari, Firefox, Edge, etc.
+    os = models.CharField(max_length=50, blank=True, default='Other')             # Windows, Android, iOS, macOS, Linux
+    country = models.CharField(max_length=80, blank=True, default='Unknown')
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = _('Blog Post View')
+        verbose_name_plural = _('Blog Post Views')
+        indexes = [
+            models.Index(fields=['blog', 'created_at']),
+            models.Index(fields=['company', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"View on '{self.blog.title}' ({self.referrer_domain}) at {self.created_at}"
+

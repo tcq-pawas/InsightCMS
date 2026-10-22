@@ -212,6 +212,11 @@ def dashboard_blog_create(request):
 
         # Create BlogPage instance strictly scoped to company
         allow_comments = request.POST.get('allow_comments') == 'on' if 'allow_comments' in request.POST else True
+        meta_title = request.POST.get('meta_title', '').strip()
+        meta_description = request.POST.get('meta_description', '').strip()
+        canonical_url = request.POST.get('canonical_url', '').strip()
+        meta_keywords = request.POST.get('meta_keywords', '').strip()
+
         blog_page = BlogPage(
             title=title,
             short_description=short_description,
@@ -221,6 +226,10 @@ def dashboard_blog_create(request):
             author=request.user,
             company=company,
             allow_comments=allow_comments,
+            meta_title=meta_title,
+            meta_description=meta_description,
+            canonical_url=canonical_url,
+            meta_keywords=meta_keywords,
         )
 
         # Add to Wagtail page tree
@@ -293,6 +302,10 @@ def dashboard_blog_edit(request, page_id):
         blog_page.short_description = request.POST.get('short_description', blog_page.short_description)
         blog_page.body = request.POST.get('body', blog_page.body)
         blog_page.allow_comments = request.POST.get('allow_comments') == 'on' if 'allow_comments' in request.POST else False
+        blog_page.meta_title = request.POST.get('meta_title', '').strip()
+        blog_page.meta_description = request.POST.get('meta_description', '').strip()
+        blog_page.canonical_url = request.POST.get('canonical_url', '').strip()
+        blog_page.meta_keywords = request.POST.get('meta_keywords', '').strip()
         
         category_id = request.POST.get('category')
         if category_id:
@@ -1004,4 +1017,244 @@ def comments_bulk_action(request):
             qs.update(status='approved')
             messages.success(request, f'Successfully approved {count} comment(s).')
 
-    return redirect('dashboard_comments')
+    return redirect('dashboard_comments')
+
+
+@login_required(login_url='/login/')
+def dashboard_analytics_view(request):
+    """Blogger-style Analytics & Reports Dashboard."""
+    company = _get_request_company(request.user)
+    from datetime import timedelta
+    from django.utils import timezone
+    from django.db.models import Count
+    from Apps.accounts.models import User as UserModel
+    from Apps.accounts.models import UserDashboardPage
+    from Apps.blogs.models import BlogPostView
+    
+    is_employee = (request.user.role == UserModel.Role.COMPANY_USER)
+    
+    # Queryset scoping
+    blogs_qs = BlogPage.objects.all()
+    if company:
+        blogs_qs = blogs_qs.filter(company=company)
+    if is_employee:
+        blogs_qs = blogs_qs.filter(author=request.user)
+        
+    views_qs = BlogPostView.objects.all()
+    if company:
+        views_qs = views_qs.filter(company=company)
+    if is_employee:
+        views_qs = views_qs.filter(blog__author=request.user)
+
+    # Time range filter
+    time_range = request.GET.get('range', '30days')
+    today = timezone.localdate()
+    
+    if time_range == 'today':
+        range_start = today
+        filtered_views = views_qs.filter(created_at__date=today)
+        days_count = 1
+    elif time_range == '7days':
+        range_start = today - timedelta(days=6)
+        filtered_views = views_qs.filter(created_at__date__gte=range_start)
+        days_count = 7
+    elif time_range == 'all':
+        filtered_views = views_qs
+        range_start = None
+        days_count = 30
+    else:  # default 30days
+        time_range = '30days'
+        range_start = today - timedelta(days=29)
+        filtered_views = views_qs.filter(created_at__date__gte=range_start)
+        days_count = 30
+
+    # Key Metrics
+    total_views = filtered_views.count()
+    unique_visitors = filtered_views.values('session_key').distinct().count()
+    total_posts = blogs_qs.count()
+    published_posts = blogs_qs.filter(live=True).count()
+    avg_views_per_post = round(total_views / total_posts, 1) if total_posts > 0 else 0
+
+    # Chart generation
+    chart_labels = []
+    chart_views = []
+    if time_range == 'today':
+        for hour in range(0, 24, 2):
+            chart_labels.append(f"{hour:02d}:00")
+            h_count = filtered_views.filter(created_at__hour__gte=hour, created_at__hour__lt=hour+2).count()
+            chart_views.append(h_count)
+    else:
+        for i in range(days_count - 1, -1, -1):
+            d = today - timedelta(days=i)
+            chart_labels.append(d.strftime('%b %d'))
+            chart_views.append(views_qs.filter(created_at__date=d).count())
+
+    # Popular Articles ranked table
+    popular_blogs = list(blogs_qs.filter(live=True).annotate(
+        views_count=Count('page_views')
+    ).order_by('-views_count')[:15])
+
+    # Traffic Sources / Referrers breakdown
+    referrers_list = list(filtered_views.values('referrer_domain').annotate(
+        count=Count('id')
+    ).order_by('-count')[:8])
+    for r in referrers_list:
+        r['percentage'] = round((r['count'] / total_views * 100), 1) if total_views > 0 else 0
+
+    # Devices breakdown
+    devices_list = list(filtered_views.values('device_type').annotate(
+        count=Count('id')
+    ).order_by('-count'))
+    for d in devices_list:
+        d['percentage'] = round((d['count'] / total_views * 100), 1) if total_views > 0 else 0
+
+    # Browsers breakdown
+    browsers_list = list(filtered_views.values('browser').annotate(
+        count=Count('id')
+    ).order_by('-count')[:5])
+    for b in browsers_list:
+        b['percentage'] = round((b['count'] / total_views * 100), 1) if total_views > 0 else 0
+
+    dashboard_page = UserDashboardPage.objects.live().first()
+    sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
+
+    context = {
+        'dashboard_page': dashboard_page,
+        'sidebar_links': sidebar_links,
+        'active_tab': 'analytics',
+        'user': request.user,
+        'company': company,
+        'is_employee': is_employee,
+        'time_range': time_range,
+        'total_views': total_views,
+        'unique_visitors': unique_visitors,
+        'total_posts': total_posts,
+        'published_posts': published_posts,
+        'avg_views_per_post': avg_views_per_post,
+        'chart_labels': chart_labels,
+        'chart_views': chart_views,
+        'popular_blogs': popular_blogs,
+        'referrers_list': referrers_list,
+        'devices_list': devices_list,
+        'browsers_list': browsers_list,
+    }
+    return render(request, 'blogs/dashboard_analytics.html', context)
+
+
+@login_required(login_url='/login/')
+def dashboard_seo_view(request):
+    """SEO & Growth Management View (Sitemap, Redirects, Meta Audit)."""
+    company = _get_request_company(request.user)
+    from wagtail.contrib.redirects.models import Redirect
+    from Apps.accounts.models import User as UserModel
+    from Apps.accounts.models import UserDashboardPage
+    
+    is_employee = (request.user.role == UserModel.Role.COMPANY_USER)
+    if is_employee:
+        messages.error(request, "Access restricted. SEO management is for Company Admins only.")
+        return redirect('/dashboard/')
+
+    # 1. Custom Redirects
+    redirects = Redirect.objects.all().order_by('-created_at')[:30]
+
+    # 2. Blog Posts SEO Health Check
+    blogs_qs = BlogPage.objects.all()
+    if company:
+        blogs_qs = blogs_qs.filter(company=company)
+
+    total_blogs = blogs_qs.count()
+    has_meta_title = blogs_qs.exclude(meta_title='').count()
+    has_meta_desc = blogs_qs.exclude(meta_description='').count()
+    has_canonical = blogs_qs.exclude(canonical_url='').count()
+    has_og_image = blogs_qs.filter(featured_image__isnull=False).count()
+
+    seo_score = 0
+    if total_blogs > 0:
+        seo_score = round(((has_meta_title + has_meta_desc + has_og_image) / (total_blogs * 3)) * 100)
+
+    dashboard_page = UserDashboardPage.objects.live().first()
+    sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
+
+    context = {
+        'dashboard_page': dashboard_page,
+        'sidebar_links': sidebar_links,
+        'active_tab': 'seo',
+        'user': request.user,
+        'company': company,
+        'redirects': redirects,
+        'total_blogs': total_blogs,
+        'has_meta_title': has_meta_title,
+        'has_meta_desc': has_meta_desc,
+        'has_canonical': has_canonical,
+        'has_og_image': has_og_image,
+        'seo_score': seo_score,
+        'sitemap_url': request.build_absolute_uri('/sitemap.xml'),
+        'robots_url': request.build_absolute_uri('/robots.txt'),
+    }
+    return render(request, 'blogs/dashboard_seo.html', context)
+
+
+@login_required(login_url='/login/')
+def dashboard_redirect_add(request):
+    """Add a new 301 or 302 custom redirect."""
+    if request.method == 'POST':
+        from wagtail.contrib.redirects.models import Redirect
+        from wagtail.models import Site
+
+        old_path = request.POST.get('old_path', '').strip()
+        redirect_url = request.POST.get('redirect_url', '').strip()
+        is_permanent = request.POST.get('is_permanent', '301') == '301'
+
+        if not old_path or not redirect_url:
+            messages.error(request, 'Both Old Path and Destination URL are required.')
+            return redirect('dashboard_seo')
+
+        if not old_path.startswith('/'):
+            old_path = '/' + old_path
+
+        default_site = Site.objects.filter(is_default_site=True).first()
+
+        try:
+            Redirect.objects.create(
+                old_path=Redirect.normalise_path(old_path),
+                redirect_link=redirect_url,
+                is_permanent=is_permanent,
+                site=default_site
+            )
+            messages.success(request, f'Redirect from "{old_path}" to "{redirect_url}" created successfully!')
+        except Exception as e:
+            messages.error(request, f'Failed to create redirect: {str(e)}')
+
+    return redirect('dashboard_seo')
+
+
+@login_required(login_url='/login/')
+def dashboard_redirect_delete(request, redirect_id):
+    """Delete a custom redirect."""
+    if request.method == 'POST':
+        from wagtail.contrib.redirects.models import Redirect
+        try:
+            r = get_object_or_404(Redirect, id=redirect_id)
+            old_path = r.old_path
+            r.delete()
+            messages.success(request, f'Redirect for "{old_path}" removed successfully.')
+        except Exception as e:
+            messages.error(request, f'Error deleting redirect: {str(e)}')
+    return redirect('dashboard_seo')
+
+
+def robots_txt(request):
+    """Dynamic robots.txt endpoint."""
+    from django.http import HttpResponse
+    sitemap_url = request.build_absolute_uri('/sitemap.xml')
+    content = f"""User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /cms/
+Disallow: /dashboard/
+Disallow: /api/
+
+Sitemap: {sitemap_url}
+"""
+    return HttpResponse(content, content_type="text/plain")
+

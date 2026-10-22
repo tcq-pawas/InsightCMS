@@ -7,6 +7,7 @@ from wagtail.admin import urls as wagtailadmin_urls
 from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from wagtail.contrib.sitemaps.views import sitemap
 from Apps.blogs.feeds import CompanyBlogFeed
 from Apps.accounts.views import (
     user_dashboard_view,
@@ -35,7 +36,12 @@ from Apps.blogs.views import (
     dashboard_blog_delete,
     dashboard_blog_approve,
     dashboard_blog_reject,
-    dashboard_website_integration
+    dashboard_website_integration,
+    dashboard_analytics_view,
+    dashboard_seo_view,
+    dashboard_redirect_add,
+    dashboard_redirect_delete,
+    robots_txt,
 )
 
 
@@ -60,12 +66,24 @@ urlpatterns = [
         path('blogs/<int:page_id>/delete/', dashboard_blog_delete, name='dashboard_blog_delete'),
         path('blogs/<int:page_id>/approve/', dashboard_blog_approve, name='dashboard_blog_approve'),
         path('blogs/<int:page_id>/reject/', dashboard_blog_reject, name='dashboard_blog_reject'),
+        # Analytics & Reports
+        path('analytics/', dashboard_analytics_view, name='dashboard_analytics'),
+        # SEO & Growth Management
+        path('seo/', dashboard_seo_view, name='dashboard_seo'),
+        path('seo/redirects/add/', dashboard_redirect_add, name='dashboard_redirect_add'),
+        path('seo/redirects/<int:redirect_id>/delete/', dashboard_redirect_delete, name='dashboard_redirect_delete'),
         # Comments inside dashboard
         path('comments/', dashboard_comments_view, name='dashboard_comments_alias'),
         path('comments/<int:comment_id>/approve/', comment_approve, name='comment_approve_alias'),
         path('comments/<int:comment_id>/delete/', comment_delete, name='comment_delete_alias'),
         path('comments/<int:comment_id>/reply/', comment_reply, name='comment_reply_alias'),
     ])),
+    # XML Sitemap & Robots.txt
+    path('sitemap.xml', sitemap, name='sitemap'),
+    path('robots.txt', robots_txt, name='robots_txt'),
+    # Direct Analytics & SEO aliases
+    path('analytics/', dashboard_analytics_view, name='analytics_alias'),
+    path('seo/', dashboard_seo_view, name='seo_alias'),
     # Blog post creation route
     path('blog-posts/create/', dashboard_blog_create, name='legacy_blog_create'),
     # Root level comments URL (http://127.0.0.1:8000/comments/)

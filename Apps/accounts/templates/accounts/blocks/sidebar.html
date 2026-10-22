@@ -129,8 +129,8 @@
               </div>
 
             {% else %}
-              <a href="{% if 'profile' in title_lower %}/my-profile/{% elif link.url == '#integration' or 'integration' in title_lower or 'website' in title_lower %}/dashboard/integration/{% elif link.url == '#comment' or link.url == '#comments' or link.url == '/comments/' or link.url == 'comments' or link.url == '/dashboard/comments/' or title_lower == 'comments' %}/comments/{% elif link.url == '#overview' or title_lower == 'overview' %}/dashboard/#overview{% elif link.url == '#posts' or title_lower == 'posts' %}/blog-posts/{% elif link.url == '#dashboard' or title_lower == 'dashboard' %}/dashboard/{% else %}{{ link.url|default:'/dashboard/' }}{% endif %}" 
-                 class="bp-nav-item {% if active_tab == 'my_profile' and 'profile' in title_lower %}active{% elif active_tab == 'integration' and 'integration' in title_lower or active_tab == 'integration' and 'website' in title_lower or active_tab == 'integration' and link.url == '#integration' %}active{% elif active_tab == 'comments' and title_lower == 'comments' %}active{% elif active_tab == 'comments' and 'comment' in link.url %}active{% elif active_tab == 'posts' and title_lower == 'posts' %}active{% elif not active_tab and title_lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
+              <a href="{% if 'profile' in title_lower %}/my-profile/{% elif 'analytic' in title_lower or 'report' in title_lower %}/dashboard/analytics/{% elif 'seo' in title_lower or 'growth' in title_lower %}/dashboard/seo/{% elif link.url == '#integration' or 'integration' in title_lower or 'website' in title_lower %}/dashboard/integration/{% elif link.url == '#comment' or link.url == '#comments' or link.url == '/comments/' or link.url == 'comments' or link.url == '/dashboard/comments/' or title_lower == 'comments' %}/comments/{% elif link.url == '#overview' or title_lower == 'overview' %}/dashboard/#overview{% elif link.url == '#posts' or title_lower == 'posts' %}/blog-posts/{% elif link.url == '#dashboard' or title_lower == 'dashboard' %}/dashboard/{% else %}{{ link.url|default:'/dashboard/' }}{% endif %}" 
+                 class="bp-nav-item {% if active_tab == 'analytics' and 'analytic' in title_lower %}active{% elif active_tab == 'seo' and 'seo' in title_lower %}active{% elif active_tab == 'my_profile' and 'profile' in title_lower %}active{% elif active_tab == 'integration' and 'integration' in title_lower or active_tab == 'integration' and 'website' in title_lower or active_tab == 'integration' and link.url == '#integration' %}active{% elif active_tab == 'comments' and title_lower == 'comments' %}active{% elif active_tab == 'comments' and 'comment' in link.url %}active{% elif active_tab == 'posts' and title_lower == 'posts' %}active{% elif not active_tab and title_lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
                 <i class="fa-solid {{ link.icon|default:'fa-file-lines' }}"></i> 
                 <span>{{ link.title }}</span>
                 {% if link.badge_text %}
@@ -142,6 +142,23 @@
         {% endwith %}
       {% endwith %}
     {% endfor %}
+
+    <!-- Standard Built-in Modules (Analytics & SEO) -->
+    <div class="px-3 pt-3 pb-1">
+      <span class="text-uppercase fw-semibold" style="font-size: 0.68rem; color: rgba(255,255,255,0.4); letter-spacing: 0.05em;">Performance</span>
+    </div>
+
+    <a href="/dashboard/analytics/" class="bp-nav-item {% if active_tab == 'analytics' %}active{% endif %}">
+      <i class="fa-solid fa-chart-line" style="color: #60a5fa;"></i>
+      <span>Analytics & Reports</span>
+    </a>
+
+    {% if not is_employee and user.role != 'company_user' %}
+    <a href="/dashboard/seo/" class="bp-nav-item {% if active_tab == 'seo' %}active{% endif %}">
+      <i class="fa-solid fa-magnifying-glass-chart" style="color: #34d399;"></i>
+      <span>SEO & Growth</span>
+    </a>
+    {% endif %}
   </nav>
 
   <script>

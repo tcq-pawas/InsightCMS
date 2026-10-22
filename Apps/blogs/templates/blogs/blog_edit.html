@@ -117,9 +117,64 @@
               </div>
               <div class="wp-sidebar-box-body">
                 <textarea name="short_description" id="short_description"
-                          rows="4"
+                          rows="3"
                           class="wp-form-control"
                           placeholder="{{ page.field_short_desc_placeholder|default:'Brief summary of your article...' }}">{{ blog.short_description }}</textarea>
+              </div>
+            </div>
+
+            <!-- SEO & Search Performance (Blogger Style) -->
+            <div class="wp-sidebar-box">
+              <div class="wp-sidebar-box-header d-flex justify-content-between align-items-center">
+                <span><i class="fa-solid fa-magnifying-glass-chart text-primary me-1"></i> SEO & Search Preview</span>
+                <span id="seo-score-badge" class="badge bg-secondary-subtle text-secondary rounded-pill" style="font-size: 0.72rem;">Score: Basic</span>
+              </div>
+              <div class="wp-sidebar-box-body">
+
+                <!-- Google SERP Snippet Preview -->
+                <div class="p-2 mb-3 rounded-2" style="background: #f8fafc; border: 1px solid #e2e8f0; font-family: Roboto, Arial, sans-serif;">
+                  <div class="text-muted d-flex align-items-center gap-1 mb-1" style="font-size: 0.75rem;">
+                    <i class="fa-brands fa-google text-danger"></i>
+                    <span id="preview-url">{{ request.scheme }}://{{ request.get_host }}{{ blog.url|default:'/blog/post-url' }}</span>
+                  </div>
+                  <div id="preview-title" style="color: #1a0dab; font-size: 0.95rem; font-weight: 500; cursor: pointer; text-decoration: underline; line-height: 1.25; margin-bottom: 4px;">
+                    {{ blog.effective_meta_title|default:blog.title }}
+                  </div>
+                  <div id="preview-desc" style="color: #4d5156; font-size: 0.8rem; line-height: 1.35;">
+                    {{ blog.effective_meta_description|default:blog.short_description|default:"Enter search description..." }}
+                  </div>
+                </div>
+
+                <!-- Meta Title -->
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="meta_title" class="form-label mb-0 fw-semibold" style="font-size: 0.82rem;">SEO Title</label>
+                    <span id="meta-title-count" class="text-muted" style="font-size: 0.72rem;">{{ blog.meta_title|length }} / 60</span>
+                  </div>
+                  <input type="text" name="meta_title" id="meta_title" class="wp-form-control" value="{{ blog.meta_title }}" placeholder="Defaults to post title if blank">
+                </div>
+
+                <!-- Meta / Search Description -->
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="meta_description" class="form-label mb-0 fw-semibold" style="font-size: 0.82rem;">Search Description</label>
+                    <span id="meta-desc-count" class="text-muted" style="font-size: 0.72rem;">{{ blog.meta_description|length }} / 160</span>
+                  </div>
+                  <textarea name="meta_description" id="meta_description" rows="3" class="wp-form-control" placeholder="150-160 characters summary for Google & WhatsApp previews">{{ blog.meta_description }}</textarea>
+                </div>
+
+                <!-- Focus Keywords -->
+                <div class="mb-3">
+                  <label for="meta_keywords" class="form-label mb-1 fw-semibold" style="font-size: 0.82rem;">Focus Keywords</label>
+                  <input type="text" name="meta_keywords" id="meta_keywords" class="wp-form-control" value="{{ blog.meta_keywords }}" placeholder="e.g. django, web development, seo">
+                </div>
+
+                <!-- Canonical URL -->
+                <div class="mb-2">
+                  <label for="canonical_url" class="form-label mb-1 fw-semibold" style="font-size: 0.82rem;">Canonical URL <span class="text-muted fw-normal">(Optional)</span></label>
+                  <input type="url" name="canonical_url" id="canonical_url" class="wp-form-control" value="{{ blog.canonical_url }}" placeholder="https://original-source.com/article">
+                </div>
+
               </div>
             </div>
 
@@ -199,5 +254,64 @@
     actionInput.value = clickedAction;
   });
 
+  // ── SEO Live SERP Preview & Character Counters ──
+  const titleInput = document.getElementById('title');
+  const shortDescInput = document.getElementById('short_description');
+  const metaTitleInput = document.getElementById('meta_title');
+  const metaDescInput = document.getElementById('meta_description');
+  const previewTitle = document.getElementById('preview-title');
+  const previewDesc = document.getElementById('preview-desc');
+  const metaTitleCount = document.getElementById('meta-title-count');
+  const metaDescCount = document.getElementById('meta-desc-count');
+  const seoScoreBadge = document.getElementById('seo-score-badge');
+
+  function updateSeoPreview() {
+    const titleVal = (metaTitleInput && metaTitleInput.value.trim()) || (titleInput && titleInput.value.trim()) || 'Enter a title...';
+    const descVal = (metaDescInput && metaDescInput.value.trim()) || (shortDescInput && shortDescInput.value.trim()) || 'Enter a search description to see how your blog post will appear in Google search results...';
+
+    if (previewTitle) previewTitle.textContent = titleVal;
+    if (previewDesc) previewDesc.textContent = descVal;
+
+    // Counters
+    const titleLen = metaTitleInput ? metaTitleInput.value.length : 0;
+    const descLen = metaDescInput ? metaDescInput.value.length : 0;
+
+    if (metaTitleCount) {
+      metaTitleCount.textContent = `${titleLen} / 60`;
+      metaTitleCount.style.color = (titleLen > 60) ? '#dc2626' : (titleLen >= 30 ? '#16a34a' : '#6b7280');
+    }
+
+    if (metaDescCount) {
+      metaDescCount.textContent = `${descLen} / 160`;
+      metaDescCount.style.color = (descLen > 160) ? '#dc2626' : (descLen >= 120 ? '#16a34a' : '#6b7280');
+    }
+
+    // SEO Score calculation
+    let score = 0;
+    if (titleVal !== 'Enter a title...' && titleVal.length >= 20) score += 35;
+    if (descVal.length >= 60 && !descVal.startsWith('Enter a search')) score += 35;
+    if (metaTitleInput && metaTitleInput.value.trim()) score += 15;
+    if (metaDescInput && metaDescInput.value.trim()) score += 15;
+
+    if (seoScoreBadge) {
+      if (score >= 80) {
+        seoScoreBadge.className = 'badge bg-success-subtle text-success rounded-pill';
+        seoScoreBadge.textContent = 'Score: Great (80+)';
+      } else if (score >= 50) {
+        seoScoreBadge.className = 'badge bg-warning-subtle text-warning rounded-pill';
+        seoScoreBadge.textContent = 'Score: Moderate';
+      } else {
+        seoScoreBadge.className = 'badge bg-secondary-subtle text-secondary rounded-pill';
+        seoScoreBadge.textContent = 'Score: Basic';
+      }
+    }
+  }
+
+  [titleInput, shortDescInput, metaTitleInput, metaDescInput].forEach(el => {
+    if (el) {
+      el.addEventListener('input', updateSeoPreview);
+    }
+  });
+  updateSeoPreview();
 </script>
 {% endblock %}

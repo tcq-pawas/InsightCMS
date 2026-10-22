@@ -90,12 +90,13 @@
     new Chart(ctx, {
       type: 'line',
       data: {
-        labels: ['May 05', 'May 10', 'May 15', 'May 20', 'May 25', 'May 30', 'Jun 03'],
+        labels: {{ chart_labels|safe|default:"['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']" }},
         datasets: [{
-          data: [2300, 3200, 2500, 4200, 3600, 2400, 4800],
+          label: 'Views',
+          data: {{ chart_views|safe|default:"[0, 0, 0, 0, 0, 0, 0]" }},
           borderColor: '#2563eb',
-          backgroundColor: 'rgba(37, 99, 235, 0.05)',
-          tension: 0.4,
+          backgroundColor: 'rgba(37, 99, 235, 0.08)',
+          tension: 0.35,
           fill: true,
           pointBackgroundColor: '#2563eb',
           pointRadius: 4,

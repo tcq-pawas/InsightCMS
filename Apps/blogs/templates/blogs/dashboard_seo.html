@@ -1,0 +1,323 @@
+﻿{% extends "companies/base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}SEO & Growth | {{ dashboard_page.brand_name|default:"BlogPro" }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  .seo-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    margin-bottom: 1.5rem;
+  }
+  .seo-score-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bp-app-wrapper">
+
+  <!-- Sidebar -->
+  {% include "accounts/blocks/sidebar.html" with page=dashboard_page %}
+
+  <div class="bp-main-container">
+
+    <!-- Topbar -->
+    {% include "accounts/blocks/topbar.html" with page=dashboard_page %}
+
+    <main class="bp-content-body">
+
+      <!-- Header -->
+      <div class="bp-page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="bp-page-title mb-1"><i class="fa-solid fa-magnifying-glass-chart text-primary me-2"></i> SEO & Growth</h1>
+          <p class="bp-page-sub mb-0">Manage XML sitemaps, robots.txt, 301 redirects, schema markup, and search visibility</p>
+        </div>
+        <div>
+          <button type="button" class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addRedirectModal">
+            <i class="fa-solid fa-plus me-1"></i> Add Custom Redirect
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Row 1: SEO Health Audit -->
+      <div class="seo-card">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+          <div>
+            <h5 class="fw-bold mb-1">On-Page SEO Health Audit</h5>
+            <small class="text-muted">Optimization check across all your blog articles</small>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <div class="seo-score-circle {% if seo_score >= 80 %}bg-success-subtle text-success{% elif seo_score >= 50 %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %}">
+              {{ seo_score }}%
+            </div>
+            <div>
+              <div class="fw-semibold">Health Score</div>
+              <small class="text-muted">{% if seo_score >= 80 %}Great optimization{% elif seo_score >= 50 %}Fair — can improve{% else %}Needs attention{% endif %}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 text-center">
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3 bg-light border">
+              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">Custom SEO Titles</span>
+              <span class="fw-bold fs-5 text-dark">{{ has_meta_title }}</span>
+              <span class="text-muted" style="font-size: 0.78rem;">/ {{ total_blogs }}</span>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3 bg-light border">
+              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">Search Descriptions</span>
+              <span class="fw-bold fs-5 text-dark">{{ has_meta_desc }}</span>
+              <span class="text-muted" style="font-size: 0.78rem;">/ {{ total_blogs }}</span>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3 bg-light border">
+              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">Featured / OG Images</span>
+              <span class="fw-bold fs-5 text-dark">{{ has_og_image }}</span>
+              <span class="text-muted" style="font-size: 0.78rem;">/ {{ total_blogs }}</span>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3 bg-light border">
+              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">Canonical Links Set</span>
+              <span class="fw-bold fs-5 text-dark">{{ has_canonical }}</span>
+              <span class="text-muted" style="font-size: 0.78rem;">/ {{ total_blogs }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Search Engine Crawlers & Indexing Files -->
+      <div class="row g-4 mb-4">
+        
+        <!-- XML Sitemap Card -->
+        <div class="col-md-6">
+          <div class="seo-card h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <h5 class="fw-bold mb-1"><i class="fa-solid fa-sitemap text-primary me-2"></i> XML Sitemap</h5>
+                <small class="text-muted">Google & Bing crawler auto-index map</small>
+              </div>
+              <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1">Active</span>
+            </div>
+            <p class="text-muted mt-2" style="font-size: 0.82rem;">
+              Your XML sitemap dynamically updates whenever posts are published or edited. Search engines use this URL to discover new articles.
+            </p>
+            <div class="p-2 bg-light rounded border text-truncate mb-3" style="font-size: 0.8rem; font-family: monospace;">
+              {{ sitemap_url }}
+            </div>
+            <div class="d-flex gap-2">
+              <a href="/sitemap.xml" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> View Live Sitemap
+              </a>
+              <a href="https://search.google.com/search-console/sitemaps" target="_blank" class="btn btn-light btn-sm border rounded-pill px-3 text-muted">
+                Submit to Google Search Console
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Robots.txt Card -->
+        <div class="col-md-6">
+          <div class="seo-card h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <h5 class="fw-bold mb-1"><i class="fa-solid fa-robot text-secondary me-2"></i> Robots.txt</h5>
+                <small class="text-muted">Crawler directives & bot control</small>
+              </div>
+              <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1">Active</span>
+            </div>
+            <p class="text-muted mt-2" style="font-size: 0.82rem;">
+              Directs search bots to public blog articles while protecting admin, cms, and private dashboard directories from indexing.
+            </p>
+            <div class="p-2 bg-light rounded border text-truncate mb-3" style="font-size: 0.8rem; font-family: monospace;">
+              {{ robots_url }}
+            </div>
+            <div>
+              <a href="/robots.txt" target="_blank" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="fa-solid fa-file-lines me-1"></i> View robots.txt
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Row 3: Custom Redirects (Blogger-style 301 / 302 Management) -->
+      <div class="seo-card">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+          <div>
+            <h5 class="fw-bold mb-0"><i class="fa-solid fa-shuffle text-warning me-2"></i> Custom Redirects (301 Permanent / 302 Temporary)</h5>
+            <small class="text-muted">Blogger-style error & redirect management to prevent 404 broken links</small>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addRedirectModal">
+            <i class="fa-solid fa-plus me-1"></i> Add Redirect
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr style="font-size: 0.8rem; color: #64748b;">
+                <th scope="col">Old URL / Path</th>
+                <th scope="col">Destination URL</th>
+                <th scope="col" class="text-center">Status</th>
+                <th scope="col">Created</th>
+                <th scope="col" class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in redirects %}
+                <tr>
+                  <td class="fw-semibold text-dark" style="font-family: monospace; font-size: 0.85rem;">
+                    {{ r.old_path }}
+                  </td>
+                  <td class="text-muted" style="font-family: monospace; font-size: 0.85rem;">
+                    {{ r.redirect_link|default:r.redirect_page.url }}
+                  </td>
+                  <td class="text-center">
+                    {% if r.is_permanent %}
+                      <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1" style="font-size: 0.75rem;">301 (Permanent)</span>
+                    {% else %}
+                      <span class="badge bg-warning-subtle text-warning rounded-pill px-2 py-1" style="font-size: 0.75rem;">302 (Temporary)</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-muted" style="font-size: 0.8rem;">
+                    {{ r.created_at|date:"M d, Y"|default:"Active" }}
+                  </td>
+                  <td class="text-end">
+                    <form method="post" action="{% url 'dashboard_redirect_delete' r.id %}" onsubmit="return confirm('Delete redirect for {{ r.old_path }}?');" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="Delete Redirect" style="font-size: 0.75rem;">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">
+                    <i class="fa-solid fa-route fa-2x mb-2 text-secondary opacity-50"></i>
+                    <div>No custom redirects configured yet. Click "Add Custom Redirect" above to create one.</div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Row 4: Social Sharing Previews & Schema Markup Info -->
+      <div class="row g-4">
+        
+        <div class="col-md-6">
+          <div class="seo-card">
+            <h5 class="fw-bold mb-1"><i class="fa-brands fa-share-nodes text-primary me-2"></i> Social Sharing Previews</h5>
+            <small class="text-muted d-block mb-3">Open Graph & Twitter Cards enabled automatically</small>
+            <p class="text-muted" style="font-size: 0.82rem;">
+              Every blog post automatically outputs <code class="text-dark">og:title</code>, <code class="text-dark">og:image</code>, and <code class="text-dark">twitter:card</code> tags so your links render attractive rich preview cards on WhatsApp, Facebook, LinkedIn, and X (Twitter).
+            </p>
+            <div class="p-3 bg-light rounded border">
+              <span class="badge bg-primary rounded-pill mb-2">WhatsApp / LinkedIn Preview</span>
+              <div class="fw-semibold text-dark" style="font-size: 0.88rem;">[Your Blog Post Title]</div>
+              <small class="text-muted">[Search description snippet will appear under thumbnail...]</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="seo-card">
+            <h5 class="fw-bold mb-1"><i class="fa-solid fa-code text-info me-2"></i> Schema Markup (JSON-LD)</h5>
+            <small class="text-muted d-block mb-3">Google Rich Snippets for Blog Articles</small>
+            <p class="text-muted" style="font-size: 0.82rem;">
+              Each article includes embedded JSON-LD structured data conforming to <a href="https://schema.org/BlogPosting" target="_blank" class="text-decoration-none">schema.org/BlogPosting</a>, enabling Google Rich Results with author, publisher, and timestamp attribution.
+            </p>
+            <a href="https://validator.schema.org/" target="_blank" class="btn btn-outline-info btn-sm rounded-pill px-3">
+              <i class="fa-solid fa-check-double me-1"></i> Test on Schema.org Validator
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+</div>
+
+<!-- Add Redirect Modal -->
+<div class="modal fade" id="addRedirectModal" tabindex="-1" aria-labelledby="addRedirectModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <form method="post" action="{% url 'dashboard_redirect_add' %}">
+        {% csrf_token %}
+        <div class="modal-header border-bottom-0 pb-0">
+          <h5 class="modal-title fw-bold" id="addRedirectModalLabel">
+            <i class="fa-solid fa-shuffle text-warning me-2"></i> Add Custom Redirect
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-3">
+          <p class="text-muted" style="font-size: 0.82rem;">
+            Redirect users and search engines automatically when article slugs change (just like Blogger's Custom Redirects).
+          </p>
+
+          <div class="mb-3">
+            <label for="old_path" class="form-label fw-semibold" style="font-size: 0.82rem;">Old Path (From)</label>
+            <input type="text" name="old_path" id="old_path" class="form-control" placeholder="/old-article-slug/" required>
+            <small class="text-muted" style="font-size: 0.72rem;">The old URL path to intercept (e.g. <code>/old-post-url/</code>)</small>
+          </div>
+
+          <div class="mb-3">
+            <label for="redirect_url" class="form-label fw-semibold" style="font-size: 0.82rem;">Destination URL (To)</label>
+            <input type="text" name="redirect_url" id="redirect_url" class="form-control" placeholder="/blog/new-article-slug/" required>
+            <small class="text-muted" style="font-size: 0.72rem;">The new target URL or path to send visitors</small>
+          </div>
+
+          <div class="mb-2">
+            <label for="is_permanent" class="form-label fw-semibold" style="font-size: 0.82rem;">Redirect Type</label>
+            <select name="is_permanent" id="is_permanent" class="form-select">
+              <option value="301" selected>Permanent (301) — Recommended for SEO ranking transfer</option>
+              <option value="302">Temporary (302) — For temporary landing pages</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 pt-0">
+          <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary rounded-pill px-4">Create Redirect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

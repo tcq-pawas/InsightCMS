@@ -2,7 +2,59 @@
 {% load static wagtailcore_tags wagtailimages_tags %}
 
 {% block title %}
-{{ page.seo_title|default:page.title }} | {{ dashboard_page.brand_name|default:"BlogPro" }}
+{{ page.effective_meta_title }} | {{ dashboard_page.brand_name|default:"BlogPro" }}
+{% endblock %}
+
+{% block meta_tags %}
+<!-- SEO Metadata -->
+<meta name="description" content="{{ page.effective_meta_description|striptags|truncatechars:160 }}">
+{% if page.meta_keywords %}<meta name="keywords" content="{{ page.meta_keywords }}">{% endif %}
+<meta name="author" content="{% if page.author %}{{ page.author.get_full_name|default:page.author.username }}{% else %}Admin{% endif %}">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="{{ page.canonical_url|default:request.build_absolute_uri }}">
+
+<!-- Open Graph / Facebook / WhatsApp -->
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="{{ dashboard_page.brand_name|default:'BlogPro' }}">
+<meta property="og:title" content="{{ page.effective_meta_title }}">
+<meta property="og:description" content="{{ page.effective_meta_description|striptags|truncatechars:200 }}">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+{% if page.effective_og_image %}
+  {% image page.effective_og_image fill-1200x630 as og_img %}
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+{% endif %}
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ page.effective_meta_title }}">
+<meta name="twitter:description" content="{{ page.effective_meta_description|striptags|truncatechars:200 }}">
+{% if page.effective_og_image %}
+  <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}">
+{% endif %}
+
+<!-- JSON-LD Schema.org Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "{{ page.effective_meta_title|escapejs }}",
+  "description": "{{ page.effective_meta_description|striptags|truncatechars:200|escapejs }}",
+  "url": "{{ request.build_absolute_uri|escapejs }}",
+  {% if page.effective_og_image %}"image": "{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}",{% endif %}
+  "datePublished": "{{ page.first_published_at|default:page.latest_revision_created_at|date:'c' }}",
+  "dateModified": "{{ page.latest_revision_created_at|date:'c' }}",
+  "author": {
+    "@type": "Person",
+    "name": "{% if page.author %}{{ page.author.get_full_name|default:page.author.username|escapejs }}{% else %}Author{% endif %}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ dashboard_page.brand_name|default:'BlogPro'|escapejs }}"
+  }
+}
+</script>
 {% endblock %}
 
 {% block extra_css %}
