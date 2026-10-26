@@ -68,12 +68,14 @@ class SidebarLinkBlock(blocks.StructBlock):
             ('fa-solid fa-gear', 'Gear / Settings'),
             ('fa-solid fa-users-gear', 'Manage Users'),
             ('fa-solid fa-code', 'Code / Integration'),
+            ('fa-solid fa-magnifying-glass-chart', 'SEO / Search & Growth'),
         ],
         default='fa-solid fa-gear',
         help_text="Choose FontAwesome Icon"
     )
     badge_text = blocks.CharBlock(required=False, max_length=10, help_text="Optional badge text (e.g. 24 or New)")
     is_active = blocks.BooleanBlock(required=False, default=False, help_text="Highlight as active/selected item")
+    admin_only = blocks.BooleanBlock(required=False, default=False, help_text="Check this if this link is only for Admins and should be hidden from Employees")
     
     # Nested dynamic submenus and direct sublinks
     submenus = blocks.ListBlock(SidebarSubmenuBlock(), label="Submenu Groups (e.g. Blog Settings)", required=False)

@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -84,6 +85,8 @@ urlpatterns = [
     # Direct Analytics & SEO aliases
     path('analytics/', dashboard_analytics_view, name='analytics_alias'),
     path('seo/', dashboard_seo_view, name='seo_alias'),
+    # Posts alias redirect
+    path('posts/', RedirectView.as_view(url='/blog-posts/', permanent=False), name='posts_alias'),
     # Blog post creation route
     path('blog-posts/create/', dashboard_blog_create, name='legacy_blog_create'),
     # Root level comments URL (http://127.0.0.1:8000/comments/)

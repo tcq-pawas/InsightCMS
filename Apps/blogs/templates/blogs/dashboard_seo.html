@@ -1,7 +1,7 @@
-﻿{% extends "companies/base.html" %}
+{% extends "companies/base.html" %}
 {% load static wagtailcore_tags wagtailimages_tags %}
 
-{% block title %}SEO & Growth | {{ dashboard_page.brand_name|default:"BlogPro" }}{% endblock %}
+{% block title %}{{ dashboard_page.seo_page_title|default:"SEO & Growth" }} | {% if company %}{{ company.company_name }}{% elif dashboard_page.brand_name %}{{ dashboard_page.brand_name }}{% else %}CMS Dashboard{% endif %}{% endblock %}
 
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -33,7 +33,7 @@
 <div class="bp-app-wrapper">
 
   <!-- Sidebar -->
-  {% include "accounts/blocks/sidebar.html" with page=dashboard_page %}
+  {% include "accounts/blocks/sidebar.html" with page=dashboard_page active_tab="seo" %}
 
   <div class="bp-main-container">
 
@@ -45,8 +45,8 @@
       <!-- Header -->
       <div class="bp-page-header d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h1 class="bp-page-title mb-1"><i class="fa-solid fa-magnifying-glass-chart text-primary me-2"></i> SEO & Growth</h1>
-          <p class="bp-page-sub mb-0">Manage XML sitemaps, robots.txt, 301 redirects, schema markup, and search visibility</p>
+          <h1 class="bp-page-title mb-1"><i class="fa-solid fa-magnifying-glass-chart text-primary me-2"></i> {{ dashboard_page.seo_page_title|default:"SEO & Growth" }}</h1>
+          <p class="bp-page-sub mb-0">{{ dashboard_page.seo_page_subtext|default:"Manage XML sitemaps, robots.txt, 301 redirects, schema markup, and search visibility" }}</p>
         </div>
         <div>
           <button type="button" class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addRedirectModal">
@@ -71,8 +71,8 @@
       <div class="seo-card">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
           <div>
-            <h5 class="fw-bold mb-1">On-Page SEO Health Audit</h5>
-            <small class="text-muted">Optimization check across all your blog articles</small>
+            <h5 class="fw-bold mb-1">{{ dashboard_page.seo_audit_heading|default:"On-Page SEO Health Audit" }}</h5>
+            <small class="text-muted">{{ dashboard_page.seo_audit_subtext|default:"Optimization check across all your blog articles" }}</small>
           </div>
           <div class="d-flex align-items-center gap-3">
             <div class="seo-score-circle {% if seo_score >= 80 %}bg-success-subtle text-success{% elif seo_score >= 50 %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %}">
@@ -88,28 +88,28 @@
         <div class="row g-3 text-center">
           <div class="col-6 col-md-3">
             <div class="p-3 rounded-3 bg-light border">
-              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">Custom SEO Titles</span>
+              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">{{ dashboard_page.seo_card_titles_label|default:"Custom SEO Titles" }}</span>
               <span class="fw-bold fs-5 text-dark">{{ has_meta_title }}</span>
               <span class="text-muted" style="font-size: 0.78rem;">/ {{ total_blogs }}</span>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="p-3 rounded-3 bg-light border">
-              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">Search Descriptions</span>
+              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">{{ dashboard_page.seo_card_descriptions_label|default:"Search Descriptions" }}</span>
               <span class="fw-bold fs-5 text-dark">{{ has_meta_desc }}</span>
               <span class="text-muted" style="font-size: 0.78rem;">/ {{ total_blogs }}</span>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="p-3 rounded-3 bg-light border">
-              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">Featured / OG Images</span>
+              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">{{ dashboard_page.seo_card_og_label|default:"Featured / OG Images" }}</span>
               <span class="fw-bold fs-5 text-dark">{{ has_og_image }}</span>
               <span class="text-muted" style="font-size: 0.78rem;">/ {{ total_blogs }}</span>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="p-3 rounded-3 bg-light border">
-              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">Canonical Links Set</span>
+              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">{{ dashboard_page.seo_card_canonical_label|default:"Canonical Links Set" }}</span>
               <span class="fw-bold fs-5 text-dark">{{ has_canonical }}</span>
               <span class="text-muted" style="font-size: 0.78rem;">/ {{ total_blogs }}</span>
             </div>
@@ -125,8 +125,8 @@
           <div class="seo-card h-100">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <div>
-                <h5 class="fw-bold mb-1"><i class="fa-solid fa-sitemap text-primary me-2"></i> XML Sitemap</h5>
-                <small class="text-muted">Google & Bing crawler auto-index map</small>
+                <h5 class="fw-bold mb-1"><i class="fa-solid fa-sitemap text-primary me-2"></i> {{ dashboard_page.sitemap_card_heading|default:"XML Sitemap" }}</h5>
+                <small class="text-muted">{{ dashboard_page.sitemap_card_subtext|default:"Google & Bing crawler auto-index map" }}</small>
               </div>
               <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1">Active</span>
             </div>
@@ -152,8 +152,8 @@
           <div class="seo-card h-100">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <div>
-                <h5 class="fw-bold mb-1"><i class="fa-solid fa-robot text-secondary me-2"></i> Robots.txt</h5>
-                <small class="text-muted">Crawler directives & bot control</small>
+                <h5 class="fw-bold mb-1"><i class="fa-solid fa-robot text-secondary me-2"></i> {{ dashboard_page.robots_card_heading|default:"Robots.txt" }}</h5>
+                <small class="text-muted">{{ dashboard_page.robots_card_subtext|default:"Crawler directives & bot control" }}</small>
               </div>
               <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1">Active</span>
             </div>
@@ -177,11 +177,11 @@
       <div class="seo-card">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
           <div>
-            <h5 class="fw-bold mb-0"><i class="fa-solid fa-shuffle text-warning me-2"></i> Custom Redirects (301 Permanent / 302 Temporary)</h5>
-            <small class="text-muted">Blogger-style error & redirect management to prevent 404 broken links</small>
+            <h5 class="fw-bold mb-0"><i class="fa-solid fa-shuffle text-warning me-2"></i> {{ dashboard_page.redirects_table_heading|default:"Custom Redirects (301 Permanent / 302 Temporary)" }}</h5>
+            <small class="text-muted">{{ dashboard_page.redirects_table_subtext|default:"Blogger-style error & redirect management to prevent 404 broken links" }}</small>
           </div>
           <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addRedirectModal">
-            <i class="fa-solid fa-plus me-1"></i> Add Redirect
+            <i class="fa-solid fa-plus me-1"></i> {{ dashboard_page.btn_add_redirect_label|default:"Add Redirect" }}
           </button>
         </div>
 
@@ -189,11 +189,11 @@
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr style="font-size: 0.8rem; color: #64748b;">
-                <th scope="col">Old URL / Path</th>
-                <th scope="col">Destination URL</th>
-                <th scope="col" class="text-center">Status</th>
-                <th scope="col">Created</th>
-                <th scope="col" class="text-end">Actions</th>
+                <th scope="col">{{ dashboard_page.th_old_url_label|default:"Old URL / Path" }}</th>
+                <th scope="col">{{ dashboard_page.th_destination_url_label|default:"Destination URL" }}</th>
+                <th scope="col" class="text-center">{{ dashboard_page.th_status_label|default:"Status" }}</th>
+                <th scope="col">{{ dashboard_page.th_created_label|default:"Created" }}</th>
+                <th scope="col" class="text-end">{{ dashboard_page.th_actions_label|default:"Actions" }}</th>
               </tr>
             </thead>
             <tbody>
@@ -203,7 +203,7 @@
                     {{ r.old_path }}
                   </td>
                   <td class="text-muted" style="font-family: monospace; font-size: 0.85rem;">
-                    {{ r.redirect_link|default:r.redirect_page.url }}
+                    {% if r.redirect_link %}{{ r.redirect_link }}{% elif r.redirect_page %}{{ r.redirect_page.url }}{% else %}-{% endif %}
                   </td>
                   <td class="text-center">
                     {% if r.is_permanent %}
@@ -228,7 +228,7 @@
                 <tr>
                   <td colspan="5" class="text-center py-4 text-muted">
                     <i class="fa-solid fa-route fa-2x mb-2 text-secondary opacity-50"></i>
-                    <div>No custom redirects configured yet. Click "Add Custom Redirect" above to create one.</div>
+                    <div>{{ dashboard_page.no_redirects_text|default:"No custom redirects configured yet. Click 'Add Custom Redirect' above to create one." }}</div>
                   </td>
                 </tr>
               {% endfor %}
@@ -242,28 +242,47 @@
         
         <div class="col-md-6">
           <div class="seo-card">
-            <h5 class="fw-bold mb-1"><i class="fa-brands fa-share-nodes text-primary me-2"></i> Social Sharing Previews</h5>
-            <small class="text-muted d-block mb-3">Open Graph & Twitter Cards enabled automatically</small>
+            <h5 class="fw-bold mb-1"><i class="fa-brands fa-share-nodes text-primary me-2"></i> {{ dashboard_page.social_preview_heading|default:"Social Sharing Previews" }}</h5>
+            <small class="text-muted d-block mb-3">{{ dashboard_page.social_preview_subtext|default:"Open Graph & Twitter Cards enabled automatically" }}</small>
             <p class="text-muted" style="font-size: 0.82rem;">
-              Every blog post automatically outputs <code class="text-dark">og:title</code>, <code class="text-dark">og:image</code>, and <code class="text-dark">twitter:card</code> tags so your links render attractive rich preview cards on WhatsApp, Facebook, LinkedIn, and X (Twitter).
+              {{ dashboard_page.social_preview_description|default:"Every blog post automatically outputs og:title, og:image, and twitter:card tags so your links render attractive rich preview cards on WhatsApp, Facebook, LinkedIn, and X (Twitter)." }}
             </p>
             <div class="p-3 bg-light rounded border">
-              <span class="badge bg-primary rounded-pill mb-2">WhatsApp / LinkedIn Preview</span>
-              <div class="fw-semibold text-dark" style="font-size: 0.88rem;">[Your Blog Post Title]</div>
-              <small class="text-muted">[Search description snippet will appear under thumbnail...]</small>
+              <span class="badge bg-primary rounded-pill mb-2"><i class="fa-brands fa-whatsapp me-1"></i> WhatsApp / LinkedIn Preview</span>
+              <div class="d-flex gap-3 align-items-center">
+                {% if sample_blog and sample_blog.effective_og_image %}
+                  {% image sample_blog.effective_og_image fill-80x80 as og_thumb %}
+                  <img src="{{ og_thumb.url }}" alt="Preview Image" class="rounded border" style="width: 70px; height: 70px; object-fit: cover;">
+                {% else %}
+                  <div class="rounded border bg-white d-flex align-items-center justify-content-center text-muted" style="width: 70px; height: 70px; font-size: 1.5rem;">
+                    <i class="fa-regular fa-image opacity-50"></i>
+                  </div>
+                {% endif %}
+                <div class="min-w-0 flex-grow-1">
+                  <div class="fw-semibold text-dark text-truncate" style="font-size: 0.88rem;">
+                    {% if sample_blog %}{{ sample_blog.title }}{% else %}[Your Blog Post Title]{% endif %}
+                  </div>
+                  <small class="text-muted d-block text-truncate" style="max-width: 320px;">
+                    {% if sample_blog and sample_blog.short_description %}{{ sample_blog.short_description }}{% else %}[Search description snippet will appear here...]{% endif %}
+                  </small>
+                  <small class="text-primary d-block mt-1" style="font-size: 0.72rem; font-family: monospace;">
+                    {{ request.get_host }}{% if sample_blog %}{{ sample_blog.url }}{% else %}/blog/article{% endif %}
+                  </small>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="col-md-6">
           <div class="seo-card">
-            <h5 class="fw-bold mb-1"><i class="fa-solid fa-code text-info me-2"></i> Schema Markup (JSON-LD)</h5>
-            <small class="text-muted d-block mb-3">Google Rich Snippets for Blog Articles</small>
+            <h5 class="fw-bold mb-1"><i class="fa-solid fa-code text-info me-2"></i> {{ dashboard_page.schema_card_heading|default:"Schema Markup (JSON-LD)" }}</h5>
+            <small class="text-muted d-block mb-3">{{ dashboard_page.schema_card_subtext|default:"Google Rich Snippets for Blog Articles" }}</small>
             <p class="text-muted" style="font-size: 0.82rem;">
-              Each article includes embedded JSON-LD structured data conforming to <a href="https://schema.org/BlogPosting" target="_blank" class="text-decoration-none">schema.org/BlogPosting</a>, enabling Google Rich Results with author, publisher, and timestamp attribution.
+              {{ dashboard_page.schema_card_description|default:"Each article includes embedded JSON-LD structured data conforming to schema.org/BlogPosting, enabling Google Rich Results with author, publisher, and timestamp attribution." }}
             </p>
             <a href="https://validator.schema.org/" target="_blank" class="btn btn-outline-info btn-sm rounded-pill px-3">
-              <i class="fa-solid fa-check-double me-1"></i> Test on Schema.org Validator
+              <i class="fa-solid fa-check-double me-1"></i> {{ dashboard_page.btn_test_schema_label|default:"Test on Schema.org Validator" }}
             </a>
           </div>
         </div>

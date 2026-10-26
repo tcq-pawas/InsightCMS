@@ -574,6 +574,43 @@ class UserDashboardPage(Page):
     terms_service_text = models.CharField(max_length=100, blank=True, default="Terms of Service ›")
     terms_service_url = models.CharField(max_length=255, blank=True, default="#")
 
+    # 10. Analytics & Reports Page Configuration (Editable from Wagtail CMS)
+    analytics_heading = models.CharField(max_length=150, blank=True, default="Analytics & Reports", verbose_name="Analytics Page Title")
+    analytics_subtext = models.CharField(max_length=255, blank=True, default="Track reader views, unique visitors, referral sources, and popular articles", verbose_name="Analytics Page Subtitle")
+    card_total_views_label = models.CharField(max_length=50, blank=True, default="Total Views", verbose_name="Card 1: Total Views Label")
+    card_total_views_sub = models.CharField(max_length=100, blank=True, default="Recorded pageviews", verbose_name="Card 1 Subtext")
+    card_unique_visitors_label = models.CharField(max_length=50, blank=True, default="Unique Visitors", verbose_name="Card 2: Unique Visitors Label")
+    card_unique_visitors_sub = models.CharField(max_length=100, blank=True, default="Distinct visitor sessions", verbose_name="Card 2 Subtext")
+    card_avg_views_label = models.CharField(max_length=50, blank=True, default="Avg Views / Post", verbose_name="Card 3: Avg Views Label")
+    card_avg_views_sub = models.CharField(max_length=100, blank=True, default="Across published articles", verbose_name="Card 3 Subtext")
+    card_live_articles_label = models.CharField(max_length=50, blank=True, default="Live Articles", verbose_name="Card 4: Live Articles Label")
+    card_live_articles_sub = models.CharField(max_length=100, blank=True, default="Total articles published", verbose_name="Card 4 Subtext")
+    chart_heading = models.CharField(max_length=150, blank=True, default="Daily Pageviews Trend", verbose_name="Chart Heading")
+    chart_subtext = models.CharField(max_length=255, blank=True, default="Visitor readership performance over selected period", verbose_name="Chart Subtext")
+    chart_badge_text = models.CharField(max_length=50, blank=True, default="Blogger-Style Stats", verbose_name="Chart Badge Text")
+    popular_articles_heading = models.CharField(max_length=150, blank=True, default="Popular Articles", verbose_name="Popular Articles Table Heading")
+    popular_articles_subtext = models.CharField(max_length=255, blank=True, default="Top articles ranked by visitor pageviews", verbose_name="Popular Articles Table Subtitle")
+    traffic_sources_heading = models.CharField(max_length=150, blank=True, default="Traffic Sources", verbose_name="Traffic Sources Heading")
+    traffic_sources_subtext = models.CharField(max_length=255, blank=True, default="Where your visitors came from", verbose_name="Traffic Sources Subtext")
+    devices_heading = models.CharField(max_length=150, blank=True, default="Devices & Browsers", verbose_name="Devices & Browsers Heading")
+    devices_subtext = models.CharField(max_length=255, blank=True, default="Visitor hardware & software", verbose_name="Devices & Browsers Subtext")
+
+    # 11. SEO & Growth Page Configuration (Editable from Wagtail CMS)
+    seo_page_title = models.CharField(max_length=150, blank=True, default="SEO & Growth", verbose_name="SEO Page Title")
+    seo_page_subtext = models.CharField(max_length=255, blank=True, default="Manage XML sitemaps, robots.txt, 301 redirects, schema markup, and search visibility", verbose_name="SEO Page Subtitle")
+    seo_audit_heading = models.CharField(max_length=150, blank=True, default="On-Page SEO Health Audit", verbose_name="SEO Audit Heading")
+    seo_audit_subtext = models.CharField(max_length=255, blank=True, default="Optimization check across all your blog articles", verbose_name="SEO Audit Subtitle")
+    seo_card_titles_label = models.CharField(max_length=50, blank=True, default="Custom SEO Titles", verbose_name="Audit Metric 1: Titles Label")
+    seo_card_descriptions_label = models.CharField(max_length=50, blank=True, default="Search Descriptions", verbose_name="Audit Metric 2: Descriptions Label")
+    seo_card_og_label = models.CharField(max_length=50, blank=True, default="Featured / OG Images", verbose_name="Audit Metric 3: OG Images Label")
+    seo_card_canonical_label = models.CharField(max_length=50, blank=True, default="Canonical Links Set", verbose_name="Audit Metric 4: Canonical Label")
+    sitemap_card_heading = models.CharField(max_length=100, blank=True, default="XML Sitemap", verbose_name="Sitemap Card Heading")
+    sitemap_card_subtext = models.CharField(max_length=255, blank=True, default="Google & Bing crawler auto-index map", verbose_name="Sitemap Card Subtitle")
+    robots_card_heading = models.CharField(max_length=100, blank=True, default="Robots.txt", verbose_name="Robots.txt Card Heading")
+    robots_card_subtext = models.CharField(max_length=255, blank=True, default="Crawler directives & bot control", verbose_name="Robots.txt Card Subtitle")
+    redirects_table_heading = models.CharField(max_length=150, blank=True, default="Custom Redirects (301 Permanent / 302 Temporary)", verbose_name="Redirects Table Heading")
+    redirects_table_subtext = models.CharField(max_length=255, blank=True, default="Blogger-style error & redirect management to prevent 404 broken links", verbose_name="Redirects Table Subtitle")
+
     # =========================================================================
     #  STREAMFIELD BODY (Shows (+) button with block choices)
     # =========================================================================
@@ -592,6 +629,43 @@ class UserDashboardPage(Page):
         ], heading="Topbar Settings (Search Bar)"),
         FieldPanel("body", heading="Dashboard Modular Blocks (Click + to Add, 🗑️ to Delete or Reorder)"),
         FieldPanel("sidebar_links", heading="Sidebar Links"),
+        MultiFieldPanel([
+            FieldPanel("analytics_heading"),
+            FieldPanel("analytics_subtext"),
+            FieldPanel("chart_heading"),
+            FieldPanel("chart_subtext"),
+            FieldPanel("chart_badge_text"),
+            FieldPanel("card_total_views_label"),
+            FieldPanel("card_total_views_sub"),
+            FieldPanel("card_unique_visitors_label"),
+            FieldPanel("card_unique_visitors_sub"),
+            FieldPanel("card_avg_views_label"),
+            FieldPanel("card_avg_views_sub"),
+            FieldPanel("card_live_articles_label"),
+            FieldPanel("card_live_articles_sub"),
+            FieldPanel("popular_articles_heading"),
+            FieldPanel("popular_articles_subtext"),
+            FieldPanel("traffic_sources_heading"),
+            FieldPanel("traffic_sources_subtext"),
+            FieldPanel("devices_heading"),
+            FieldPanel("devices_subtext"),
+        ], heading="Analytics & Reports Page Settings (Custom Headings & Labels)", classname="collapsible collapsed"),
+        MultiFieldPanel([
+            FieldPanel("seo_page_title"),
+            FieldPanel("seo_page_subtext"),
+            FieldPanel("seo_audit_heading"),
+            FieldPanel("seo_audit_subtext"),
+            FieldPanel("seo_card_titles_label"),
+            FieldPanel("seo_card_descriptions_label"),
+            FieldPanel("seo_card_og_label"),
+            FieldPanel("seo_card_canonical_label"),
+            FieldPanel("sitemap_card_heading"),
+            FieldPanel("sitemap_card_subtext"),
+            FieldPanel("robots_card_heading"),
+            FieldPanel("robots_card_subtext"),
+            FieldPanel("redirects_table_heading"),
+            FieldPanel("redirects_table_subtext"),
+        ], heading="SEO & Growth Page Settings (Custom Headings & Labels)", classname="collapsible collapsed"),
     ]
         
 

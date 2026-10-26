@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from wagtail.models import Page
 from wagtail.fields import StreamField
-from wagtail.admin.panels import FieldPanel
+from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.fields import RichTextField
 from Apps.common.models import BaseModel
 from Apps.common.helpers import generate_api_key
@@ -334,6 +334,19 @@ class CompanyBlogPostsPage(Page):
     approve_btn_text = models.CharField(max_length=50, blank=True, default="Approve")
     reject_btn_text = models.CharField(max_length=50, blank=True, default="Reject")
 
+    # Blog Create & Edit SEO & Search Preview Section Fields (Editable via Wagtail)
+    seo_box_header = models.CharField(max_length=100, blank=True, default="SEO & Search Preview")
+    field_slug_label = models.CharField(max_length=100, blank=True, default="URL Slug (Permalink)")
+    field_slug_placeholder = models.CharField(max_length=100, blank=True, default="auto-generated-from-title")
+    field_seo_title_label = models.CharField(max_length=100, blank=True, default="SEO Title")
+    field_seo_title_placeholder = models.CharField(max_length=100, blank=True, default="Defaults to post title if blank")
+    field_meta_desc_label = models.CharField(max_length=100, blank=True, default="Search Description")
+    field_meta_desc_placeholder = models.CharField(max_length=200, blank=True, default="150-160 characters summary for Google & WhatsApp previews")
+    field_meta_keywords_label = models.CharField(max_length=100, blank=True, default="Focus Keywords")
+    field_meta_keywords_placeholder = models.CharField(max_length=100, blank=True, default="e.g. django, web development, seo")
+    field_canonical_label = models.CharField(max_length=100, blank=True, default="Canonical URL")
+    field_canonical_placeholder = models.CharField(max_length=150, blank=True, default="https://original-source.com/article")
+
     content_panels = Page.content_panels + [
         FieldPanel("page_heading"),
         FieldPanel("page_subtext"),
@@ -368,6 +381,19 @@ class CompanyBlogPostsPage(Page):
         FieldPanel("visibility_value_text"),
         FieldPanel("approve_btn_text"),
         FieldPanel("reject_btn_text"),
+        MultiFieldPanel([
+            FieldPanel("seo_box_header"),
+            FieldPanel("field_slug_label"),
+            FieldPanel("field_slug_placeholder"),
+            FieldPanel("field_seo_title_label"),
+            FieldPanel("field_seo_title_placeholder"),
+            FieldPanel("field_meta_desc_label"),
+            FieldPanel("field_meta_desc_placeholder"),
+            FieldPanel("field_meta_keywords_label"),
+            FieldPanel("field_meta_keywords_placeholder"),
+            FieldPanel("field_canonical_label"),
+            FieldPanel("field_canonical_placeholder"),
+        ], heading="Blog SEO & Search Optimization Box Settings (Create & Edit)", classname="collapsible collapsed"),
     ]
 
     parent_page_types = ["companies.CompanyHomePage", "wagtailcore.Page"]

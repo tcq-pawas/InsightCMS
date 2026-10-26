@@ -1,5 +1,5 @@
 <aside class="bp-sidebar">
-  <!-- Brand Logo & Company Name (Compact Sleek Box) -->
+  <!-- Brand Logo & Company Name (Fully Dynamic) -->
   <div class="bp-brand text-center d-flex flex-column align-items-center mb-3 py-2 px-3 rounded-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
     <div class="bp-brand-logo-box mb-1 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: #ffffff; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.12); overflow: hidden; padding: 4px;">
       {% if company and company.logo %}
@@ -11,25 +11,40 @@
       {% elif page.brand_logo %}
         <img src="{{ page.brand_logo.url }}" alt="{{ page.brand_name }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
       {% else %}
-        <span class="fw-bold text-primary" style="font-size: 1.3rem;">{% if company %}{{ company.company_name|slice:":1" }}{% elif user.company %}{{ user.company.company_name|slice:":1" }}{% elif request.user.company %}{{ request.user.company.company_name|slice:":1" }}{% elif page.brand_name %}{{ page.brand_name|slice:":1" }}{% else %}B{% endif %}</span>
+        <span class="fw-bold text-primary" style="font-size: 1.3rem;">
+          {% if company %}{{ company.company_name|slice:":1"|upper }}
+          {% elif user.company %}{{ user.company.company_name|slice:":1"|upper }}
+          {% elif request.user.company %}{{ request.user.company.company_name|slice:":1"|upper }}
+          {% elif page.brand_name %}{{ page.brand_name|slice:":1"|upper }}
+          {% else %}C{% endif %}
+        </span>
       {% endif %}
     </div>
     <span class="bp-brand-name fw-bold" style="font-size: 0.88rem; color: #ffffff; text-align: center; word-break: break-word; line-height: 1.2;">
-      {% if company %}{{ company.company_name }}{% elif user.company %}{{ user.company.company_name }}{% elif request.user.company %}{{ request.user.company.company_name }}{% elif page.brand_name %}{{ page.brand_name }}{% else %}BlogPro{% endif %}
+      {% if company %}{{ company.company_name }}
+      {% elif user.company %}{{ user.company.company_name }}
+      {% elif request.user.company %}{{ request.user.company.company_name }}
+      {% elif page.brand_name %}{{ page.brand_name }}
+      {% else %}CMS Dashboard{% endif %}
     </span>
   </div>
 
-  <!-- Dynamic Navigation Menu -->
+  <!-- Dynamic Navigation Menu (Driven 100% by Wagtail StreamField) -->
   <nav class="bp-nav">
     {% for item in sidebar_links %}
       {% with link=item.value %}
         {% with title_lower=link.title|lower %}
-          {% if is_employee and 'setting' in title_lower or is_employee and 'integration' in title_lower or is_employee and 'website' in title_lower or user.role == 'company_user' and 'setting' in title_lower or user.role == 'company_user' and 'integration' in title_lower or user.role == 'company_user' and 'website' in title_lower %}
-            <!-- Hide Settings and Integration tabs for normal User/Employee -->
-          {% elif not is_employee and 'profile' in title_lower %}
-            <!-- Hide My Profile link for Admins — only employees see it -->
-          {% elif title_lower == 'logout' %}
-            <!-- Logout: POST form -->
+
+          {# 1. Role-based Visibility: Hide Admin-only items from Employees #}
+          {% if link.admin_only and is_employee or link.admin_only and user.role == 'company_user' %}
+            {# Skip admin-only link for employee #}
+
+          {# 2. Profile link: Only shown to employees #}
+          {% elif not is_employee and user.role != 'company_user' and 'profile' in title_lower %}
+            {# Skip profile link for admin #}
+
+          {# 3. Logout action #}
+          {% elif title_lower == 'logout' or link.url == '/logout/' %}
             <form method="post" action="{% url 'logout' %}" style="margin:0;padding:0;">
               {% csrf_token %}
               <button type="submit" class="bp-nav-item w-100 text-start border-0 bg-transparent" style="cursor:pointer;">
@@ -37,128 +52,81 @@
                 <span>{{ link.title }}</span>
               </button>
             </form>
-          {% else %}
-            {% if link.submenus or link.direct_sublinks or title_lower == 'settings' and not is_employee and user.role != 'company_user' %}
-              <!-- Dynamic Dropdown Item (Wagtail StreamField Enabled) -->
-              <div class="bp-nav-dropdown-wrap">
-                <a href="javascript:void(0);" onclick="toggleSidebarMenu('sidebar-menu-{{ forloop.counter }}', 'chevron-menu-{{ forloop.counter }}')"
-                   class="bp-nav-item d-flex align-items-center justify-content-between {% if active_tab == 'settings' and not active_subtab or link.is_active %}active{% endif %}"
-                   style="cursor: pointer; {% if active_tab == 'settings' and active_subtab %}color: #ffffff; background: rgba(255,255,255,0.06);{% endif %}">
-                  <div class="d-flex align-items-center gap-2">
-                    <i class="{% if link.icon %}{{ link.icon }}{% else %}fa-solid fa-gear{% endif %}"></i>
-                    <span>{{ link.title }}</span>
-                  </div>
-                  <i class="fa-solid fa-chevron-down" id="chevron-menu-{{ forloop.counter }}" style="font-size: 0.68rem; transition: transform 0.25s ease; {% if active_tab != 'settings' and not link.is_active %}transform: rotate(-90deg);{% endif %}"></i>
-                </a>
 
-                <!-- Level 1 Subnav Menu -->
-                <div id="sidebar-menu-{{ forloop.counter }}" class="bp-subnav" style="{% if active_tab != 'settings' and not link.is_active %}display:none;{% endif %}">
-                  
-                  {% if link.submenus %}
-                    <!-- Dynamic Submenus from Wagtail -->
-                    {% for sub in link.submenus %}
-                      <div class="d-flex flex-column">
-                        <a href="javascript:void(0);" onclick="toggleSidebarMenu('sub-menu-{{ forloop.parentloop.counter }}-{{ forloop.counter }}', 'chevron-sub-{{ forloop.parentloop.counter }}-{{ forloop.counter }}')"
-                           class="bp-subnav-item {% if active_subtab == 'comments_settings' and 'blog' in sub.title|lower %}text-white fw-semibold{% endif %}">
-                          <div class="d-flex align-items-center gap-2">
-                            <i class="{{ sub.icon|default:'fa-solid fa-folder-open' }}" style="font-size: 0.8rem; color: #60a5fa;"></i>
-                            <span>{{ sub.title }}</span>
-                          </div>
-                          <i class="fa-solid fa-chevron-down" id="chevron-sub-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" style="font-size: 0.62rem; transition: transform 0.25s ease; {% if active_subtab != 'comments_settings' %}transform: rotate(-90deg);{% endif %}"></i>
-                        </a>
-
-                        <!-- Level 2 Nested Links -->
-                        <div id="sub-menu-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" class="bp-nested-subnav" style="{% if active_subtab != 'comments_settings' and 'blog' in sub.title|lower %}display:none;{% elif not active_subtab %}display:none;{% endif %}">
-                          {% for child in sub.nested_links %}
-                            <a href="{{ child.url }}" class="bp-nested-subnav-item {% if child.url == request.path or active_subtab == 'comments_settings' and 'comment' in child.url %}active{% endif %}">
-                              <i class="{{ child.icon|default:'fa-regular fa-comments' }}"></i>
-                              <span>{{ child.title }}</span>
-                            </a>
-                          {% empty %}
-                            <a href="/settings/blog/comments/" class="bp-nested-subnav-item {% if active_subtab == 'comments_settings' %}active{% endif %}">
-                              <i class="fa-regular fa-comments"></i>
-                              <span>Comments Settings</span>
-                            </a>
-                          {% endfor %}
-                        </div>
-                      </div>
-                    {% endfor %}
-                  {% else %}
-                    <!-- Default Blog Settings Sub-Toggle if submenus not explicitly configured -->
-                    <div class="d-flex flex-column">
-                      <a href="javascript:void(0);" onclick="toggleSidebarMenu('sidebar-blog-settings-sub', 'chevron-blog-settings')"
-                         class="bp-subnav-item {% if active_subtab == 'comments_settings' %}text-white fw-semibold{% endif %}">
-                        <div class="d-flex align-items-center gap-2">
-                          <i class="fa-solid fa-folder-open" style="font-size: 0.8rem; color: #60a5fa;"></i>
-                          <span>Blog Settings</span>
-                        </div>
-                        <i class="fa-solid fa-chevron-down" id="chevron-blog-settings" style="font-size: 0.62rem; transition: transform 0.25s ease; {% if active_subtab != 'comments_settings' %}transform: rotate(-90deg);{% endif %}"></i>
-                      </a>
-
-                      <!-- Level 2: Inside Blog Settings -> Comments Settings -->
-                      <div id="sidebar-blog-settings-sub" class="bp-nested-subnav" style="{% if active_subtab != 'comments_settings' %}display:none;{% endif %}">
-                        <a href="/settings/blog/comments/" class="bp-nested-subnav-item {% if active_subtab == 'comments_settings' %}active{% endif %}">
-                          <i class="fa-regular fa-comments"></i>
-                          <span>Comments Settings</span>
-                        </a>
-                      </div>
-                    </div>
-                  {% endif %}
-
-                  {% if link.direct_sublinks %}
-                    <!-- Dynamic Direct Sublinks from Wagtail -->
-                    {% for child in link.direct_sublinks %}
-                      <a href="{{ child.url }}" class="bp-subnav-item {% if child.url == request.path or active_subtab == 'manage_users' and 'user' in child.url %}active{% endif %}">
-                        <div class="d-flex align-items-center gap-2">
-                          <i class="{{ child.icon|default:'fa-solid fa-users-gear' }}" style="font-size: 0.82rem; color: #a78bfa;"></i>
-                          <span>{{ child.title }}</span>
-                        </div>
-                      </a>
-                    {% endfor %}
-                  {% else %}
-                    <!-- Default Manage User Settings link -->
-                    <a href="/settings/users/" class="bp-subnav-item {% if active_subtab == 'manage_users' %}active{% endif %}">
-                      <div class="d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-users-gear" style="font-size: 0.82rem; color: #a78bfa;"></i>
-                        <span>Manage User Settings</span>
-                      </div>
-                    </a>
-                  {% endif %}
-
+          {# 4. Dropdown Menu (If submenus or direct_sublinks are configured) #}
+          {% elif link.submenus or link.direct_sublinks %}
+            <div class="bp-nav-dropdown-wrap">
+              <a href="javascript:void(0);" onclick="toggleSidebarMenu('sidebar-menu-{{ forloop.counter }}', 'chevron-menu-{{ forloop.counter }}')"
+                 class="bp-nav-item d-flex align-items-center justify-content-between {% if link.is_active or active_tab in title_lower %}active{% endif %}"
+                 style="cursor: pointer;">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="{% if link.icon %}{{ link.icon }}{% else %}fa-solid fa-folder{% endif %}"></i>
+                  <span>{{ link.title }}</span>
                 </div>
-              </div>
-
-            {% else %}
-              <a href="{% if 'profile' in title_lower %}/my-profile/{% elif 'analytic' in title_lower or 'report' in title_lower %}/dashboard/analytics/{% elif 'seo' in title_lower or 'growth' in title_lower %}/dashboard/seo/{% elif link.url == '#integration' or 'integration' in title_lower or 'website' in title_lower %}/dashboard/integration/{% elif link.url == '#comment' or link.url == '#comments' or link.url == '/comments/' or link.url == 'comments' or link.url == '/dashboard/comments/' or title_lower == 'comments' %}/comments/{% elif link.url == '#overview' or title_lower == 'overview' %}/dashboard/#overview{% elif link.url == '#posts' or title_lower == 'posts' %}/blog-posts/{% elif link.url == '#dashboard' or title_lower == 'dashboard' %}/dashboard/{% else %}{{ link.url|default:'/dashboard/' }}{% endif %}" 
-                 class="bp-nav-item {% if active_tab == 'analytics' and 'analytic' in title_lower %}active{% elif active_tab == 'seo' and 'seo' in title_lower %}active{% elif active_tab == 'my_profile' and 'profile' in title_lower %}active{% elif active_tab == 'integration' and 'integration' in title_lower or active_tab == 'integration' and 'website' in title_lower or active_tab == 'integration' and link.url == '#integration' %}active{% elif active_tab == 'comments' and title_lower == 'comments' %}active{% elif active_tab == 'comments' and 'comment' in link.url %}active{% elif active_tab == 'posts' and title_lower == 'posts' %}active{% elif not active_tab and title_lower == 'dashboard' %}active{% elif link.is_active %}active{% endif %}">
-                <i class="fa-solid {{ link.icon|default:'fa-file-lines' }}"></i> 
-                <span>{{ link.title }}</span>
-                {% if link.badge_text %}
-                  <span class="bp-nav-badge">{{ link.badge_text }}</span>
-                {% endif %}
+                <i class="fa-solid fa-chevron-down" id="chevron-menu-{{ forloop.counter }}" style="font-size: 0.68rem; transition: transform 0.25s ease;"></i>
               </a>
-            {% endif %}
+
+              <!-- Level 1 Subnav Menu -->
+              <div id="sidebar-menu-{{ forloop.counter }}" class="bp-subnav" style="display:none;">
+                
+                {# Dynamic Submenus #}
+                {% for sub in link.submenus %}
+                  <div class="d-flex flex-column">
+                    <a href="javascript:void(0);" onclick="toggleSidebarMenu('sub-menu-{{ forloop.parentloop.counter }}-{{ forloop.counter }}', 'chevron-sub-{{ forloop.parentloop.counter }}-{{ forloop.counter }}')"
+                       class="bp-subnav-item">
+                      <div class="d-flex align-items-center gap-2">
+                        <i class="{{ sub.icon|default:'fa-solid fa-folder-open' }}" style="font-size: 0.8rem; color: #60a5fa;"></i>
+                        <span>{{ sub.title }}</span>
+                      </div>
+                      <i class="fa-solid fa-chevron-down" id="chevron-sub-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" style="font-size: 0.62rem; transition: transform 0.25s ease; transform: rotate(-90deg);"></i>
+                    </a>
+
+                    <!-- Level 2 Nested Links -->
+                    <div id="sub-menu-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" class="bp-nested-subnav" style="display:none;">
+                      {% for child in sub.nested_links %}
+                        <a href="{{ child.url }}" class="bp-nested-subnav-item {% if child.url == request.path %}active{% endif %}">
+                          <i class="{{ child.icon|default:'fa-regular fa-file' }}"></i>
+                          <span>{{ child.title }}</span>
+                        </a>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endfor %}
+
+                {# Dynamic Direct Sublinks #}
+                {% for child in link.direct_sublinks %}
+                  <a href="{{ child.url }}" class="bp-subnav-item {% if child.url == request.path %}active{% endif %}">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="{{ child.icon|default:'fa-solid fa-link' }}" style="font-size: 0.82rem; color: #a78bfa;"></i>
+                      <span>{{ child.title }}</span>
+                    </div>
+                  </a>
+                {% endfor %}
+
+              </div>
+            </div>
+
+          {# 5. Standard Dynamic Navigation Link #}
+          {% else %}
+            <a href="{{ link.url|default:'#' }}" 
+               class="bp-nav-item {% if request.path == link.url or link.is_active %}active{% elif active_tab and active_tab in title_lower %}active{% endif %}">
+              <i class="fa-solid {{ link.icon|default:'fa-file-lines' }}"></i> 
+              <span>{{ link.title }}</span>
+              {% if link.badge_text %}
+                <span class="bp-nav-badge">{{ link.badge_text }}</span>
+              {% endif %}
+            </a>
           {% endif %}
+
         {% endwith %}
       {% endwith %}
+    {% empty %}
+      <!-- Fallback only if no links are created in Wagtail CMS yet -->
+      <a href="{% url 'dashboard' %}" class="bp-nav-item active">
+        <i class="fa-solid fa-table-cells-large"></i>
+        <span>Dashboard</span>
+      </a>
     {% endfor %}
-
-    <!-- Standard Built-in Modules (Analytics & SEO) -->
-    <div class="px-3 pt-3 pb-1">
-      <span class="text-uppercase fw-semibold" style="font-size: 0.68rem; color: rgba(255,255,255,0.4); letter-spacing: 0.05em;">Performance</span>
-    </div>
-
-    <a href="/dashboard/analytics/" class="bp-nav-item {% if active_tab == 'analytics' %}active{% endif %}">
-      <i class="fa-solid fa-chart-line" style="color: #60a5fa;"></i>
-      <span>Analytics & Reports</span>
-    </a>
-
-    {% if not is_employee and user.role != 'company_user' %}
-    <a href="/dashboard/seo/" class="bp-nav-item {% if active_tab == 'seo' %}active{% endif %}">
-      <i class="fa-solid fa-magnifying-glass-chart" style="color: #34d399;"></i>
-      <span>SEO & Growth</span>
-    </a>
-    {% endif %}
   </nav>
 
   <script>
@@ -177,5 +145,4 @@
       }
     }
   </script>
-
 </aside>

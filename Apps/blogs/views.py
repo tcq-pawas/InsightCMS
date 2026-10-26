@@ -202,6 +202,10 @@ def dashboard_blog_create(request):
             import re
             clean_body = re.sub(r'<[^>]+>', ' ', body).strip()
             short_description = (clean_body[:180] + '...') if clean_body else title
+        else:
+            short_description = short_description.strip()
+            if len(short_description) > 280:
+                short_description = short_description[:277] + '...'
 
         category = None
         if category_id:
@@ -231,6 +235,13 @@ def dashboard_blog_create(request):
             canonical_url=canonical_url,
             meta_keywords=meta_keywords,
         )
+
+        custom_slug = request.POST.get('slug', '').strip()
+        if custom_slug:
+            from django.utils.text import slugify
+            clean_slug = slugify(custom_slug)
+            if clean_slug:
+                blog_page.slug = clean_slug
 
         # Add to Wagtail page tree
         blog_index.add_child(instance=blog_page)
@@ -299,7 +310,33 @@ def dashboard_blog_edit(request, page_id):
 
     if request.method == 'POST':
         blog_page.title = request.POST.get('title', blog_page.title)
-        blog_page.short_description = request.POST.get('short_description', blog_page.short_description)
+        # Custom URL Slug (Permalink) update
+        new_slug = request.POST.get('slug', '').strip()
+        if new_slug:
+            from django.utils.text import slugify
+            clean_slug = slugify(new_slug)
+            if clean_slug and clean_slug != blog_page.slug:
+                old_path = f"/blog/{blog_page.slug}/"
+                blog_page.slug = clean_slug
+                # Auto-create 301 Redirect to protect SEO ranking
+                try:
+                    from wagtail.contrib.redirects.models import Redirect
+                    Redirect.objects.update_or_create(
+                        old_path=old_path.rstrip('/'),
+                        defaults={
+                            'redirect_page': blog_page,
+                            'is_permanent': True,
+                        }
+                    )
+                except Exception:
+                    pass
+
+        raw_short_desc = request.POST.get('short_description', blog_page.short_description)
+        if raw_short_desc:
+            raw_short_desc = raw_short_desc.strip()
+            if len(raw_short_desc) > 280:
+                raw_short_desc = raw_short_desc[:277] + '...'
+        blog_page.short_description = raw_short_desc
         blog_page.body = request.POST.get('body', blog_page.body)
         blog_page.allow_comments = request.POST.get('allow_comments') == 'on' if 'allow_comments' in request.POST else False
         blog_page.meta_title = request.POST.get('meta_title', '').strip()
@@ -1175,6 +1212,8 @@ def dashboard_seo_view(request):
     dashboard_page = UserDashboardPage.objects.live().first()
     sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
 
+    sample_blog = blogs_qs.first()
+
     context = {
         'dashboard_page': dashboard_page,
         'sidebar_links': sidebar_links,
@@ -1182,6 +1221,7 @@ def dashboard_seo_view(request):
         'user': request.user,
         'company': company,
         'redirects': redirects,
+        'sample_blog': sample_blog,
         'total_blogs': total_blogs,
         'has_meta_title': has_meta_title,
         'has_meta_desc': has_meta_desc,

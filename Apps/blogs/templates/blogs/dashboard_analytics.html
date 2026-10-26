@@ -1,7 +1,7 @@
 {% extends "companies/base.html" %}
 {% load static wagtailcore_tags wagtailimages_tags %}
 
-{% block title %}Analytics & Reports | {{ dashboard_page.brand_name|default:"BlogPro" }}{% endblock %}
+{% block title %}{{ dashboard_page.analytics_heading|default:"Analytics & Reports" }} | {% if company %}{{ company.company_name }}{% elif dashboard_page.brand_name %}{{ dashboard_page.brand_name }}{% else %}CMS Dashboard{% endif %}{% endblock %}
 
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -10,11 +10,10 @@
 <style>
   .analytics-card {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid #e2e8f0;
-    padding: 1.25rem;
+    padding: 1rem 1.15rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-    height: 100%;
   }
   .stat-badge-trend {
     font-size: 0.75rem;
@@ -27,6 +26,10 @@
     padding: 0.35rem 0.85rem;
     border-radius: 999px;
   }
+  /* Compact spacing overrides for analytics page */
+  .bp-content-body { padding: 1.25rem 1.5rem !important; }
+  .bp-page-title { font-size: 1.35rem !important; }
+  .bp-page-sub { font-size: 0.85rem !important; }
 </style>
 {% endblock %}
 
@@ -34,7 +37,7 @@
 <div class="bp-app-wrapper">
 
   <!-- Sidebar -->
-  {% include "accounts/blocks/sidebar.html" with page=dashboard_page %}
+  {% include "accounts/blocks/sidebar.html" with page=dashboard_page active_tab="analytics" %}
 
   <div class="bp-main-container">
 
@@ -43,11 +46,11 @@
 
     <main class="bp-content-body">
 
-      <!-- Header & Time Filter -->
-      <div class="bp-page-header d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+      <!-- Header & Time Filter (Dynamic) -->
+      <div class="bp-page-header d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div>
-          <h1 class="bp-page-title mb-1"><i class="fa-solid fa-chart-line text-primary me-2"></i> Analytics & Reports</h1>
-          <p class="bp-page-sub mb-0">Track reader views, unique visitors, referral sources, and popular articles</p>
+          <h1 class="bp-page-title mb-1"><i class="fa-solid fa-chart-line text-primary me-2"></i> {{ dashboard_page.analytics_heading|default:"Analytics & Reports" }}</h1>
+          <p class="bp-page-sub mb-0">{{ dashboard_page.analytics_subtext|default:"Track reader views, unique visitors, referral sources, and popular articles" }}</p>
         </div>
 
         <div class="btn-group filter-btn-group bg-white p-1 rounded-pill shadow-sm border" role="group">
@@ -70,20 +73,20 @@
         </div>
       {% endif %}
 
-      <!-- 4 Top KPI Cards -->
-      <div class="row g-3 mb-4">
+      <!-- 4 Top KPI Cards (Dynamic Values & Labels from Wagtail) -->
+      <div class="row g-2 mb-3">
         
         <!-- Total Views -->
         <div class="col-sm-6 col-lg-3">
           <div class="analytics-card">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Total Views</span>
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_total_views_label|default:"Total Views" }}</span>
               <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #eff6ff; color: #2563eb;">
                 <i class="fa-solid fa-eye"></i>
               </div>
             </div>
-            <div class="fs-3 fw-bold text-dark">{{ total_views }}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">Recorded pageviews</div>
+            <div class="fs-3 fw-bold text-dark">{{ total_views|default:0 }}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.card_total_views_sub|default:"Recorded pageviews" }}</div>
           </div>
         </div>
 
@@ -91,13 +94,13 @@
         <div class="col-sm-6 col-lg-3">
           <div class="analytics-card">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Unique Visitors</span>
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_unique_visitors_label|default:"Unique Visitors" }}</span>
               <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #fdf4ff; color: #c026d3;">
                 <i class="fa-solid fa-users"></i>
               </div>
             </div>
-            <div class="fs-3 fw-bold text-dark">{{ unique_visitors }}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">Distinct visitor sessions</div>
+            <div class="fs-3 fw-bold text-dark">{{ unique_visitors|default:0 }}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.card_unique_visitors_sub|default:"Distinct visitor sessions" }}</div>
           </div>
         </div>
 
@@ -105,13 +108,13 @@
         <div class="col-sm-6 col-lg-3">
           <div class="analytics-card">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Avg Views / Post</span>
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_avg_views_label|default:"Avg Views / Post" }}</span>
               <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #ecfdf5; color: #059669;">
                 <i class="fa-solid fa-arrow-trend-up"></i>
               </div>
             </div>
-            <div class="fs-3 fw-bold text-dark">{{ avg_views_per_post }}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">Across published articles</div>
+            <div class="fs-3 fw-bold text-dark">{{ avg_views_per_post|default:0 }}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.card_avg_views_sub|default:"Across published articles" }}</div>
           </div>
         </div>
 
@@ -119,44 +122,44 @@
         <div class="col-sm-6 col-lg-3">
           <div class="analytics-card">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Live Articles</span>
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_live_articles_label|default:"Live Articles" }}</span>
               <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #fffbeb; color: #d97706;">
                 <i class="fa-solid fa-newspaper"></i>
               </div>
             </div>
-            <div class="fs-3 fw-bold text-dark">{{ published_posts }} <span class="fs-6 fw-normal text-muted">/ {{ total_posts }}</span></div>
-            <div class="text-muted" style="font-size: 0.75rem;">Total articles published</div>
+            <div class="fs-3 fw-bold text-dark">{{ published_posts|default:0 }} <span class="fs-6 fw-normal text-muted">/ {{ total_posts|default:0 }}</span></div>
+            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.card_live_articles_sub|default:"Total articles published" }}</div>
           </div>
         </div>
 
       </div>
 
       <!-- Main Traffic Chart -->
-      <div class="analytics-card mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="analytics-card mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
           <div>
-            <h5 class="fw-bold mb-0">Daily Pageviews Trend</h5>
-            <small class="text-muted">Visitor readership performance over selected period</small>
+            <h5 class="fw-bold mb-0" style="font-size: 1rem;">{{ dashboard_page.chart_heading|default:"Daily Pageviews Trend" }}</h5>
+            <small class="text-muted" style="font-size: 0.78rem;">{{ dashboard_page.chart_subtext|default:"Visitor readership performance over selected period" }}</small>
           </div>
-          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill">
-            <i class="fa-solid fa-chart-simple me-1"></i> Blogger-Style Stats
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill" style="font-size: 0.72rem;">
+            <i class="fa-solid fa-chart-simple me-1"></i> {{ dashboard_page.chart_badge_text|default:"Blogger-Style Stats" }}
           </span>
         </div>
-        <div style="height: 280px; position: relative;">
+        <div style="height: 200px; position: relative;">
           <canvas id="analyticsChart"></canvas>
         </div>
       </div>
 
       <!-- Bottom Grid: Left Popular Articles, Right Referrers & Tech -->
-      <div class="row g-4">
+      <div class="row g-3">
 
         <!-- Left: Popular Articles -->
         <div class="col-lg-8">
           <div class="analytics-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
               <div>
-                <h5 class="fw-bold mb-0"><i class="fa-solid fa-fire text-danger me-2"></i> Popular Articles</h5>
-                <small class="text-muted">Top articles ranked by visitor pageviews</small>
+                <h5 class="fw-bold mb-0" style="font-size: 1rem;"><i class="fa-solid fa-fire text-danger me-2"></i> {{ dashboard_page.popular_articles_heading|default:"Popular Articles" }}</h5>
+                <small class="text-muted" style="font-size: 0.78rem;">{{ dashboard_page.popular_articles_subtext|default:"Top articles ranked by visitor pageviews" }}</small>
               </div>
             </div>
 
@@ -165,10 +168,10 @@
                 <thead class="table-light">
                   <tr style="font-size: 0.8rem; color: #64748b;">
                     <th scope="col" style="width: 50px;">#</th>
-                    <th scope="col">Article</th>
-                    <th scope="col">Author</th>
-                    <th scope="col" class="text-center">Views</th>
-                    <th scope="col" class="text-end">Action</th>
+                    <th scope="col">{{ dashboard_page.th_article_label|default:"Article" }}</th>
+                    <th scope="col">{{ dashboard_page.th_author_label|default:"Author" }}</th>
+                    <th scope="col" class="text-center">{{ dashboard_page.th_views_label|default:"Views" }}</th>
+                    <th scope="col" class="text-end">{{ dashboard_page.th_action_label|default:"Action" }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -198,7 +201,7 @@
                       </td>
                       <td class="text-end">
                         <a href="{{ post.url }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-3" style="font-size: 0.75rem;">
-                          <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> View
+                          <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> {{ dashboard_page.btn_view_label|default:"View" }}
                         </a>
                       </td>
                     </tr>
@@ -206,7 +209,7 @@
                     <tr>
                       <td colspan="5" class="text-center py-4 text-muted">
                         <i class="fa-solid fa-chart-pie fa-2x mb-2 text-secondary opacity-50"></i>
-                        <div>No blog views recorded yet for this period.</div>
+                        <div>{{ dashboard_page.no_views_text|default:"No blog views recorded yet for this period." }}</div>
                       </td>
                     </tr>
                   {% endfor %}
@@ -221,9 +224,9 @@
         <div class="col-lg-4">
           
           <!-- Referral Sources -->
-          <div class="analytics-card mb-4">
-            <h5 class="fw-bold mb-1"><i class="fa-solid fa-route text-success me-2"></i> Traffic Sources</h5>
-            <small class="text-muted d-block mb-3">Where your visitors came from</small>
+          <div class="analytics-card mb-3">
+            <h5 class="fw-bold mb-1" style="font-size: 1rem;"><i class="fa-solid fa-route text-success me-2"></i> {{ dashboard_page.traffic_sources_heading|default:"Traffic Sources" }}</h5>
+            <small class="text-muted d-block mb-2" style="font-size: 0.78rem;">{{ dashboard_page.traffic_sources_subtext|default:"Where your visitors came from" }}</small>
 
             {% if referrers_list %}
               <div class="d-flex flex-column gap-3">
@@ -249,18 +252,18 @@
               </div>
             {% else %}
               <div class="text-center py-3 text-muted" style="font-size: 0.82rem;">
-                No referrer data yet. Visits will appear here.
+                {{ dashboard_page.no_referrer_text|default:"No referrer data yet. Visits will appear here." }}
               </div>
             {% endif %}
           </div>
 
           <!-- Devices Breakdown -->
           <div class="analytics-card">
-            <h5 class="fw-bold mb-1"><i class="fa-solid fa-mobile-screen text-info me-2"></i> Devices & Browsers</h5>
-            <small class="text-muted d-block mb-3">Visitor hardware & software</small>
+            <h5 class="fw-bold mb-1" style="font-size: 1rem;"><i class="fa-solid fa-mobile-screen text-info me-2"></i> {{ dashboard_page.devices_heading|default:"Devices & Browsers" }}</h5>
+            <small class="text-muted d-block mb-2" style="font-size: 0.78rem;">{{ dashboard_page.devices_subtext|default:"Visitor hardware & software" }}</small>
 
             <div class="mb-3">
-              <label class="form-label text-muted fw-semibold mb-2" style="font-size: 0.78rem;">DEVICE USAGE</label>
+              <label class="form-label text-muted fw-semibold mb-2" style="font-size: 0.78rem;">{{ dashboard_page.device_usage_label|default:"DEVICE USAGE" }}</label>
               {% for dev in devices_list %}
                 <div class="d-flex justify-content-between align-items-center mb-2" style="font-size: 0.82rem;">
                   <span>
@@ -279,7 +282,7 @@
             <hr class="my-3 opacity-25">
 
             <div>
-              <label class="form-label text-muted fw-semibold mb-2" style="font-size: 0.78rem;">TOP BROWSERS</label>
+              <label class="form-label text-muted fw-semibold mb-2" style="font-size: 0.78rem;">{{ dashboard_page.top_browsers_label|default:"TOP BROWSERS" }}</label>
               <div class="d-flex flex-wrap gap-2">
                 {% for b in browsers_list %}
                   <span class="badge bg-light text-secondary border px-2 py-1 rounded-pill" style="font-size: 0.78rem;">
