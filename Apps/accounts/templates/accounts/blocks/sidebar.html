@@ -84,10 +84,14 @@
                     <!-- Level 2 Nested Links -->
                     <div id="sub-menu-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" class="bp-nested-subnav" style="display:none;">
                       {% for child in sub.nested_links %}
-                        <a href="{{ child.url }}" class="bp-nested-subnav-item {% if child.url == request.path %}active{% endif %}">
-                          <i class="{{ child.icon|default:'fa-regular fa-file' }}"></i>
-                          <span>{{ child.title }}</span>
-                        </a>
+                        {% if child.admin_only and is_employee %}
+                          {# Skip admin-only nested link for employee #}
+                        {% else %}
+                          <a href="{{ child.url }}" class="bp-nested-subnav-item {% if child.url == request.path %}active{% endif %}">
+                            <i class="{{ child.icon|default:'fa-regular fa-file' }}"></i>
+                            <span>{{ child.title }}</span>
+                          </a>
+                        {% endif %}
                       {% endfor %}
                     </div>
                   </div>
@@ -95,12 +99,16 @@
 
                 {# Dynamic Direct Sublinks #}
                 {% for child in link.direct_sublinks %}
-                  <a href="{{ child.url }}" class="bp-subnav-item {% if child.url == request.path %}active{% endif %}">
-                    <div class="d-flex align-items-center gap-2">
-                      <i class="{{ child.icon|default:'fa-solid fa-link' }}" style="font-size: 0.82rem; color: #a78bfa;"></i>
-                      <span>{{ child.title }}</span>
-                    </div>
-                  </a>
+                  {% if child.admin_only and is_employee %}
+                    {# Skip admin-only direct sublink for employee #}
+                  {% else %}
+                    <a href="{{ child.url }}" class="bp-subnav-item {% if child.url == request.path %}active{% endif %}">
+                      <div class="d-flex align-items-center gap-2">
+                        <i class="{{ child.icon|default:'fa-solid fa-link' }}" style="font-size: 0.82rem; color: #a78bfa;"></i>
+                        <span>{{ child.title }}</span>
+                      </div>
+                    </a>
+                  {% endif %}
                 {% endfor %}
 
               </div>

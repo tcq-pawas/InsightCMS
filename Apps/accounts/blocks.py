@@ -15,12 +15,14 @@ class SidebarChildLinkBlock(blocks.StructBlock):
             ('fa-solid fa-gear', 'Gear / Settings'),
             ('fa-solid fa-shield-halved', 'Security / Shield'),
             ('fa-solid fa-file-lines', 'File / Pages'),
+            ('fa-solid fa-magnifying-glass-chart', 'SEO / Search & Growth'),
             ('fa-solid fa-link', 'Link / Generic'),
         ],
         default='fa-regular fa-comments',
         help_text="Choose FontAwesome Icon"
     )
     badge_text = blocks.CharBlock(required=False, max_length=10, help_text="Optional badge")
+    admin_only = blocks.BooleanBlock(required=False, default=False, help_text="Only show to Company Admins. Hide from regular employees.")
 
     class Meta:
         icon = "link"

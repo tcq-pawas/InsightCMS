@@ -9,6 +9,69 @@
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'css/blog_editor.css' %}">
+<style>
+  /* Yoast SEO Tag Style exact matching Image 2 */
+  .keyword-tag-box {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 6px !important;
+    min-height: 38px !important;
+    padding: 4px 8px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 4px !important;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05) !important;
+    cursor: text !important;
+  }
+  .keyword-tag-box:focus-within {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15) !important;
+  }
+  .keyword-tag {
+    display: inline-flex !important;
+    align-items: center !important;
+    background: #f1f3f5 !important;
+    color: #374151 !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 4px !important;
+    padding: 2px 7px 2px 5px !important;
+    font-size: 0.81rem !important;
+    line-height: 1.4 !important;
+    font-family: inherit !important;
+  }
+  .keyword-tag .tag-remove {
+    background: none !important;
+    border: none !important;
+    color: #6b7280 !important;
+    font-size: 1rem !important;
+    line-height: 1 !important;
+    padding: 0 4px 0 0 !important;
+    margin: 0 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    font-weight: bold !important;
+  }
+  .keyword-tag .tag-remove:hover {
+    color: #dc2626 !important;
+  }
+  .keyword-tag-input {
+    flex: 1 1 auto !important;
+    min-width: 120px !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 2px 4px !important;
+    font-size: 0.82rem !important;
+    background: transparent !important;
+  }
+  .keyword-tag-input:focus {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -178,10 +241,16 @@
                   <textarea name="meta_description" id="meta_description" rows="3" class="wp-form-control" placeholder="{{ page.field_meta_desc_placeholder|default:'150-160 characters summary for Google & WhatsApp previews' }}">{{ blog.meta_description }}</textarea>
                 </div>
 
-                <!-- Focus Keywords -->
+                <!-- Focus Keywords (Tag Input) -->
                 <div class="mb-3">
-                  <label for="meta_keywords" class="form-label mb-1 fw-semibold" style="font-size: 0.82rem;">{{ page.field_meta_keywords_label|default:"Focus Keywords" }}</label>
-                  <input type="text" name="meta_keywords" id="meta_keywords" class="wp-form-control" value="{{ blog.meta_keywords }}" placeholder="{{ page.field_meta_keywords_placeholder|default:'e.g. django, web development, seo' }}">
+                  <label class="form-label mb-1 fw-semibold" style="font-size: 0.82rem;">{{ page.field_meta_keywords_label|default:"Focus Keywords" }}</label>
+                  <!-- Hidden input stores comma-separated keywords for backend -->
+                  <input type="hidden" name="meta_keywords" id="meta_keywords_hidden" value="{{ blog.meta_keywords }}">
+                  <!-- Tag display + typing area -->
+                  <div id="keyword-tag-box" class="keyword-tag-box" onclick="document.getElementById('keyword-tag-input').focus()">
+                    <input type="text" id="keyword-tag-input" class="keyword-tag-input" placeholder="{{ page.field_meta_keywords_placeholder|default:'Type keyword and press Enter or comma...' }}" autocomplete="off">
+                  </div>
+                  <div class="text-muted mt-1" style="font-size: 0.75rem;">Press <kbd>Enter</kbd> or <kbd>,</kbd> to add a keyword. Click <strong>×</strong> to remove.</div>
                 </div>
 
                 <!-- Canonical URL -->
@@ -328,5 +397,64 @@
     }
   });
   updateSeoPreview();
+
+  /* ── Keyword Tag Input ── */
+  (function () {
+    const box = document.getElementById('keyword-tag-box');
+    const tagInput = document.getElementById('keyword-tag-input');
+    const hidden = document.getElementById('meta_keywords_hidden');
+    if (!box || !tagInput || !hidden) return;
+
+    // Pre-fill existing keywords from hidden input
+    let keywords = hidden.value ? hidden.value.split(',').map(k => k.trim()).filter(Boolean) : [];
+
+    function renderTags() {
+      box.querySelectorAll('.keyword-tag').forEach(t => t.remove());
+      keywords.forEach(function (kw, idx) {
+        const tag = document.createElement('span');
+        tag.className = 'keyword-tag';
+        tag.innerHTML = '<button type="button" class="tag-remove" data-idx="' + idx + '" title="Remove">×</button><span>' + kw + '</span>';
+        tag.querySelector('.tag-remove').addEventListener('click', function (e) {
+          e.stopPropagation();
+          keywords.splice(parseInt(this.dataset.idx), 1);
+          renderTags();
+        });
+        box.insertBefore(tag, tagInput);
+      });
+      hidden.value = keywords.join(',');
+    }
+
+    function addKeyword(val) {
+      val = val.trim().replace(/,+$/, '').trim();
+      if (val && !keywords.includes(val)) {
+        keywords.push(val);
+        renderTags();
+      }
+      tagInput.value = '';
+    }
+
+    tagInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        addKeyword(this.value);
+      } else if (e.key === 'Backspace' && this.value === '' && keywords.length) {
+        keywords.pop();
+        renderTags();
+      }
+    });
+
+    tagInput.addEventListener('blur', function () {
+      if (this.value.trim()) addKeyword(this.value);
+    });
+
+    tagInput.addEventListener('paste', function (e) {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text');
+      text.split(',').forEach(function (k) { addKeyword(k); });
+    });
+
+    // Render pre-filled tags on load
+    renderTags();
+  })();
 </script>
 {% endblock %}
