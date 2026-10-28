@@ -39,6 +39,10 @@
           {% if link.admin_only and is_employee or link.admin_only and user.role == 'company_user' %}
             {# Skip admin-only link for employee #}
 
+          {# 1b. Hide from Super Admin if configured #}
+          {% elif link.hide_from_superadmin and user.role == 'super_admin' or link.hide_from_superadmin and user.is_superuser or link.hide_from_superadmin and request.user.role == 'super_admin' or link.hide_from_superadmin and request.user.is_superuser %}
+            {# Skip link for super admin #}
+
           {# 2. Profile link: Only shown to employees #}
           {% elif not is_employee and user.role != 'company_user' and 'profile' in title_lower %}
             {# Skip profile link for admin #}
@@ -71,6 +75,11 @@
                 
                 {# Dynamic Submenus #}
                 {% for sub in link.submenus %}
+                  {% if sub.admin_only and is_employee %}
+                    {# Skip admin-only submenu for employee #}
+                  {% elif sub.hide_from_superadmin and user.role == 'super_admin' or sub.hide_from_superadmin and user.is_superuser or sub.hide_from_superadmin and request.user.role == 'super_admin' or sub.hide_from_superadmin and request.user.is_superuser %}
+                    {# Skip submenu for super admin #}
+                  {% else %}
                   <div class="d-flex flex-column">
                     <a href="javascript:void(0);" onclick="toggleSidebarMenu('sub-menu-{{ forloop.parentloop.counter }}-{{ forloop.counter }}', 'chevron-sub-{{ forloop.parentloop.counter }}-{{ forloop.counter }}')"
                        class="bp-subnav-item">
@@ -86,6 +95,8 @@
                       {% for child in sub.nested_links %}
                         {% if child.admin_only and is_employee %}
                           {# Skip admin-only nested link for employee #}
+                        {% elif child.hide_from_superadmin and user.role == 'super_admin' or child.hide_from_superadmin and user.is_superuser or child.hide_from_superadmin and request.user.role == 'super_admin' or child.hide_from_superadmin and request.user.is_superuser %}
+                          {# Skip sublink for super admin #}
                         {% else %}
                           <a href="{{ child.url }}" class="bp-nested-subnav-item {% if child.url == request.path %}active{% endif %}">
                             <i class="{{ child.icon|default:'fa-regular fa-file' }}"></i>
@@ -95,12 +106,15 @@
                       {% endfor %}
                     </div>
                   </div>
+                  {% endif %}
                 {% endfor %}
 
                 {# Dynamic Direct Sublinks #}
                 {% for child in link.direct_sublinks %}
                   {% if child.admin_only and is_employee %}
                     {# Skip admin-only direct sublink for employee #}
+                  {% elif child.hide_from_superadmin and user.role == 'super_admin' or child.hide_from_superadmin and user.is_superuser or child.hide_from_superadmin and request.user.role == 'super_admin' or child.hide_from_superadmin and request.user.is_superuser %}
+                    {# Skip direct sublink for super admin #}
                   {% else %}
                     <a href="{{ child.url }}" class="bp-subnav-item {% if child.url == request.path %}active{% endif %}">
                       <div class="d-flex align-items-center gap-2">

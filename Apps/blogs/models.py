@@ -1,3 +1,4 @@
+import re
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from wagtail.models import Page
@@ -283,6 +284,21 @@ class BlogPage(Page):
     @property
     def effective_og_image(self):
         return self.og_image or self.featured_image
+
+    @property
+    def first_content_image(self):
+        """Extract first <img> src from body HTML using regex to use as automatic thumbnail."""
+        if not self.body:
+            return None
+        match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', str(self.body), re.IGNORECASE)
+        return match.group(1) if match else None
+
+    @property
+    def effective_thumbnail_url(self):
+        """Returns uploaded featured image URL if present, otherwise falls back to first image found in blog body."""
+        if self.featured_image:
+            return self.featured_image.url
+        return self.first_content_image
 
     @property
     def total_views_count(self):

@@ -23,6 +23,7 @@ class SidebarChildLinkBlock(blocks.StructBlock):
     )
     badge_text = blocks.CharBlock(required=False, max_length=10, help_text="Optional badge")
     admin_only = blocks.BooleanBlock(required=False, default=False, help_text="Only show to Company Admins. Hide from regular employees.")
+    hide_from_superadmin = blocks.BooleanBlock(required=False, default=False, help_text="Hide this sublink from Super Admin")
 
     class Meta:
         icon = "link"
@@ -42,6 +43,8 @@ class SidebarSubmenuBlock(blocks.StructBlock):
         default='fa-solid fa-folder-open',
         help_text="Submenu Icon"
     )
+    admin_only = blocks.BooleanBlock(required=False, default=False, help_text="Only show this group to Company Admins. Hide from regular employees.")
+    hide_from_superadmin = blocks.BooleanBlock(required=False, default=False, help_text="Hide this group from Super Admin")
     nested_links = blocks.ListBlock(SidebarChildLinkBlock(), label="Nested Links (e.g. Comments Settings)", required=False)
 
     class Meta:
@@ -78,6 +81,7 @@ class SidebarLinkBlock(blocks.StructBlock):
     badge_text = blocks.CharBlock(required=False, max_length=10, help_text="Optional badge text (e.g. 24 or New)")
     is_active = blocks.BooleanBlock(required=False, default=False, help_text="Highlight as active/selected item")
     admin_only = blocks.BooleanBlock(required=False, default=False, help_text="Check this if this link is only for Admins and should be hidden from Employees")
+    hide_from_superadmin = blocks.BooleanBlock(required=False, default=False, help_text="Hide this navigation link from Super Admin")
     
     # Nested dynamic submenus and direct sublinks
     submenus = blocks.ListBlock(SidebarSubmenuBlock(), label="Submenu Groups (e.g. Blog Settings)", required=False)

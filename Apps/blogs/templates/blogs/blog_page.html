@@ -24,6 +24,8 @@
   <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+{% elif page.effective_thumbnail_url %}
+  <meta property="og:image" content="{% if page.effective_thumbnail_url|slice:':4' == 'http' %}{{ page.effective_thumbnail_url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ page.effective_thumbnail_url }}{% endif %}">
 {% endif %}
 
 <!-- Twitter Cards -->
@@ -32,6 +34,8 @@
 <meta name="twitter:description" content="{{ page.effective_meta_description|striptags|truncatechars:200 }}">
 {% if page.effective_og_image %}
   <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}">
+{% elif page.effective_thumbnail_url %}
+  <meta name="twitter:image" content="{% if page.effective_thumbnail_url|slice:':4' == 'http' %}{{ page.effective_thumbnail_url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ page.effective_thumbnail_url }}{% endif %}">
 {% endif %}
 
 <!-- JSON-LD Schema.org Structured Data (Google Rich Snippets Compliant) -->
@@ -84,6 +88,11 @@
         "url": "{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}",
         "width": 1200,
         "height": 630
+      },
+      {% elif page.effective_thumbnail_url %}
+      "image": {
+        "@type": "ImageObject",
+        "url": "{% if page.effective_thumbnail_url|slice:':4' == 'http' %}{{ page.effective_thumbnail_url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ page.effective_thumbnail_url }}{% endif %}"
       },
       {% endif %}
       "datePublished": "{{ page.first_published_at|default:page.latest_revision_created_at|date:'c' }}",

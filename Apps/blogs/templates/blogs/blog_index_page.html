@@ -36,6 +36,8 @@
               <div class="bp-blog-card-item mb-3">
                 {% if blog.featured_image %}
                   {% image blog.featured_image fill-60x60 class="bp-blog-thumb" %}
+                {% elif blog.effective_thumbnail_url %}
+                  <img src="{{ blog.effective_thumbnail_url }}" alt="{{ blog.title }}" class="bp-blog-thumb" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
                 {% else %}
                   <div class="bp-blog-thumb-fallback"><i class="fa-solid fa-pen-nib"></i></div>
                 {% endif %}
@@ -88,6 +90,8 @@
             <!-- 1. Left Thumbnail -->
             {% if blog.featured_image %}
               {% image blog.featured_image fill-60x60 class="bp-blog-thumb" %}
+            {% elif blog.effective_thumbnail_url %}
+              <img src="{{ blog.effective_thumbnail_url }}" alt="{{ blog.title }}" class="bp-blog-thumb" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
             {% else %}
               <div class="bp-blog-thumb-fallback"><i class="fa-solid fa-pen-nib"></i></div>
             {% endif %}

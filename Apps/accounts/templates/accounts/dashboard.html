@@ -30,7 +30,7 @@
             <h1 class="bp-page-title">{{ page.welcome_heading|default:"Dashboard" }}</h1>
             <p class="bp-page-sub">{{ page.welcome_subtext|default:"Welcome back! Here's what's happening with your blog." }}</p>
           </div>
-          {% if page.new_post_button_text %}
+          {% if page.new_post_button_text and user.role != 'super_admin' and not user.is_superuser and request.user.role != 'super_admin' and not request.user.is_superuser %}
           <div>
             <a href="{{ page.new_post_button_url|default:'/cms/pages/' }}" class="bp-btn-primary">
               <i class="fa-solid fa-plus me-1"></i> {{ page.new_post_button_text }}

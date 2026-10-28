@@ -74,15 +74,15 @@
             <h5 class="fw-bold mb-1">{{ dashboard_page.seo_audit_heading|default:"On-Page SEO Health Audit" }}</h5>
             <small class="text-muted">{{ dashboard_page.seo_audit_subtext|default:"Optimization check across all your blog articles" }}</small>
           </div>
-          <div class="d-flex align-items-center gap-3">
+          <!-- <div class="d-flex align-items-center gap-3">
             <div class="seo-score-circle {% if seo_score >= 80 %}bg-success-subtle text-success{% elif seo_score >= 50 %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %}">
               {{ seo_score }}%
-            </div>
-            <div>
+            </div> -->
+            <!-- <div>
               <div class="fw-semibold">Health Score</div>
               <small class="text-muted">{% if seo_score >= 80 %}Great optimization{% elif seo_score >= 50 %}Fair — can improve{% else %}Needs attention{% endif %}</small>
-            </div>
-          </div>
+            </div> -->
+          <!-- </div> -->
         </div>
 
         <div class="row g-3 text-center">
@@ -241,18 +241,22 @@
       <div class="row g-4">
         
         <div class="col-md-6">
-          <div class="seo-card">
-            <h5 class="fw-bold mb-1"><i class="fa-brands fa-share-nodes text-primary me-2"></i> {{ dashboard_page.social_preview_heading|default:"Social Sharing Previews" }}</h5>
-            <small class="text-muted d-block mb-3">{{ dashboard_page.social_preview_subtext|default:"Open Graph & Twitter Cards enabled automatically" }}</small>
-            <p class="text-muted" style="font-size: 0.82rem;">
-              {{ dashboard_page.social_preview_description|default:"Every blog post automatically outputs og:title, og:image, and twitter:card tags so your links render attractive rich preview cards on WhatsApp, Facebook, LinkedIn, and X (Twitter)." }}
-            </p>
-            <div class="p-3 bg-light rounded border">
+          <div class="seo-card h-100 d-flex flex-column justify-content-between">
+            <div>
+              <h5 class="fw-bold mb-1"><i class="fa-brands fa-share-nodes text-primary me-2"></i> {{ dashboard_page.social_preview_heading|default:"Social Sharing Previews" }}</h5>
+              <small class="text-muted d-block mb-3">{{ dashboard_page.social_preview_subtext|default:"Open Graph & Twitter Cards enabled automatically" }}</small>
+              <p class="text-muted" style="font-size: 0.82rem;">
+                {{ dashboard_page.social_preview_description|default:"Every blog post automatically outputs og:title, og:image, and twitter:card tags so your links render attractive rich preview cards on WhatsApp, Facebook, LinkedIn, and X (Twitter)." }}
+              </p>
+            </div>
+            <div class="p-3 bg-light rounded border mt-2">
               <span class="badge bg-primary rounded-pill mb-2"><i class="fa-brands fa-whatsapp me-1"></i> WhatsApp / LinkedIn Preview</span>
               <div class="d-flex gap-3 align-items-center">
                 {% if sample_blog and sample_blog.effective_og_image %}
                   {% image sample_blog.effective_og_image fill-80x80 as og_thumb %}
                   <img src="{{ og_thumb.url }}" alt="Preview Image" class="rounded border" style="width: 70px; height: 70px; object-fit: cover;">
+                {% elif sample_blog and sample_blog.effective_thumbnail_url %}
+                  <img src="{{ sample_blog.effective_thumbnail_url }}" alt="Preview Image" class="rounded border" style="width: 70px; height: 70px; object-fit: cover;">
                 {% else %}
                   <div class="rounded border bg-white d-flex align-items-center justify-content-center text-muted" style="width: 70px; height: 70px; font-size: 1.5rem;">
                     <i class="fa-regular fa-image opacity-50"></i>
@@ -275,15 +279,19 @@
         </div>
 
         <div class="col-md-6">
-          <div class="seo-card">
-            <h5 class="fw-bold mb-1"><i class="fa-solid fa-code text-info me-2"></i> {{ dashboard_page.schema_card_heading|default:"Schema Markup (JSON-LD)" }}</h5>
-            <small class="text-muted d-block mb-3">{{ dashboard_page.schema_card_subtext|default:"Google Rich Snippets for Blog Articles" }}</small>
-            <p class="text-muted" style="font-size: 0.82rem;">
-              {{ dashboard_page.schema_card_description|default:"Each article includes embedded JSON-LD structured data conforming to schema.org/BlogPosting, enabling Google Rich Results with author, publisher, and timestamp attribution." }}
-            </p>
-            <a href="https://validator.schema.org/" target="_blank" class="btn btn-outline-info btn-sm rounded-pill px-3">
-              <i class="fa-solid fa-check-double me-1"></i> {{ dashboard_page.btn_test_schema_label|default:"Test on Schema.org Validator" }}
-            </a>
+          <div class="seo-card h-100 d-flex flex-column justify-content-between">
+            <div>
+              <h5 class="fw-bold mb-1"><i class="fa-solid fa-code text-info me-2"></i> {{ dashboard_page.schema_card_heading|default:"Schema Markup (JSON-LD)" }}</h5>
+              <small class="text-muted d-block mb-3">{{ dashboard_page.schema_card_subtext|default:"Google Rich Snippets for Blog Articles" }}</small>
+              <p class="text-muted" style="font-size: 0.82rem;">
+                {{ dashboard_page.schema_card_description|default:"Each article includes embedded JSON-LD structured data conforming to schema.org/BlogPosting, enabling Google Rich Results with author, publisher, and timestamp attribution." }}
+              </p>
+            </div>
+            <div class="mt-3">
+              <a href="https://validator.schema.org/" target="_blank" class="btn btn-outline-info btn-sm rounded-pill px-3">
+                <i class="fa-solid fa-check-double me-1"></i> {{ dashboard_page.btn_test_schema_label|default:"Test on Schema.org Validator" }}
+              </a>
+            </div>
           </div>
         </div>
 

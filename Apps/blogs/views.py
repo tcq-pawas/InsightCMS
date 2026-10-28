@@ -1203,7 +1203,7 @@ def dashboard_seo_view(request):
     has_meta_title = blogs_qs.exclude(meta_title='').count()
     has_meta_desc = blogs_qs.exclude(meta_description='').count()
     has_canonical = blogs_qs.exclude(canonical_url='').count()
-    has_og_image = blogs_qs.filter(featured_image__isnull=False).count()
+    has_og_image = sum(1 for b in blogs_qs if b.effective_thumbnail_url)
 
     seo_score = 0
     if total_blogs > 0:
