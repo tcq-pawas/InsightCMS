@@ -14,16 +14,23 @@
     border-radius: 16px;
     padding: 1.25rem 1.5rem;
     border: 1px solid #E5E7EB;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
   }
   .company-stat-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    transform: translateY(-3px);
   }
+  .stat-card-blue { border-top: 4px solid #3B82F6; }
+  .stat-card-green { border-top: 4px solid #10B981; }
+  .stat-card-purple { border-top: 4px solid #8B5CF6; }
+  .stat-card-amber { border-top: 4px solid #F59E0B; }
+
   .stat-icon-circle {
     width: 48px;
     height: 48px;
@@ -32,6 +39,59 @@
     align-items: center;
     justify-content: center;
     font-size: 1.25rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+
+  .comp-table tr {
+    transition: background-color 0.15s ease;
+  }
+  .comp-table tr:hover {
+    background-color: #F8FAFC !important;
+  }
+  .comp-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+  .comp-chip {
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .btn-action-view {
+    background: #EEF2FF;
+    color: #4F46E5;
+    border: 1px solid #C7D2FE;
+    transition: all 0.2s ease;
+  }
+  .btn-action-view:hover {
+    background: #4F46E5;
+    color: #ffffff;
+    border-color: #4F46E5;
+    transform: translateY(-1px);
+  }
+  .btn-action-delete {
+    background: #FEF2F2;
+    color: #DC2626;
+    border: 1px solid #FECACA;
+    transition: all 0.2s ease;
+  }
+  .btn-action-delete:hover {
+    background: #DC2626;
+    color: #ffffff;
+    border-color: #DC2626;
+    transform: translateY(-1px);
   }
 </style>
 {% endblock %}
@@ -54,8 +114,10 @@
       <div class="bp-page-header mb-4">
         <div>
           <h1 class="bp-page-title d-flex align-items-center gap-2">
-            <i class="fa-solid fa-building text-primary" style="font-size: 1.5rem;"></i>
-            {{ page.companies_page_title|default:"Companies Management" }}
+            <span class="d-inline-flex align-items-center justify-content-center rounded-3 shadow-sm" style="width: 40px; height: 40px; background: linear-gradient(135deg, #4F46E5, #7C3AED); color: #fff;">
+              <i class="fa-solid fa-building" style="font-size: 1.15rem;"></i>
+            </span>
+            <span>{{ page.companies_page_title|default:"Companies Management" }}</span>
           </h1>
           <p class="bp-page-sub">{{ page.companies_page_subtext|default:"Manage all registered client companies, workspaces, and team admins." }}</p>
         </div>
@@ -77,10 +139,10 @@
       <div class="row g-3 mb-4">
         <!-- Total Companies -->
         <div class="col-md-3 col-sm-6">
-          <div class="company-stat-card">
+          <div class="company-stat-card stat-card-blue">
             <div>
               <span class="text-muted small fw-medium d-block mb-1">{{ page.companies_stat_total_label|default:"Total Companies" }}</span>
-              <h3 class="fw-bold mb-0 text-dark">{{ total_companies_count }}</h3>
+              <h3 class="fw-bold mb-0" style="color: #1E40AF;">{{ total_companies_count }}</h3>
             </div>
             <div class="stat-icon-circle" style="background: #EEF2FF; color: #4F46E5;">
               <i class="fa-solid fa-building"></i>
@@ -90,10 +152,10 @@
 
         <!-- Active Companies -->
         <div class="col-md-3 col-sm-6">
-          <div class="company-stat-card">
+          <div class="company-stat-card stat-card-green">
             <div>
               <span class="text-muted small fw-medium d-block mb-1">{{ page.companies_stat_active_label|default:"Active Companies" }}</span>
-              <h3 class="fw-bold mb-0 text-success">{{ active_companies_count }}</h3>
+              <h3 class="fw-bold mb-0" style="color: #065F46;">{{ active_companies_count }}</h3>
             </div>
             <div class="stat-icon-circle" style="background: #ECFDF5; color: #10B981;">
               <i class="fa-solid fa-circle-check"></i>
@@ -103,12 +165,12 @@
 
         <!-- Total Blogs Across All -->
         <div class="col-md-3 col-sm-6">
-          <div class="company-stat-card">
+          <div class="company-stat-card stat-card-purple">
             <div>
               <span class="text-muted small fw-medium d-block mb-1">{{ page.companies_stat_blogs_label|default:"Total Blogs" }}</span>
-              <h3 class="fw-bold mb-0 text-primary">{{ total_blogs_across_all }}</h3>
+              <h3 class="fw-bold mb-0" style="color: #6B21A8;">{{ total_blogs_across_all }}</h3>
             </div>
-            <div class="stat-icon-circle" style="background: #EFF6FF; color: #3B82F6;">
+            <div class="stat-icon-circle" style="background: #FAF5FF; color: #8B5CF6;">
               <i class="fa-solid fa-newspaper"></i>
             </div>
           </div>
@@ -116,10 +178,10 @@
 
         <!-- Total Members Across All -->
         <div class="col-md-3 col-sm-6">
-          <div class="company-stat-card">
+          <div class="company-stat-card stat-card-amber">
             <div>
               <span class="text-muted small fw-medium d-block mb-1">{{ page.companies_stat_members_label|default:"Total Members" }}</span>
-              <h3 class="fw-bold mb-0 text-warning">{{ total_members_across_all }}</h3>
+              <h3 class="fw-bold mb-0" style="color: #92400E;">{{ total_members_across_all }}</h3>
             </div>
             <div class="stat-icon-circle" style="background: #FFFBEB; color: #F59E0B;">
               <i class="fa-solid fa-users"></i>
@@ -129,11 +191,15 @@
       </div>
 
       <!-- Main Companies Card with Table -->
-      <div class="bp-card mb-4">
-        <div class="bp-card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="bp-card mb-4" style="border-radius: 18px; border: 1px solid #E2E8F0; box-shadow: 0 4px 18px rgba(0,0,0,0.04); overflow: hidden;">
+        <div class="bp-card-header d-flex flex-wrap justify-content-between align-items-center gap-3" style="background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%); border-bottom: 1px solid #EDF2F7; padding: 1.25rem 1.5rem;">
           <div>
-            <h3 class="bp-card-title mb-0">
-              {{ page.dashboard_tab_companies_title|default:"Registered Companies" }} ({{ companies_data|length }})
+            <h3 class="bp-card-title mb-0 d-flex align-items-center gap-2" style="font-weight: 700; color: #0F172A;">
+              <span class="d-inline-flex align-items-center justify-content-center rounded-2" style="width: 28px; height: 28px; background: #EEF2FF; color: #4F46E5; font-size: 0.85rem;">
+                <i class="fa-solid fa-layer-group"></i>
+              </span>
+              <span>{{ page.dashboard_tab_companies_title|default:"Registered Companies" }}</span>
+              <span class="badge rounded-pill bg-light text-primary border px-2 py-1" style="font-size: 0.78rem;">{{ companies_data|length }}</span>
             </h3>
           </div>
 
@@ -155,8 +221,8 @@
                     <i class="fa-solid fa-xmark"></i>
                   </a>
                 {% endif %}
-                <button class="btn btn-primary btn-sm px-3 fw-semibold" type="submit" style="border-radius: 0 9999px 9999px 0; font-size: 0.82rem;">
-                  Search
+                <button class="btn btn-primary btn-sm px-3 fw-semibold" type="submit" style="border-radius: 0 9999px 9999px 0; font-size: 0.82rem; background: linear-gradient(135deg, #4F46E5, #3B82F6); border: none;">
+                  {{ page.companies_search_button_label|default:"Search" }}
                 </button>
               </div>
             </form>
@@ -164,16 +230,16 @@
         </div>
 
         <div class="table-responsive">
-          <table class="table bp-table align-middle mb-0">
-            <thead>
+          <table class="table bp-table comp-table align-middle mb-0">
+            <thead style="background: #F8FAFC;">
               <tr>
-                <th>{{ page.th_company_name_label|default:"COMPANY NAME" }}</th>
-                <th>{{ page.th_company_domain_label|default:"DOMAIN / SLUG" }}</th>
-                <th>{{ page.th_company_admin_label|default:"COMPANY ADMIN" }}</th>
-                <th class="text-center">{{ page.th_company_blogs_label|default:"TOTAL BLOGS" }}</th>
-                <th class="text-center">{{ page.th_company_members_label|default:"MEMBERS" }}</th>
-                <th class="text-center">{{ page.th_company_status_label|default:"STATUS" }}</th>
-                <th class="text-end">{{ page.th_company_actions_label|default:"ACTIONS" }}</th>
+                <th style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_name_label|default:"COMPANY NAME" }}</th>
+                <th style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_domain_label|default:"DOMAIN / SLUG" }}</th>
+                <th style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_admin_label|default:"COMPANY ADMIN" }}</th>
+                <th class="text-center" style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_blogs_label|default:"TOTAL BLOGS" }}</th>
+                <th class="text-center" style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_members_label|default:"MEMBERS" }}</th>
+                <th class="text-center" style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_status_label|default:"STATUS" }}</th>
+                <th class="text-end" style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_actions_label|default:"ACTIONS" }}</th>
               </tr>
             </thead>
             <tbody>
@@ -183,60 +249,60 @@
                   <td>
                     <div class="d-flex align-items-center gap-2">
                       {% if comp.company.logo %}
-                        <img src="{{ comp.company.logo.url }}" alt="{{ comp.name }}" class="rounded-circle object-fit-cover" style="width: 38px; height: 38px; border: 1px solid #E5E7EB;">
+                        <img src="{{ comp.company.logo.url }}" alt="{{ comp.name }}" class="object-fit-cover rounded-3" style="width: 38px; height: 38px; border: 1.5px solid #E0E7FF; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
                       {% else %}
-                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
-                             style="width: 38px; height: 38px; background: #E0E7FF; color: #4338CA; font-size: 0.95rem;">
+                        <div class="comp-avatar" 
+                             style="{% cycle 'background: linear-gradient(135deg, #EEF2FF, #E0E7FF); color: #4338CA;' 'background: linear-gradient(135deg, #ECFDF5, #D1FAE5); color: #047857;' 'background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: #1D4ED8;' 'background: linear-gradient(135deg, #FAF5FF, #F3E8FF); color: #7E22CE;' 'background: linear-gradient(135deg, #FFFBEB, #FEF3C7); color: #B45309;' %}">
                           {{ comp.name|slice:":1"|upper }}
                         </div>
                       {% endif %}
                       <div>
-                        <div class="fw-semibold text-dark">{{ comp.name }}</div>
-                        <small class="text-muted">{{ comp.created_at|date:"M d, Y" }}</small>
+                        <div class="fw-bold text-dark" style="font-size: 0.92rem;">{{ comp.name }}</div>
+                        <small class="text-muted" style="font-size: 0.72rem;">{{ comp.created_at|date:"M d, Y" }}</small>
                       </div>
                     </div>
                   </td>
 
                   <!-- Domain / Slug -->
                   <td>
-                    <span class="badge rounded-pill bg-light text-secondary px-3 py-1 font-monospace" style="border: 1px solid #E5E7EB; font-size: 0.82rem;">
-                      {{ comp.domain }}
+                    <span class="comp-chip font-monospace" style="background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE;">
+                      <i class="fa-solid fa-link fa-2xs"></i> {{ comp.domain }}
                     </span>
                   </td>
 
                   <!-- Admin Contact -->
                   <td>
-                    <div class="fw-medium text-dark" style="font-size: 0.9rem;">{{ comp.admin_name }}</div>
-                    <small class="text-muted">{{ comp.admin_email }}</small>
+                    <div class="fw-semibold text-dark" style="font-size: 0.88rem;">{{ comp.admin_name }}</div>
+                    <small style="color: #6366F1; font-size: 0.76rem;"><i class="fa-regular fa-envelope me-1"></i>{{ comp.admin_email }}</small>
                   </td>
 
                   <!-- Total Blogs -->
                   <td class="text-center">
-                    <span class="badge rounded-pill bg-light text-dark px-3 py-2 fw-bold" style="border: 1px solid #E5E7EB; font-size: 0.85rem;">
+                    <span class="badge rounded-pill fw-bold px-3 py-1" style="background: #EFF6FF; color: #2563EB; border: 1px solid #DBEAFE; font-size: 0.84rem;">
                       {{ comp.total_blogs }}
                     </span>
                   </td>
 
                   <!-- Members -->
                   <td class="text-center">
-                    <span class="badge rounded-pill bg-light text-dark px-3 py-2 fw-bold" style="border: 1px solid #E5E7EB; font-size: 0.85rem;">
-                      <i class="fa-solid fa-users me-1 text-muted"></i> {{ comp.total_members }}
+                    <span class="badge rounded-pill fw-bold px-3 py-1" style="background: #FAF5FF; color: #7C3AED; border: 1px solid #E9D5FF; font-size: 0.84rem;">
+                      <i class="fa-solid fa-users me-1" style="color: #A855F7;"></i> {{ comp.total_members }}
                     </span>
                   </td>
 
                   <!-- Status -->
                   <td class="text-center">
                     {% if comp.approval_status == 'approved' or comp.status == 'active' %}
-                      <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2 fw-bold" style="font-size: 0.82rem;">
-                        <i class="fa-solid fa-circle-check me-1"></i> Active
+                      <span class="comp-chip" style="background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0;">
+                        <i class="fa-solid fa-circle-check"></i> Active
                       </span>
                     {% elif comp.approval_status == 'pending' %}
-                      <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis px-3 py-2 fw-bold" style="font-size: 0.82rem;">
-                        <i class="fa-regular fa-clock me-1"></i> Pending
+                      <span class="comp-chip" style="background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A;">
+                        <i class="fa-regular fa-clock"></i> Pending
                       </span>
                     {% else %}
-                      <span class="badge rounded-pill bg-danger-subtle text-danger px-3 py-2 fw-bold" style="font-size: 0.82rem;">
-                        <i class="fa-solid fa-ban me-1"></i> Inactive
+                      <span class="comp-chip" style="background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA;">
+                        <i class="fa-solid fa-ban"></i> Inactive
                       </span>
                     {% endif %}
                   </td>
@@ -246,16 +312,16 @@
                     <div class="d-inline-flex align-items-center gap-1">
                       <!-- View Details Button → opens company detail page -->
                       <a href="/companies/{{ comp.company.id }}/"
-                         class="btn btn-sm btn-outline-primary rounded d-inline-flex align-items-center justify-content-center"
-                         style="width: 30px; height: 28px; padding: 0;"
+                         class="btn btn-sm btn-action-view rounded-3 d-inline-flex align-items-center justify-content-center"
+                         style="width: 32px; height: 32px; padding: 0;"
                          title="View Details">
                         <i class="fa-solid fa-eye" style="font-size: 0.85rem;"></i>
                       </a>
 
                       <!-- Remove Company Icon Button -->
                       <button type="button" 
-                              class="btn btn-sm btn-outline-danger rounded d-inline-flex align-items-center justify-content-center btn-remove-company" 
-                              style="width: 30px; height: 28px; padding: 0;"
+                              class="btn btn-sm btn-action-delete rounded-3 d-inline-flex align-items-center justify-content-center btn-remove-company" 
+                              style="width: 32px; height: 32px; padding: 0;"
                               data-company-id="{{ comp.company.id }}" 
                               data-company-name="{{ comp.name }}"
                               title="Remove Company">
@@ -280,19 +346,19 @@
         {% if companies_page_obj.paginator.num_pages > 1 %}
         <div class="p-3 border-top d-flex flex-wrap justify-content-between align-items-center gap-2">
           <small class="text-muted">
-            Showing {{ companies_page_obj.start_index }} to {{ companies_page_obj.end_index }} of {{ companies_page_obj.paginator.count }} companies
+            {{ page.companies_pagination_showing_text|default:"Showing" }} {{ companies_page_obj.start_index }} {{ page.companies_pagination_to_text|default:"to" }} {{ companies_page_obj.end_index }} {{ page.companies_pagination_of_text|default:"of" }} {{ companies_page_obj.paginator.count }} {{ page.companies_pagination_companies_text|default:"companies" }}
           </small>
           <nav aria-label="Companies Page Navigation">
             <ul class="pagination pagination-sm mb-0">
               {% if companies_page_obj.has_previous %}
                 <li class="page-item">
                   <a class="page-link rounded-pill me-1 px-3" href="?page={{ companies_page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
-                    &laquo; Previous
+                    &laquo; {{ page.companies_pagination_prev_text|default:"Previous" }}
                   </a>
                 </li>
               {% else %}
                 <li class="page-item disabled">
-                  <span class="page-link rounded-pill me-1 px-3">&laquo; Previous</span>
+                  <span class="page-link rounded-pill me-1 px-3">&laquo; {{ page.companies_pagination_prev_text|default:"Previous" }}</span>
                 </li>
               {% endif %}
 
@@ -311,12 +377,12 @@
               {% if companies_page_obj.has_next %}
                 <li class="page-item">
                   <a class="page-link rounded-pill ms-1 px-3" href="?page={{ companies_page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
-                    Next &raquo;
+                    {{ page.companies_pagination_next_text|default:"Next" }} &raquo;
                   </a>
                 </li>
               {% else %}
                 <li class="page-item disabled">
-                  <span class="page-link rounded-pill ms-1 px-3">Next &raquo;</span>
+                  <span class="page-link rounded-pill ms-1 px-3">{{ page.companies_pagination_next_text|default:"Next" }} &raquo;</span>
                 </li>
               {% endif %}
             </ul>

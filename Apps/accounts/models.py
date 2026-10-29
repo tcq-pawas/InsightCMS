@@ -919,6 +919,40 @@ class SettingsPage(Page):
     companies_stat_blogs_label          = models.CharField(max_length=50, blank=True, default="Total Blogs")
     companies_stat_members_label        = models.CharField(max_length=50, blank=True, default="Total Members")
     companies_search_placeholder        = models.CharField(max_length=100, blank=True, default="Search company by name or domain...")
+    companies_search_button_label       = models.CharField(max_length=50, blank=True, default="Search")
+    companies_pagination_showing_text   = models.CharField(max_length=50, blank=True, default="Showing")
+    companies_pagination_to_text        = models.CharField(max_length=50, blank=True, default="to")
+    companies_pagination_of_text        = models.CharField(max_length=50, blank=True, default="of")
+    companies_pagination_companies_text = models.CharField(max_length=50, blank=True, default="companies")
+    companies_pagination_prev_text      = models.CharField(max_length=50, blank=True, default="Previous")
+    companies_pagination_next_text      = models.CharField(max_length=50, blank=True, default="Next")
+    dashboard_view_all_companies_label  = models.CharField(max_length=100, blank=True, default="View All Companies", help_text="Label for View All Companies button on dashboard")
+
+    # Company Detail Page CMS Fields (/companies/<uuid>/)
+    detail_back_btn_text                = models.CharField(max_length=60, blank=True, default="Back to Companies", help_text="Back button text on Company Detail page")
+    detail_card_info_title              = models.CharField(max_length=80, blank=True, default="Company Information")
+    detail_card_contact_title           = models.CharField(max_length=80, blank=True, default="Admin & Contact")
+    detail_card_members_title           = models.CharField(max_length=80, blank=True, default="Team Members")
+    detail_stat_members_label           = models.CharField(max_length=50, blank=True, default="Members")
+    detail_th_domain_label              = models.CharField(max_length=50, blank=True, default="Domain / Slug")
+    detail_th_website_name_label        = models.CharField(max_length=50, blank=True, default="Website Name")
+    detail_th_website_url_label         = models.CharField(max_length=50, blank=True, default="Website URL")
+    detail_th_registered_label          = models.CharField(max_length=50, blank=True, default="Registered On")
+    detail_th_status_label              = models.CharField(max_length=50, blank=True, default="Account Status")
+    detail_th_approval_label            = models.CharField(max_length=50, blank=True, default="Approval")
+    detail_th_admin_name_label          = models.CharField(max_length=50, blank=True, default="Company Admin")
+    detail_th_admin_email_label         = models.CharField(max_length=50, blank=True, default="Admin Email")
+    detail_th_contact_person_label      = models.CharField(max_length=50, blank=True, default="Contact Person")
+    detail_th_contact_email_label       = models.CharField(max_length=50, blank=True, default="Contact Email")
+    detail_empty_members_text           = models.CharField(max_length=120, blank=True, default="No members found.")
+
+    # Manage User Settings Placeholder Page CMS Fields
+    manage_users_breadcrumb_settings_text = models.CharField(max_length=50, blank=True, default="Settings")
+    manage_users_breadcrumb_active_text   = models.CharField(max_length=50, blank=True, default="Manage User Settings")
+    manage_users_placeholder_title        = models.CharField(max_length=100, blank=True, default="Manage User Settings")
+    manage_users_placeholder_desc         = models.TextField(blank=True, default="This settings module is currently in development. You will soon be able to manage user invitations, fine-grained access levels, and workspace roles directly from here.")
+    manage_users_btn_comments_settings    = models.CharField(max_length=60, blank=True, default="Go to Comments Settings")
+    manage_users_btn_view_team            = models.CharField(max_length=60, blank=True, default="View Team Members")
 
     # Website Integration Page CMS Fields (Comprehensive Dynamic Customization)
     integration_page_title = models.CharField(max_length=100, blank=True, default="Website Integration Guide")
@@ -1171,7 +1205,37 @@ class SettingsPage(Page):
             FieldPanel("companies_stat_blogs_label"),
             FieldPanel("companies_stat_members_label"),
             FieldPanel("companies_search_placeholder"),
-        ], heading="Super Admin Companies Listing Settings"),
+            FieldPanel("companies_search_button_label"),
+            FieldPanel("companies_pagination_showing_text"),
+            FieldPanel("companies_pagination_to_text"),
+            FieldPanel("companies_pagination_of_text"),
+            FieldPanel("companies_pagination_companies_text"),
+            FieldPanel("companies_pagination_prev_text"),
+            FieldPanel("companies_pagination_next_text"),
+            FieldPanel("dashboard_view_all_companies_label"),
+            FieldPanel("detail_back_btn_text"),
+            FieldPanel("detail_card_info_title"),
+            FieldPanel("detail_card_contact_title"),
+            FieldPanel("detail_card_members_title"),
+            FieldPanel("detail_stat_members_label"),
+            FieldPanel("detail_th_domain_label"),
+            FieldPanel("detail_th_website_name_label"),
+            FieldPanel("detail_th_website_url_label"),
+            FieldPanel("detail_th_registered_label"),
+            FieldPanel("detail_th_status_label"),
+            FieldPanel("detail_th_approval_label"),
+            FieldPanel("detail_th_admin_name_label"),
+            FieldPanel("detail_th_admin_email_label"),
+            FieldPanel("detail_th_contact_person_label"),
+            FieldPanel("detail_th_contact_email_label"),
+            FieldPanel("detail_empty_members_text"),
+            FieldPanel("manage_users_breadcrumb_settings_text"),
+            FieldPanel("manage_users_breadcrumb_active_text"),
+            FieldPanel("manage_users_placeholder_title"),
+            FieldPanel("manage_users_placeholder_desc"),
+            FieldPanel("manage_users_btn_comments_settings"),
+            FieldPanel("manage_users_btn_view_team"),
+        ], heading="Super Admin Companies Listing & Detail Settings"),
     ]
 
     parent_page_types = ["wagtailcore.Page", "companies.CompanyHomePage"]

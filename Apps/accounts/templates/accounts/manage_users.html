@@ -20,25 +20,118 @@
     font-weight: 500;
     font-size: 0.95rem;
     padding: 0.65rem 1.25rem;
-    border-radius: 8px;
+    border-radius: 10px;
     transition: all 0.2s ease;
     background: transparent;
+    display: inline-flex;
+    align-items: center;
   }
   .nav-tabs-custom .nav-link:hover {
     color: #1a1a2e;
-    background: #f8f9fa;
+    background: #f1f5f9;
   }
   .nav-tabs-custom .nav-link.active {
-    color: #6c63ff;
-    background: #f0f0ff;
+    color: #4f46e5;
+    background: #eef2ff;
     font-weight: 600;
+    box-shadow: 0 1px 3px rgba(79, 70, 229, 0.1);
   }
   .tab-badge {
     font-size: 0.75rem;
-    padding: 0.2em 0.6em;
+    padding: 0.2em 0.65em;
     border-radius: 12px;
     margin-left: 0.4rem;
+    font-weight: 700;
   }
+  .tab-badge-amber {
+    background: #FEF3C7 !important;
+    color: #B45309 !important;
+  }
+  .tab-badge-purple {
+    background: #EDE9FE !important;
+    color: #6D28D9 !important;
+  }
+  .tab-badge-blue {
+    background: #DBEAFE !important;
+    color: #1E40AF !important;
+  }
+  .tab-badge-green {
+    background: #D1FAE5 !important;
+    color: #065F46 !important;
+  }
+
+  .comp-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+  }
+
+  .comp-chip {
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .btn-action-edit {
+    background: #EEF2FF;
+    color: #4F46E5;
+    border: 1px solid #C7D2FE;
+    transition: all 0.2s ease;
+  }
+  .btn-action-edit:hover {
+    background: #4F46E5;
+    color: #ffffff;
+    border-color: #4F46E5;
+    transform: translateY(-1px);
+  }
+  .btn-action-group {
+    background: #FAF5FF;
+    color: #7C3AED;
+    border: 1px solid #E9D5FF;
+    transition: all 0.2s ease;
+  }
+  .btn-action-group:hover {
+    background: #7C3AED;
+    color: #ffffff;
+    border-color: #7C3AED;
+    transform: translateY(-1px);
+  }
+  .btn-action-block {
+    background: #FFFBEB;
+    color: #D97706;
+    border: 1px solid #FDE68A;
+    transition: all 0.2s ease;
+  }
+  .btn-action-block:hover {
+    background: #D97706;
+    color: #ffffff;
+    border-color: #D97706;
+    transform: translateY(-1px);
+  }
+  .btn-action-delete {
+    background: #FEF2F2;
+    color: #DC2626;
+    border: 1px solid #FECACA;
+    transition: all 0.2s ease;
+  }
+  .btn-action-delete:hover {
+    background: #DC2626;
+    color: #ffffff;
+    border-color: #DC2626;
+    transform: translateY(-1px);
+  }
+
   .email-mode-pill {
     color: #64748b;
     border: none;
@@ -106,31 +199,31 @@
         <ul class="nav nav-tabs nav-tabs-custom" id="userSettingsTabs" role="tablist">
           <li class="nav-item" role="presentation">
             <button class="nav-link active" id="admins-tab" data-bs-toggle="tab" data-bs-target="#admins-pane" type="button" role="tab">
-              <i class="bi bi-shield-lock me-1"></i> {{ page.manage_users_tab_admins|default:"Administrators" }}
-              <span class="badge bg-warning text-dark tab-badge">{{ admin_members|length }}</span>
+              <i class="bi bi-shield-lock me-1 text-primary"></i> {{ page.manage_users_tab_admins|default:"Administrators" }}
+              <span class="badge tab-badge tab-badge-amber">{{ admin_members|length }}</span>
             </button>
           </li>
           <li class="nav-item" role="presentation">
             <button class="nav-link" id="groups-tab" data-bs-toggle="tab" data-bs-target="#groups-pane" type="button" role="tab">
-              <i class="bi bi-diagram-3 me-1"></i> {{ page.manage_users_tab_groups|default:"Groups" }}
-              <span class="badge bg-primary tab-badge" style="background:#6c63ff!important;">{{ groups|length }}</span>
+              <i class="bi bi-diagram-3 me-1" style="color: #7C3AED;"></i> {{ page.manage_users_tab_groups|default:"Groups" }}
+              <span class="badge tab-badge tab-badge-purple">{{ groups|length }}</span>
             </button>
           </li>
           <li class="nav-item" role="presentation">
             <button class="nav-link" id="all-users-tab" data-bs-toggle="tab" data-bs-target="#all-users-pane" type="button" role="tab">
-              <i class="bi bi-people me-1"></i> {{ page.manage_users_tab_users|default:"Users" }}
-              <span class="badge bg-secondary tab-badge">{{ team_list|length }}</span>
+              <i class="bi bi-people me-1 text-info"></i> {{ page.manage_users_tab_users|default:"Users" }}
+              <span class="badge tab-badge tab-badge-blue">{{ team_list|length }}</span>
             </button>
           </li>
           <li class="nav-item" role="presentation">
             <button class="nav-link" id="email-settings-tab" data-bs-toggle="tab" data-bs-target="#email-settings-pane" type="button" role="tab">
-              <i class="bi bi-envelope-at me-1"></i> {{ page.manage_users_tab_email|default:"Email Integration" }}
+              <i class="bi bi-envelope-at me-1 text-secondary"></i> {{ page.manage_users_tab_email|default:"Email Integration" }}
               {% if company.email_provider == 'google' and company.google_email %}
-                <span class="badge bg-success tab-badge"><i class="bi bi-google"></i> Google Connected</span>
+                <span class="badge tab-badge tab-badge-green"><i class="bi bi-google me-1"></i> Google Connected</span>
               {% elif company.smtp_user %}
-                <span class="badge bg-success tab-badge"><i class="bi bi-check2"></i> SMTP Active</span>
+                <span class="badge tab-badge tab-badge-green"><i class="bi bi-check2 me-1"></i> SMTP Active</span>
               {% else %}
-                <span class="badge bg-warning text-dark tab-badge"><i class="bi bi-exclamation-triangle"></i> Not Set</span>
+                <span class="badge tab-badge tab-badge-amber"><i class="bi bi-exclamation-triangle me-1"></i> Not Set</span>
               {% endif %}
             </button>
           </li>
@@ -141,79 +234,99 @@
 
           <!-- 1. ALL USERS TAB PANE -->
           <div class="tab-pane fade" id="all-users-pane" role="tabpanel">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden; border: 1px solid #E2E8F0 !important;">
               <div class="table-responsive">
-                <table class="table table-hover mb-0 align-middle" style="font-size:.87rem;">
-                  <thead style="background:#f8f7ff;">
+                <table class="table table-hover mb-0 align-middle comp-table" style="font-size:.87rem;">
+                  <thead style="background:#F8FAFC; border-bottom: 1px solid #EDF2F7;">
                     <tr>
-                      <th class="ps-3">{{ page.manage_users_th_user|default:"User" }}</th>
-                      <th>{{ page.manage_users_th_email|default:"Email" }}</th>
-                      <th>{{ page.manage_users_th_group|default:"Group" }}</th>
-                      <th>{{ page.manage_users_th_status|default:"Status" }}</th>
-                      <th class="text-end pe-3">{{ page.manage_users_th_actions|default:"Actions" }}</th>
+                      <th class="ps-4" style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.manage_users_th_user|default:"USER" }}</th>
+                      <th style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.manage_users_th_email|default:"EMAIL" }}</th>
+                      <th style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.manage_users_th_group|default:"GROUP" }}</th>
+                      <th style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.manage_users_th_status|default:"STATUS" }}</th>
+                      <th class="text-end pe-4" style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.manage_users_th_actions|default:"ACTIONS" }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {% for member in team_list %}
                     {% if not member.is_admin %}
                     <tr>
-                      <td class="ps-3">
+                      <td class="ps-4">
                         <div class="d-flex align-items-center gap-2">
-                          <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width:34px;height:34px;background:#6c63ff;font-size:.8rem;">
+                          <div class="comp-avatar" style="{% cycle 'background: linear-gradient(135deg, #EEF2FF, #E0E7FF); color: #4338CA;' 'background: linear-gradient(135deg, #ECFDF5, #D1FAE5); color: #047857;' 'background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: #1D4ED8;' 'background: linear-gradient(135deg, #FAF5FF, #F3E8FF); color: #7E22CE;' 'background: linear-gradient(135deg, #FFFBEB, #FEF3C7); color: #B45309;' %}">
                             {{ member.name|slice:":1"|upper }}
                           </div>
-                          <span class="fw-semibold" style="color:#1a1a2e;">{{ member.name }}{% if member.is_self %} <span class="badge bg-secondary ms-1" style="font-size:.65rem;">{{ page.manage_users_badge_you|default:"You" }}</span>{% endif %}</span>
+                          <div>
+                            <span class="fw-bold text-dark">{{ member.name }}</span>
+                            {% if member.is_self %}
+                              <span class="badge rounded-pill bg-light text-secondary border ms-1" style="font-size:.68rem;">{{ page.manage_users_badge_you|default:"You" }}</span>
+                            {% endif %}
+                          </div>
                         </div>
                       </td>
-                      <td class="text-muted">{{ member.email }}</td>
+                      <td>
+                        <span class="text-muted"><i class="fa-regular fa-envelope me-1" style="color: #6366F1;"></i>{{ member.email }}</span>
+                      </td>
                       <td>
                         {% if member.group %}
-                        <span class="badge" style="background:#f0f0ff;color:#6c63ff;font-weight:600;"><i class="bi bi-folder2 me-1"></i>{{ member.group_name }}</span>
+                        <span class="comp-chip" style="background:#FAF5FF;color:#7C3AED;border:1px solid #E9D5FF;">
+                          <i class="fa-regular fa-folder-open"></i> {{ member.group_name }}
+                        </span>
                         {% else %}
                         <span class="text-muted fst-italic" style="font-size:.8rem;">— {{ page.manage_users_option_no_group|default:"None" }}</span>
                         {% endif %}
                       </td>
                       <td>
                         {% if member.is_blocked %}
-                        <span class="badge bg-danger">{{ page.manage_users_badge_blocked|default:"Blocked" }}</span>
+                        <span class="comp-chip" style="background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA;">
+                          <i class="fa-solid fa-ban"></i> {{ page.manage_users_badge_blocked|default:"Blocked" }}
+                        </span>
                         {% else %}
-                        <span class="badge bg-success">{{ page.manage_users_badge_active|default:"Active" }}</span>
+                        <span class="comp-chip" style="background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0;">
+                          <i class="fa-solid fa-circle-check"></i> {{ page.manage_users_badge_active|default:"Active" }}
+                        </span>
                         {% endif %}
                       </td>
-                      <td class="text-end pe-3">
+                      <td class="text-end pe-4">
                         {% if not member.is_self %}
-                        <div class="d-flex justify-content-end gap-2">
+                        <div class="d-flex justify-content-end gap-1">
                           <!-- Edit User -->
-                          <button class="btn btn-sm btn-light btn-edit-user" title="{{ page.manage_users_btn_edit|default:'Edit User' }}"
+                          <button class="btn btn-sm btn-action-edit rounded-3 d-inline-flex align-items-center justify-content-center btn-edit-user" 
+                            style="width: 32px; height: 32px; padding: 0;"
+                            title="{{ page.manage_users_btn_edit|default:'Edit User' }}"
                             data-id="{{ member.id }}"
                             data-first-name="{{ member.first_name }}"
                             data-last-name="{{ member.last_name }}"
                             data-email="{{ member.email }}"
                             data-group-id="{% if member.group %}{{ member.group.id }}{% endif %}"
                             data-role="{{ member.role }}">
-                            <i class="bi bi-pencil-square" style="color:#6c63ff;"></i>
+                            <i class="fa-solid fa-pen-to-square" style="font-size:.85rem;"></i>
                           </button>
                           <!-- Assign to group -->
-                          <button class="btn btn-sm btn-light" title="{{ page.manage_users_modal_assign_group_title|default:'Assign Group' }}"
+                          <button class="btn btn-sm btn-action-group rounded-3 d-inline-flex align-items-center justify-content-center" 
+                            style="width: 32px; height: 32px; padding: 0;"
+                            title="{{ page.manage_users_modal_assign_group_title|default:'Assign Group' }}"
                             onclick="openAssignGroup({{ member.id }}, '{{ member.name|escapejs }}', {% if member.group %}{{ member.group.id }}{% else %}null{% endif %})">
-                            <i class="bi bi-diagram-3" style="color:#6c63ff;"></i>
+                            <i class="fa-solid fa-diagram-project" style="font-size:.85rem;"></i>
                           </button>
                           <!-- Block/Unblock -->
                           <form method="POST" style="display:inline;">
                             {% csrf_token %}
                             <input type="hidden" name="action_type" value="toggle_block">
                             <input type="hidden" name="user_id" value="{{ member.id }}">
-                            <button type="submit" class="btn btn-sm btn-light" title="{% if member.is_blocked %}{{ page.manage_users_badge_active|default:'Unblock' }}{% else %}{{ page.manage_users_badge_blocked|default:'Block' }}{% endif %}">
-                              <i class="bi {% if member.is_blocked %}bi-unlock-fill text-success{% else %}bi-slash-circle text-warning{% endif %}"></i>
+                            <button type="submit" class="btn btn-sm btn-action-block rounded-3 d-inline-flex align-items-center justify-content-center" 
+                              style="width: 32px; height: 32px; padding: 0;"
+                              title="{% if member.is_blocked %}{{ page.manage_users_badge_active|default:'Unblock' }}{% else %}{{ page.manage_users_badge_blocked|default:'Block' }}{% endif %}">
+                              <i class="fa-solid {% if member.is_blocked %}fa-lock-open{% else %}fa-ban{% endif %}" style="font-size:.85rem;"></i>
                             </button>
                           </form>
                           <!-- Remove -->
-                          <button type="button" class="btn btn-sm btn-light btn-remove-user" 
+                          <button type="button" class="btn btn-sm btn-action-delete rounded-3 d-inline-flex align-items-center justify-content-center btn-remove-user" 
+                                  style="width: 32px; height: 32px; padding: 0;"
                                   data-id="{{ member.id }}" 
                                   data-name="{{ member.name|escapejs }}" 
                                   data-email="{{ member.email }}"
                                   title="{{ page.manage_users_btn_delete|default:'Remove' }}">
-                            <i class="bi bi-person-x-fill text-danger"></i>
+                            <i class="fa-solid fa-trash-can" style="font-size:.85rem;"></i>
                           </button>
                         </div>
                         {% endif %}
@@ -318,43 +431,66 @@
 
           <!-- 3. ADMINS TAB PANE -->
           <div class="tab-pane fade show active" id="admins-pane" role="tabpanel">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden; border: 1px solid #E2E8F0 !important;">
               <div class="table-responsive">
-                <table class="table table-hover mb-0 align-middle" style="font-size:.87rem;">
-                  <thead style="background:#f8f7ff;">
+                <table class="table table-hover mb-0 align-middle comp-table" style="font-size:.87rem;">
+                  <thead style="background:#F8FAFC; border-bottom: 1px solid #EDF2F7;">
                     <tr>
-                      <th class="ps-3">{{ page.manage_users_th_user|default:"User" }}</th>
-                      <th>{{ page.manage_users_th_email|default:"Email" }}</th>
-                      <th>{{ page.manage_users_th_role|default:"Role" }}</th>
-                      <th>{{ page.manage_users_th_status|default:"Status" }}</th>
-                      <th class="text-end pe-3">{{ page.manage_users_th_actions|default:"Actions" }}</th>
+                      <th class="ps-4" style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.manage_users_th_user|default:"USER" }}</th>
+                      <th style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.manage_users_th_email|default:"EMAIL" }}</th>
+                      <th style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.manage_users_th_role|default:"ROLE" }}</th>
+                      <th style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.manage_users_th_status|default:"STATUS" }}</th>
+                      <th class="text-end pe-4" style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.manage_users_th_actions|default:"ACTIONS" }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {% for member in admin_members %}
                     <tr>
-                      <td class="ps-3">
+                      <td class="ps-4">
                         <div class="d-flex align-items-center gap-2">
-                          <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width:34px;height:34px;background:#e8a838;font-size:.8rem;">
+                          <div class="comp-avatar" style="{% cycle 'background: linear-gradient(135deg, #EEF2FF, #E0E7FF); color: #4338CA;' 'background: linear-gradient(135deg, #ECFDF5, #D1FAE5); color: #047857;' 'background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: #1D4ED8;' 'background: linear-gradient(135deg, #FAF5FF, #F3E8FF); color: #7E22CE;' 'background: linear-gradient(135deg, #FFFBEB, #FEF3C7); color: #B45309;' %}">
                             {{ member.name|slice:":1"|upper }}
                           </div>
-                          <span class="fw-semibold" style="color:#1a1a2e;">{{ member.name }}{% if member.is_self %} <span class="badge bg-secondary ms-1" style="font-size:.65rem;">{{ page.manage_users_badge_you|default:"You" }}</span>{% endif %}</span>
+                          <div>
+                            <span class="fw-bold text-dark">{{ member.name }}</span>
+                            {% if member.is_self %}
+                              <span class="badge rounded-pill bg-light text-secondary border ms-1" style="font-size:.68rem;">{{ page.manage_users_badge_you|default:"You" }}</span>
+                            {% endif %}
+                          </div>
                         </div>
                       </td>
-                      <td class="text-muted">{{ member.email }}</td>
-                      <td><span class="badge" style="background:#fff3cd;color:#856404;">{{ page.manage_users_badge_admin|default:"Admin" }}</span></td>
-                      <td><span class="badge bg-success">{{ page.manage_users_badge_active|default:"Active" }}</span></td>
-                      <td class="text-end pe-3">
-                        <div class="d-flex justify-content-end gap-2">
+                      <td>
+                        <span class="text-muted"><i class="fa-regular fa-envelope me-1" style="color: #6366F1;"></i>{{ member.email }}</span>
+                      </td>
+                      <td>
+                        <span class="comp-chip" style="background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A;">
+                          <i class="fa-solid fa-shield-halved"></i> {{ page.manage_users_badge_admin|default:"Admin" }}
+                        </span>
+                      </td>
+                      <td>
+                        {% if member.is_blocked %}
+                          <span class="comp-chip" style="background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA;">
+                            <i class="fa-solid fa-ban"></i> Blocked
+                          </span>
+                        {% else %}
+                          <span class="comp-chip" style="background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0;">
+                            <i class="fa-solid fa-circle-check"></i> {{ page.manage_users_badge_active|default:"Active" }}
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td class="text-end pe-4">
+                        <div class="d-flex justify-content-end gap-1">
                           <!-- Edit Admin -->
-                          <button class="btn btn-sm btn-light btn-edit-user" title="{{ page.manage_users_btn_edit|default:'Edit Admin' }}"
+                          <button class="btn btn-sm btn-action-edit rounded-3 d-inline-flex align-items-center justify-content-center btn-edit-user" 
+                            style="width: 32px; height: 32px; padding: 0;"
+                            title="{{ page.manage_users_btn_edit|default:'Edit Admin' }}"
                             data-id="{{ member.id }}"
                             data-first-name="{{ member.first_name }}"
                             data-last-name="{{ member.last_name }}"
                             data-email="{{ member.email }}"
                             data-group-id="{% if member.group %}{{ member.group.id }}{% endif %}"
                             data-role="{{ member.role }}">
-                            <i class="bi bi-pencil-square" style="color:#6c63ff;"></i>
+                            <i class="fa-solid fa-pen-to-square" style="font-size:.85rem;"></i>
                           </button>
                         </div>
                       </td>

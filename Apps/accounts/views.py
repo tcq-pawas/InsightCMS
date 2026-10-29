@@ -289,7 +289,9 @@ def companies_management_view(request):
         models.Q(status='active') | models.Q(approval_status='approved')
     ).count()
     total_blogs_across_all = BlogPage.objects.count()
-    total_members_across_all = UserModel.objects.exclude(role=UserModel.Role.SUPER_ADMIN).count()
+    total_members_across_all = UserModel.objects.filter(
+        models.Q(userprofile__company__isnull=False) | models.Q(company_memberships__company__isnull=False)
+    ).distinct().count()
 
     # Build companies data list
     companies_data = []

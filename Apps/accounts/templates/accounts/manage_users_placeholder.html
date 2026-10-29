@@ -53,15 +53,15 @@
 
       <!-- Breadcrumb hierarchy: Settings > Manage User Settings -->
       <div class="settings-breadcrumb">
-        <a href="/settings/"><i class="fa-solid fa-gear me-1"></i> Settings</a>
+        <a href="/settings/"><i class="fa-solid fa-gear me-1"></i> {{ page.manage_users_breadcrumb_settings_text|default:"Settings" }}</a>
         <span><i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></span>
-        <span class="active">Manage User Settings</span>
+        <span class="active">{{ page.manage_users_breadcrumb_active_text|default:"Manage User Settings" }}</span>
       </div>
 
       <div class="bp-page-header mb-4">
         <div>
-          <h1 class="bp-page-title">Manage User Settings</h1>
-          <p class="bp-page-sub">Configure user roles, authentication policies, and team permissions.</p>
+          <h1 class="bp-page-title">{{ page.manage_users_page_title|default:"Manage User Settings" }}</h1>
+          <p class="bp-page-sub">{{ page.manage_users_page_subtext|default:"Configure user roles, authentication policies, and team permissions." }}</p>
         </div>
       </div>
 
@@ -69,16 +69,16 @@
         <div class="bp-placeholder-icon">
           <i class="fa-solid fa-users-gear"></i>
         </div>
-        <h3 class="fw-bold text-dark mb-2">Manage User Settings</h3>
+        <h3 class="fw-bold text-dark mb-2">{{ page.manage_users_placeholder_title|default:"Manage User Settings" }}</h3>
         <p class="text-muted mx-auto" style="max-width: 480px; font-size: 0.95rem;">
-          This settings module is currently in development. You will soon be able to manage user invitations, fine-grained access levels, and workspace roles directly from here.
+          {{ page.manage_users_placeholder_desc|default:"This settings module is currently in development. You will soon be able to manage user invitations, fine-grained access levels, and workspace roles directly from here." }}
         </p>
         <div class="mt-4">
           <a href="{% url 'blog_comments_settings' %}" class="btn btn-outline-primary px-3 rounded-pill me-2">
-            <i class="fa-solid fa-comments me-1"></i> Go to Comments Settings
+            <i class="fa-solid fa-comments me-1"></i> {{ page.manage_users_btn_comments_settings|default:"Go to Comments Settings" }}
           </a>
           <a href="/settings/#team" class="btn btn-primary px-3 rounded-pill">
-            <i class="fa-solid fa-users me-1"></i> View Team Members
+            <i class="fa-solid fa-users me-1"></i> {{ page.manage_users_btn_view_team|default:"View Team Members" }}
           </a>
         </div>
       </div>

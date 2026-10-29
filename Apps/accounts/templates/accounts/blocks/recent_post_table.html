@@ -104,18 +104,84 @@
   </div>
 
   {% if is_superadmin or user.role == 'super_admin' or user.is_superuser %}
+  <style>
+    #writers.bp-card {
+      border-radius: 18px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+      background: #ffffff;
+    }
+    #writers .bp-card-header {
+      background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+      border-bottom: 1px solid #EDF2F7;
+      padding: 1.25rem 1.5rem;
+    }
+    .comp-table tr {
+      transition: background-color 0.15s ease;
+    }
+    .comp-table tr:hover {
+      background-color: #F8FAFC !important;
+    }
+    .comp-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .comp-chip {
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-action-view {
+      background: #EEF2FF;
+      color: #4F46E5;
+      border: 1px solid #C7D2FE;
+      transition: all 0.2s ease;
+    }
+    .btn-action-view:hover {
+      background: #4F46E5;
+      color: #ffffff;
+      border-color: #4F46E5;
+      transform: translateY(-1px);
+    }
+    .btn-action-delete {
+      background: #FEF2F2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+      transition: all 0.2s ease;
+    }
+    .btn-action-delete:hover {
+      background: #DC2626;
+      color: #ffffff;
+      border-color: #DC2626;
+      transform: translateY(-1px);
+    }
+  </style>
+
   <!-- ==================== SUPER ADMIN: COMPANIES LISTING ONLY ==================== -->
   <div class="table-responsive">
-    <table class="table bp-table align-middle mb-0">
-      <thead>
+    <table class="table bp-table comp-table align-middle mb-0">
+      <thead style="background: #F8FAFC;">
         <tr>
-          <th>{{ page.th_company_name_label|default:"COMPANY NAME" }}</th>
-          <th>{{ page.th_company_domain_label|default:"DOMAIN / SLUG" }}</th>
-          <th>{{ page.th_company_admin_label|default:"COMPANY ADMIN" }}</th>
-          <th class="text-center">{{ page.th_company_blogs_label|default:"TOTAL BLOGS" }}</th>
-          <th class="text-center">{{ page.th_company_members_label|default:"MEMBERS" }}</th>
-          <th class="text-center">{{ page.th_company_status_label|default:"STATUS" }}</th>
-          <th class="text-end">{{ page.th_company_actions_label|default:"ACTIONS" }}</th>
+          <th style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_name_label|default:"COMPANY NAME" }}</th>
+          <th style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_domain_label|default:"DOMAIN / SLUG" }}</th>
+          <th style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_admin_label|default:"COMPANY ADMIN" }}</th>
+          <th class="text-center" style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_blogs_label|default:"TOTAL BLOGS" }}</th>
+          <th class="text-center" style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_members_label|default:"MEMBERS" }}</th>
+          <th class="text-center" style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_status_label|default:"STATUS" }}</th>
+          <th class="text-end" style="color: #64748B; font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">{{ page.th_company_actions_label|default:"ACTIONS" }}</th>
         </tr>
       </thead>
       <tbody>
@@ -125,59 +191,60 @@
             <td>
               <div class="d-flex align-items-center gap-2">
                 {% if comp.company.logo %}
-                  <img src="{{ comp.company.logo.url }}" alt="{{ comp.name }}" class="rounded-circle object-fit-cover" style="width: 36px; height: 36px; border: 1px solid #E5E7EB;">
+                  <img src="{{ comp.company.logo.url }}" alt="{{ comp.name }}" class="object-fit-cover rounded-3" style="width: 38px; height: 38px; border: 1.5px solid #E0E7FF; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
                 {% else %}
-                  <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
-                       style="width: 36px; height: 36px; background: #E0E7FF; color: #4338CA; font-size: 0.9rem;">
+                  <div class="comp-avatar" 
+                       style="{% cycle 'background: linear-gradient(135deg, #EEF2FF, #E0E7FF); color: #4338CA;' 'background: linear-gradient(135deg, #ECFDF5, #D1FAE5); color: #047857;' 'background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: #1D4ED8;' 'background: linear-gradient(135deg, #FAF5FF, #F3E8FF); color: #7E22CE;' 'background: linear-gradient(135deg, #FFFBEB, #FEF3C7); color: #B45309;' %}">
                     {{ comp.name|slice:":1"|upper }}
                   </div>
                 {% endif %}
                 <div>
-                  <div class="fw-semibold text-dark">{{ comp.name }}</div>
+                  <div class="fw-bold text-dark" style="font-size: 0.92rem;">{{ comp.name }}</div>
+                  <small class="text-muted" style="font-size: 0.72rem;">{{ comp.created_at|date:"M d, Y" }}</small>
                 </div>
               </div>
             </td>
 
             <!-- Domain / Slug -->
             <td>
-              <span class="badge rounded-pill bg-light text-secondary px-3 py-1 font-monospace" style="border: 1px solid #E5E7EB; font-size: 0.8rem;">
-                {{ comp.domain }}
+              <span class="comp-chip font-monospace" style="background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE;">
+                <i class="fa-solid fa-link fa-2xs"></i> {{ comp.domain }}
               </span>
             </td>
 
             <!-- Admin Contact -->
             <td>
-              <div class="fw-medium text-dark" style="font-size: 0.9rem;">{{ comp.admin_name }}</div>
-              <small class="text-muted">{{ comp.admin_email }}</small>
+              <div class="fw-semibold text-dark" style="font-size: 0.88rem;">{{ comp.admin_name }}</div>
+              <small style="color: #6366F1; font-size: 0.76rem;"><i class="fa-regular fa-envelope me-1"></i>{{ comp.admin_email }}</small>
             </td>
 
             <!-- Total Blogs -->
             <td class="text-center">
-              <span class="badge rounded-pill bg-light text-dark px-3 py-2 fw-bold" style="border: 1px solid #E5E7EB; font-size: 0.85rem;">
+              <span class="badge rounded-pill fw-bold px-3 py-1" style="background: #EFF6FF; color: #2563EB; border: 1px solid #DBEAFE; font-size: 0.84rem;">
                 {{ comp.total_blogs }}
               </span>
             </td>
 
             <!-- Members -->
             <td class="text-center">
-              <span class="badge rounded-pill bg-light text-dark px-3 py-2 fw-bold" style="border: 1px solid #E5E7EB; font-size: 0.85rem;">
-                <i class="fa-solid fa-users me-1 text-muted"></i> {{ comp.total_members }}
+              <span class="badge rounded-pill fw-bold px-3 py-1" style="background: #FAF5FF; color: #7C3AED; border: 1px solid #E9D5FF; font-size: 0.84rem;">
+                <i class="fa-solid fa-users me-1" style="color: #A855F7;"></i> {{ comp.total_members }}
               </span>
             </td>
 
             <!-- Status -->
             <td class="text-center">
               {% if comp.approval_status == 'approved' or comp.status == 'active' %}
-                <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2 fw-bold" style="font-size: 0.82rem;">
-                  <i class="fa-solid fa-circle-check me-1"></i> Active
+                <span class="comp-chip" style="background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0;">
+                  <i class="fa-solid fa-circle-check fa-xs"></i> Active
                 </span>
               {% elif comp.approval_status == 'pending' %}
-                <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis px-3 py-2 fw-bold" style="font-size: 0.82rem;">
-                  <i class="fa-regular fa-clock me-1"></i> Pending
+                <span class="comp-chip" style="background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A;">
+                  <i class="fa-regular fa-clock fa-xs"></i> Pending
                 </span>
               {% else %}
-                <span class="badge rounded-pill bg-danger-subtle text-danger px-3 py-2 fw-bold" style="font-size: 0.82rem;">
-                  <i class="fa-solid fa-ban me-1"></i> Inactive
+                <span class="comp-chip" style="background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA;">
+                  <i class="fa-solid fa-ban fa-xs"></i> Inactive
                 </span>
               {% endif %}
             </td>
@@ -187,16 +254,16 @@
               <div class="d-inline-flex align-items-center gap-1">
                 <!-- View Details → opens company detail page -->
                 <a href="/companies/{{ comp.company.id }}/"
-                   class="btn btn-sm btn-outline-primary rounded d-inline-flex align-items-center justify-content-center"
-                   style="width: 30px; height: 28px; padding: 0;"
+                   class="btn btn-sm btn-action-view rounded d-inline-flex align-items-center justify-content-center"
+                   style="width: 32px; height: 30px; padding: 0;"
                    title="View Details">
                   <i class="fa-solid fa-eye" style="font-size: 0.85rem;"></i>
                 </a>
 
                 <!-- Remove Company Icon Button -->
                 <button type="button" 
-                        class="btn btn-sm btn-outline-danger rounded d-inline-flex align-items-center justify-content-center btn-remove-company" 
-                        style="width: 30px; height: 28px; padding: 0;"
+                        class="btn btn-sm btn-action-delete rounded d-inline-flex align-items-center justify-content-center btn-remove-company" 
+                        style="width: 32px; height: 30px; padding: 0;"
                         data-company-id="{{ comp.company.id }}" 
                         data-company-name="{{ comp.name }}"
                         title="Remove Company">
@@ -216,9 +283,9 @@
     </table>
   </div>
   {% if companies_data|length > 5 %}
-    <div class="p-3 text-center border-top bg-light-subtle">
-      <a href="/companies/" class="btn btn-sm btn-outline-primary rounded-pill px-4 fw-semibold">
-        View All Companies ({{ companies_data|length }}) →
+    <div class="p-3 text-center border-top" style="background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);">
+      <a href="/companies/" class="btn btn-sm btn-primary rounded-pill px-4 fw-semibold shadow-sm" style="background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%); border: none;">
+        {{ page.dashboard_view_all_companies_label|default:"View All Companies" }} ({{ companies_data|length }}) →
       </a>
     </div>
   {% endif %}
