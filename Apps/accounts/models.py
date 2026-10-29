@@ -847,6 +847,11 @@ class SettingsPage(Page):
     manage_users_text_delete_confirm      = models.CharField(max_length=200, blank=True, default="Are you sure you want to delete group")
     manage_users_text_delete_warning      = models.CharField(max_length=200, blank=True, default="Members of this group will become ungrouped.")
 
+    # Remove User Confirmation Modal (Dynamic CMS Fields)
+    manage_users_modal_remove_user_title   = models.CharField(max_length=100, blank=True, default="Remove Team Member?")
+    manage_users_text_remove_user_confirm  = models.CharField(max_length=255, blank=True, default="Are you sure you want to permanently remove this user from the team? This action cannot be undone.")
+    manage_users_btn_remove_user_confirm   = models.CharField(max_length=50, blank=True, default="Yes, Delete")
+
     # Empty states
     manage_users_text_no_groups         = models.CharField(max_length=200, blank=True, default="No permission groups created yet.")
     manage_users_btn_create_first_group = models.CharField(max_length=100, blank=True, default="Create First Group")
@@ -890,6 +895,30 @@ class SettingsPage(Page):
     manage_users_field_password         = models.CharField(max_length=60, blank=True, default="Reset Password")
     manage_users_option_editor          = models.CharField(max_length=60, blank=True, default="Employee (Company User)")
     manage_users_text_leave_blank       = models.CharField(max_length=100, blank=True, default="Leave blank to keep current")
+
+    # Super Admin Companies Listing (Dynamic CMS Fields)
+    dashboard_tab_companies_title       = models.CharField(max_length=100, blank=True, default="Registered Companies", help_text="Tab label for Super Admin companies table")
+    dashboard_tab_authors_title         = models.CharField(max_length=100, blank=True, default="All Authors & Team", help_text="Tab label for Super Admin authors table")
+    th_company_name_label               = models.CharField(max_length=50, blank=True, default="Company Name")
+    th_company_domain_label             = models.CharField(max_length=50, blank=True, default="Domain / Slug")
+    th_company_admin_label              = models.CharField(max_length=50, blank=True, default="Company Admin")
+    th_company_blogs_label              = models.CharField(max_length=50, blank=True, default="Total Blogs")
+    th_company_members_label            = models.CharField(max_length=50, blank=True, default="Members")
+    th_company_status_label             = models.CharField(max_length=50, blank=True, default="Status")
+    th_company_actions_label            = models.CharField(max_length=50, blank=True, default="Actions")
+    no_companies_text                   = models.CharField(max_length=200, blank=True, default="No companies registered yet.")
+    btn_remove_company_label            = models.CharField(max_length=50, blank=True, default="Remove")
+    modal_remove_company_title          = models.CharField(max_length=100, blank=True, default="Remove Company?")
+    modal_remove_company_confirm_text   = models.CharField(max_length=255, blank=True, default="Are you sure you want to permanently remove this company? All associated data will be removed. This action cannot be undone.")
+    modal_remove_company_btn_confirm    = models.CharField(max_length=50, blank=True, default="Yes, Delete")
+    modal_remove_company_btn_cancel     = models.CharField(max_length=50, blank=True, default="Cancel")
+    companies_page_title                = models.CharField(max_length=100, blank=True, default="Companies Management", help_text="Heading for /companies/ page")
+    companies_page_subtext              = models.CharField(max_length=255, blank=True, default="Manage all registered client companies, workspaces, and team admins.", help_text="Subtext for /companies/ page")
+    companies_stat_total_label          = models.CharField(max_length=50, blank=True, default="Total Companies")
+    companies_stat_active_label         = models.CharField(max_length=50, blank=True, default="Active Companies")
+    companies_stat_blogs_label          = models.CharField(max_length=50, blank=True, default="Total Blogs")
+    companies_stat_members_label        = models.CharField(max_length=50, blank=True, default="Total Members")
+    companies_search_placeholder        = models.CharField(max_length=100, blank=True, default="Search company by name or domain...")
 
     # Website Integration Page CMS Fields (Comprehensive Dynamic Customization)
     integration_page_title = models.CharField(max_length=100, blank=True, default="Website Integration Guide")
@@ -1009,6 +1038,10 @@ class SettingsPage(Page):
             FieldPanel("manage_users_modal_delete_group_title"),
             FieldPanel("manage_users_text_delete_confirm"),
             FieldPanel("manage_users_text_delete_warning"),
+            # Remove User Modal
+            FieldPanel("manage_users_modal_remove_user_title"),
+            FieldPanel("manage_users_text_remove_user_confirm"),
+            FieldPanel("manage_users_btn_remove_user_confirm"),
             # Empty States
             FieldPanel("manage_users_text_no_groups"),
             FieldPanel("manage_users_btn_create_first_group"),
@@ -1115,6 +1148,30 @@ class SettingsPage(Page):
             FieldPanel("integration_step3_point2"),
             FieldPanel("integration_step3_point3"),
         ], heading="Website Integration Guide Settings"),
+        MultiFieldPanel([
+            FieldPanel("dashboard_tab_companies_title"),
+            FieldPanel("dashboard_tab_authors_title"),
+            FieldPanel("th_company_name_label"),
+            FieldPanel("th_company_domain_label"),
+            FieldPanel("th_company_admin_label"),
+            FieldPanel("th_company_blogs_label"),
+            FieldPanel("th_company_members_label"),
+            FieldPanel("th_company_status_label"),
+            FieldPanel("th_company_actions_label"),
+            FieldPanel("no_companies_text"),
+            FieldPanel("btn_remove_company_label"),
+            FieldPanel("modal_remove_company_title"),
+            FieldPanel("modal_remove_company_confirm_text"),
+            FieldPanel("modal_remove_company_btn_confirm"),
+            FieldPanel("modal_remove_company_btn_cancel"),
+            FieldPanel("companies_page_title"),
+            FieldPanel("companies_page_subtext"),
+            FieldPanel("companies_stat_total_label"),
+            FieldPanel("companies_stat_active_label"),
+            FieldPanel("companies_stat_blogs_label"),
+            FieldPanel("companies_stat_members_label"),
+            FieldPanel("companies_search_placeholder"),
+        ], heading="Super Admin Companies Listing Settings"),
     ]
 
     parent_page_types = ["wagtailcore.Page", "companies.CompanyHomePage"]

@@ -77,21 +77,154 @@
 
 {% else %}
 <!-- ========================================================= -->
-<!-- COMPANY ADMIN VIEW: Writers & Authors Summary Table        -->
+<!-- ADMIN VIEW: Super Admin (Companies + Authors Tabs) /      -->
+<!--             Company Admin (Authors Table)                 -->
 <!-- ========================================================= -->
 <div class="bp-card mb-4" id="writers">
-  <div class="bp-card-header d-flex justify-content-between align-items-center">
+  <div class="bp-card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
     <div>
       <h3 class="bp-card-title">{{ value.heading|default:page.recent_posts_heading|default:"Dashboard" }}</h3>
       <span class="bp-card-sub">{{ value.subtext|default:page.recent_posts_subtext|default:"Welcome back! Here's what's happening with your blog" }}</span>
     </div>
-    <div>
-      <a href="{{ value.view_all_url|default:page.view_all_posts_url|default:'/settings/#team' }}" class="bp-link-sm">
-        {{ value.view_all_text|default:page.view_all_posts_text|default:"Manage Team →" }}
+
+    <div class="d-flex align-items-center gap-3">
+      {% if is_superadmin or user.role == 'super_admin' or user.is_superuser %}
+      <!-- Super Admin View All Companies Link -->
+      <a href="/companies/" class="bp-link-sm">
+        {{ page.dashboard_tab_companies_title|default:"Registered Companies" }} ({{ companies_data|length }}) →
       </a>
+      {% else %}
+      <div>
+        <a href="{{ value.view_all_url|default:page.view_all_posts_url|default:'/settings/#team' }}" class="bp-link-sm">
+          {{ value.view_all_text|default:page.view_all_posts_text|default:"Manage Team →" }}
+        </a>
+      </div>
+      {% endif %}
     </div>
   </div>
 
+  {% if is_superadmin or user.role == 'super_admin' or user.is_superuser %}
+  <!-- ==================== SUPER ADMIN: COMPANIES LISTING ONLY ==================== -->
+  <div class="table-responsive">
+    <table class="table bp-table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>{{ page.th_company_name_label|default:"COMPANY NAME" }}</th>
+          <th>{{ page.th_company_domain_label|default:"DOMAIN / SLUG" }}</th>
+          <th>{{ page.th_company_admin_label|default:"COMPANY ADMIN" }}</th>
+          <th class="text-center">{{ page.th_company_blogs_label|default:"TOTAL BLOGS" }}</th>
+          <th class="text-center">{{ page.th_company_members_label|default:"MEMBERS" }}</th>
+          <th class="text-center">{{ page.th_company_status_label|default:"STATUS" }}</th>
+          <th class="text-end">{{ page.th_company_actions_label|default:"ACTIONS" }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for comp in companies_data|slice:":5" %}
+          <tr>
+            <!-- Company Name + Logo / Avatar -->
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                {% if comp.company.logo %}
+                  <img src="{{ comp.company.logo.url }}" alt="{{ comp.name }}" class="rounded-circle object-fit-cover" style="width: 36px; height: 36px; border: 1px solid #E5E7EB;">
+                {% else %}
+                  <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                       style="width: 36px; height: 36px; background: #E0E7FF; color: #4338CA; font-size: 0.9rem;">
+                    {{ comp.name|slice:":1"|upper }}
+                  </div>
+                {% endif %}
+                <div>
+                  <div class="fw-semibold text-dark">{{ comp.name }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Domain / Slug -->
+            <td>
+              <span class="badge rounded-pill bg-light text-secondary px-3 py-1 font-monospace" style="border: 1px solid #E5E7EB; font-size: 0.8rem;">
+                {{ comp.domain }}
+              </span>
+            </td>
+
+            <!-- Admin Contact -->
+            <td>
+              <div class="fw-medium text-dark" style="font-size: 0.9rem;">{{ comp.admin_name }}</div>
+              <small class="text-muted">{{ comp.admin_email }}</small>
+            </td>
+
+            <!-- Total Blogs -->
+            <td class="text-center">
+              <span class="badge rounded-pill bg-light text-dark px-3 py-2 fw-bold" style="border: 1px solid #E5E7EB; font-size: 0.85rem;">
+                {{ comp.total_blogs }}
+              </span>
+            </td>
+
+            <!-- Members -->
+            <td class="text-center">
+              <span class="badge rounded-pill bg-light text-dark px-3 py-2 fw-bold" style="border: 1px solid #E5E7EB; font-size: 0.85rem;">
+                <i class="fa-solid fa-users me-1 text-muted"></i> {{ comp.total_members }}
+              </span>
+            </td>
+
+            <!-- Status -->
+            <td class="text-center">
+              {% if comp.approval_status == 'approved' or comp.status == 'active' %}
+                <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2 fw-bold" style="font-size: 0.82rem;">
+                  <i class="fa-solid fa-circle-check me-1"></i> Active
+                </span>
+              {% elif comp.approval_status == 'pending' %}
+                <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis px-3 py-2 fw-bold" style="font-size: 0.82rem;">
+                  <i class="fa-regular fa-clock me-1"></i> Pending
+                </span>
+              {% else %}
+                <span class="badge rounded-pill bg-danger-subtle text-danger px-3 py-2 fw-bold" style="font-size: 0.82rem;">
+                  <i class="fa-solid fa-ban me-1"></i> Inactive
+                </span>
+              {% endif %}
+            </td>
+
+            <!-- Actions (Icon Only) -->
+            <td class="text-end">
+              <div class="d-inline-flex align-items-center gap-1">
+                <!-- View Details → opens company detail page -->
+                <a href="/companies/{{ comp.company.id }}/"
+                   class="btn btn-sm btn-outline-primary rounded d-inline-flex align-items-center justify-content-center"
+                   style="width: 30px; height: 28px; padding: 0;"
+                   title="View Details">
+                  <i class="fa-solid fa-eye" style="font-size: 0.85rem;"></i>
+                </a>
+
+                <!-- Remove Company Icon Button -->
+                <button type="button" 
+                        class="btn btn-sm btn-outline-danger rounded d-inline-flex align-items-center justify-content-center btn-remove-company" 
+                        style="width: 30px; height: 28px; padding: 0;"
+                        data-company-id="{{ comp.company.id }}" 
+                        data-company-name="{{ comp.name }}"
+                        title="Remove Company">
+                  <i class="fa-solid fa-trash-can" style="font-size: 0.85rem;"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-4 text-muted">
+              <p class="mb-2">{{ page.no_companies_text|default:"No companies registered yet." }}</p>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if companies_data|length > 5 %}
+    <div class="p-3 text-center border-top bg-light-subtle">
+      <a href="/companies/" class="btn btn-sm btn-outline-primary rounded-pill px-4 fw-semibold">
+        View All Companies ({{ companies_data|length }}) →
+      </a>
+    </div>
+  {% endif %}
+
+  {% else %}
+  <!-- ==================== COMPANY ADMIN: AUTHORS TABLE ONLY ==================== -->
   <div class="table-responsive">
     <table class="table bp-table align-middle mb-0">
       <thead>
@@ -159,7 +292,234 @@
       </tbody>
     </table>
   </div>
+  {% endif %}
 </div>
+{% endif %}
+
+{% if is_superadmin or user.role == 'super_admin' or user.is_superuser %}
+<!-- ========================================================= -->
+<!-- REMOVE COMPANY CONFIRMATION MODAL (Matching Image 2)      -->
+<!-- ========================================================= -->
+<div class="modal fade" id="removeCompanyModal" tabindex="-1" aria-labelledby="removeCompanyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-body p-4 text-center">
+        <!-- Trash Icon Circle -->
+        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background: #fee2e2; color: #dc2626;">
+          <i class="fa-solid fa-trash-can fs-3"></i>
+        </div>
+
+        <!-- Heading & Subtext (100% Dynamic CMS Fields) -->
+        <h5 class="fw-bold mb-2 text-dark">{{ page.modal_remove_company_title|default:"Remove Company?" }}</h5>
+        <p class="text-secondary small mb-3">
+          {{ page.modal_remove_company_confirm_text|default:"Are you sure you want to permanently remove this company? All associated data will be removed. This action cannot be undone." }}
+        </p>
+
+        <!-- Company Info Pill -->
+        <div class="p-2 mb-4 rounded-3 text-truncate bg-light border small text-dark fw-medium" id="rm_company_preview">
+          🏢 Company Name
+        </div>
+
+        <!-- Action Form -->
+        <form method="POST" id="removeCompanyForm">
+          {% csrf_token %}
+          <input type="hidden" name="action_type" value="remove_company">
+          <input type="hidden" name="company_id" id="rm_company_id">
+          <div class="d-flex justify-content-center gap-2">
+            <button type="button" class="btn btn-light px-4 fw-semibold rounded-pill" data-bs-dismiss="modal">
+              {{ page.modal_remove_company_btn_cancel|default:"Cancel" }}
+            </button>
+            <button type="submit" class="btn btn-danger px-4 fw-semibold rounded-pill text-white shadow-sm">
+              {{ page.modal_remove_company_btn_confirm|default:"Yes, Delete" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW COMPANY DETAILS MODAL -->
+<div class="modal fade" id="viewCompanyModal" tabindex="-1" aria-labelledby="viewCompanyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header border-bottom py-3 px-4 bg-light">
+        <div class="d-flex align-items-center gap-3">
+          <div id="vm_logo_wrap_dash"></div>
+          <div>
+            <h5 class="modal-title fw-bold text-dark mb-0" id="vm_name_dash">Company Name</h5>
+            <small class="text-muted" id="vm_domain_dash">domain</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="row g-3">
+          <!-- Left Column: Company & Admin Details -->
+          <div class="col-md-7">
+            <h6 class="fw-bold text-primary mb-3">
+              <i class="fa-solid fa-circle-info me-1"></i> Company Information
+            </h6>
+            <div class="list-group list-group-flush border rounded-3 mb-3 small">
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Domain / Slug:</span>
+                <span class="fw-semibold text-dark font-monospace" id="vm_slug_dash">-</span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Website Name:</span>
+                <span class="fw-semibold text-dark" id="vm_website_name_dash">-</span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Website URL:</span>
+                <span id="vm_website_url_wrap_dash"><span class="text-muted">-</span></span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Registration Date:</span>
+                <span class="fw-semibold text-dark" id="vm_created_dash">-</span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Account Status:</span>
+                <span id="vm_status_badge_dash">-</span>
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-primary mb-3">
+              <i class="fa-solid fa-user-shield me-1"></i> Admin & Contact
+            </h6>
+            <div class="list-group list-group-flush border rounded-3 small">
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Company Admin:</span>
+                <span class="fw-semibold text-dark" id="vm_admin_name_dash">-</span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Admin Email:</span>
+                <span class="fw-semibold text-dark" id="vm_admin_email_dash">-</span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Contact Person:</span>
+                <span class="fw-semibold text-dark" id="vm_contact_person_dash">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Stats & API -->
+          <div class="col-md-5">
+            <h6 class="fw-bold text-primary mb-3">
+              <i class="fa-solid fa-chart-pie me-1"></i> Workspace Stats
+            </h6>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <div class="p-3 border rounded-3 text-center bg-light">
+                  <div class="text-muted small mb-1">Total Blogs</div>
+                  <h4 class="fw-bold text-primary mb-0" id="vm_total_blogs_dash">0</h4>
+                  <small class="text-success fw-medium" id="vm_live_blogs_dash">0 Live</small>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-3 border rounded-3 text-center bg-light">
+                  <div class="text-muted small mb-1">Members</div>
+                  <h4 class="fw-bold text-warning mb-0" id="vm_members_dash">0</h4>
+                  <small class="text-muted fw-medium">Active Users</small>
+                </div>
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-primary mb-2">
+              <i class="fa-solid fa-key me-1"></i> API Key
+            </h6>
+            <div class="p-2 bg-light border rounded-3 font-monospace small text-break text-muted mb-3" id="vm_api_key_dash">
+              -
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-top py-2 px-4 bg-light">
+        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const removeCompanyModalEl = document.getElementById('removeCompanyModal');
+  if (removeCompanyModalEl && typeof bootstrap !== 'undefined') {
+    const removeCompanyModal = new bootstrap.Modal(removeCompanyModalEl);
+    
+    document.querySelectorAll('.btn-remove-company').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const companyId = this.dataset.companyId;
+        const companyName = this.dataset.companyName;
+        
+        const previewEl = document.getElementById('rm_company_preview');
+        const inputId = document.getElementById('rm_company_id');
+        
+        if (previewEl) previewEl.innerHTML = '🏢 ' + companyName;
+        if (inputId) inputId.value = companyId;
+        
+        removeCompanyModal.show();
+      });
+    });
+  }
+
+  const viewCompanyModalEl = document.getElementById('viewCompanyModal');
+  if (viewCompanyModalEl && typeof bootstrap !== 'undefined') {
+    const viewCompanyModal = new bootstrap.Modal(viewCompanyModalEl);
+
+    document.querySelectorAll('.btn-view-company').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const d = this.dataset;
+
+        document.getElementById('vm_name_dash').textContent = d.companyName || '-';
+        document.getElementById('vm_domain_dash').textContent = d.domain || '-';
+        document.getElementById('vm_slug_dash').textContent = d.domain || '-';
+        document.getElementById('vm_website_name_dash').textContent = d.websiteName || '-';
+        
+        const urlWrap = document.getElementById('vm_website_url_wrap_dash');
+        if (d.websiteUrl) {
+          urlWrap.innerHTML = '<a href="' + d.websiteUrl + '" target="_blank" rel="noopener noreferrer" class="text-primary text-decoration-none d-inline-flex align-items-center gap-1">' + d.websiteUrl + ' <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7rem;"></i></a>';
+        } else {
+          urlWrap.innerHTML = '<span class="text-muted">Not specified</span>';
+        }
+
+        document.getElementById('vm_created_dash').textContent = d.created || '-';
+        document.getElementById('vm_admin_name_dash').textContent = d.adminName || '-';
+        document.getElementById('vm_admin_email_dash').textContent = d.adminEmail || '-';
+        document.getElementById('vm_contact_person_dash').textContent = d.contactPerson || '-';
+        document.getElementById('vm_total_blogs_dash').textContent = d.totalBlogs || '0';
+        document.getElementById('vm_live_blogs_dash').textContent = (d.publishedBlogs || '0') + ' Live';
+        document.getElementById('vm_members_dash').textContent = d.members || '0';
+        document.getElementById('vm_api_key_dash').textContent = d.apiKey || '-';
+
+        const logoWrap = document.getElementById('vm_logo_wrap_dash');
+        if (d.logo) {
+          logoWrap.innerHTML = '<img src="' + d.logo + '" class="rounded-circle object-fit-cover" style="width: 44px; height: 44px; border: 1px solid #E5E7EB;">';
+        } else {
+          logoWrap.innerHTML = '<div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px; background: #E0E7FF; color: #4338CA; font-size: 1.1rem;">' + (d.companyName ? d.companyName.charAt(0).toUpperCase() : 'C') + '</div>';
+        }
+
+        const statusBadge = document.getElementById('vm_status_badge_dash');
+        if (d.status === 'active' || d.approval === 'approved') {
+          statusBadge.innerHTML = '<span class="badge rounded-pill bg-success-subtle text-success px-3 py-1 fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Active</span>';
+        } else if (d.approval === 'pending') {
+          statusBadge.innerHTML = '<span class="badge rounded-pill bg-warning-subtle text-warning-emphasis px-3 py-1 fw-bold"><i class="fa-regular fa-clock me-1"></i> Pending</span>';
+        } else {
+          statusBadge.innerHTML = '<span class="badge rounded-pill bg-danger-subtle text-danger px-3 py-1 fw-bold"><i class="fa-solid fa-ban me-1"></i> Inactive</span>';
+        }
+
+        viewCompanyModal.show();
+      });
+    });
+  }
+});
+</script>
 {% endif %}
 
 

@@ -12,6 +12,8 @@ from wagtail.contrib.sitemaps.views import sitemap
 from Apps.blogs.feeds import CompanyBlogFeed
 from Apps.accounts.views import (
     user_dashboard_view,
+    companies_management_view,
+    company_detail_view,
     logout_view,
     settings_view,
     forgot_password_view,
@@ -85,6 +87,8 @@ urlpatterns = [
     # Direct Analytics & SEO aliases
     path('analytics/', dashboard_analytics_view, name='analytics_alias'),
     path('seo/', dashboard_seo_view, name='seo_alias'),
+    path('companies/', companies_management_view, name='companies_management'),
+    path('companies/<uuid:company_id>/', company_detail_view, name='company_detail'),
     # Posts alias redirect
     path('posts/', RedirectView.as_view(url='/blog-posts/', permanent=False), name='posts_alias'),
     # Blog post creation route

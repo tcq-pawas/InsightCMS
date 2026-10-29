@@ -208,14 +208,13 @@
                             </button>
                           </form>
                           <!-- Remove -->
-                          <form method="POST" style="display:inline;" onsubmit="return confirm('Remove {{ member.name|escapejs }} from team?')">
-                            {% csrf_token %}
-                            <input type="hidden" name="action_type" value="remove_user">
-                            <input type="hidden" name="user_id" value="{{ member.id }}">
-                            <button type="submit" class="btn btn-sm btn-light" title="{{ page.manage_users_btn_delete|default:'Remove' }}">
-                              <i class="bi bi-person-x-fill text-danger"></i>
-                            </button>
-                          </form>
+                          <button type="button" class="btn btn-sm btn-light btn-remove-user" 
+                                  data-id="{{ member.id }}" 
+                                  data-name="{{ member.name|escapejs }}" 
+                                  data-email="{{ member.email }}"
+                                  title="{{ page.manage_users_btn_delete|default:'Remove' }}">
+                            <i class="bi bi-person-x-fill text-danger"></i>
+                          </button>
                         </div>
                         {% endif %}
                       </td>
@@ -848,6 +847,47 @@
     </div>
   </div>
 </div>
+
+<!-- REMOVE USER CONFIRMATION MODAL (Matching Image 2) -->
+<div class="modal fade" id="removeUserModal" tabindex="-1" aria-labelledby="removeUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-body p-4 text-center">
+        <!-- Trash Icon Circle -->
+        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background: #fee2e2; color: #dc2626;">
+          <i class="fa-solid fa-trash-can fs-3"></i>
+        </div>
+
+        <!-- Heading & Subtext (100% Dynamic CMS Fields) -->
+        <h5 class="fw-bold mb-2 text-dark">{{ page.manage_users_modal_remove_user_title|default:"Remove Team Member?" }}</h5>
+        <p class="text-secondary small mb-3">
+          {{ page.manage_users_text_remove_user_confirm|default:"Are you sure you want to permanently remove this user from the team? This action cannot be undone." }}
+        </p>
+
+        <!-- User Info Pill -->
+        <div class="p-2 mb-4 rounded-3 text-truncate bg-light border small text-dark fw-medium" id="rm_user_preview">
+          👤 User Name
+        </div>
+
+        <!-- Action Form -->
+        <form method="POST" id="removeUserForm">
+          {% csrf_token %}
+          <input type="hidden" name="action_type" value="remove_user">
+          <input type="hidden" name="user_id" id="rm_user_id">
+          <div class="d-flex justify-content-center gap-2">
+            <button type="button" class="btn btn-light px-4 fw-semibold rounded-pill" data-bs-dismiss="modal">
+              {{ page.manage_users_btn_cancel|default:"Cancel" }}
+            </button>
+            <button type="submit" class="btn btn-danger px-4 fw-semibold rounded-pill text-white shadow-sm">
+              {{ page.manage_users_btn_remove_user_confirm|default:"Yes, Delete" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- EDIT USER MODAL -->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -913,6 +953,22 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // Remove User Confirmation Modal (Image 2 style)
+  document.querySelectorAll('.btn-remove-user').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      var id = this.getAttribute('data-id');
+      var name = this.getAttribute('data-name') || 'this user';
+      var email = this.getAttribute('data-email') || '';
+
+      document.getElementById('rm_user_id').value = id;
+      document.getElementById('rm_user_preview').textContent = '👤 ' + name + (email ? ' (' + email + ')' : '');
+
+      var rmModal = new bootstrap.Modal(document.getElementById('removeUserModal'));
+      rmModal.show();
+    });
+  });
+
   // Edit User Buttons
   document.querySelectorAll('.btn-edit-user').forEach(function(btn) {
     btn.addEventListener('click', function() {

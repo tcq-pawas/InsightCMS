@@ -1,0 +1,564 @@
+{% extends "companies/base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}{{ page.companies_page_title|default:"Companies Management" }} | {{ page.brand_name|default:"BlogPro" }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  .company-stat-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+  }
+  .company-stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
+  }
+  .stat-icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bp-app-wrapper">
+
+  <!-- 1. Left Sidebar Navigation -->
+  {% include "accounts/blocks/sidebar.html" %}
+
+  <!-- 2. Main Container -->
+  <div class="bp-main-container">
+
+    <!-- 2.1 Topbar Header -->
+    {% include "accounts/blocks/topbar.html" %}
+
+    <main class="bp-content-body">
+
+      <!-- Dynamic Page Header -->
+      <div class="bp-page-header mb-4">
+        <div>
+          <h1 class="bp-page-title d-flex align-items-center gap-2">
+            <i class="fa-solid fa-building text-primary" style="font-size: 1.5rem;"></i>
+            {{ page.companies_page_title|default:"Companies Management" }}
+          </h1>
+          <p class="bp-page-sub">{{ page.companies_page_subtext|default:"Manage all registered client companies, workspaces, and team admins." }}</p>
+        </div>
+      </div>
+
+      <!-- Flash Messages -->
+      {% if messages %}
+        <div class="container-fluid px-0 mb-3">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show mb-2 shadow-sm" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- 4 Key Metrics Stat Cards -->
+      <div class="row g-3 mb-4">
+        <!-- Total Companies -->
+        <div class="col-md-3 col-sm-6">
+          <div class="company-stat-card">
+            <div>
+              <span class="text-muted small fw-medium d-block mb-1">{{ page.companies_stat_total_label|default:"Total Companies" }}</span>
+              <h3 class="fw-bold mb-0 text-dark">{{ total_companies_count }}</h3>
+            </div>
+            <div class="stat-icon-circle" style="background: #EEF2FF; color: #4F46E5;">
+              <i class="fa-solid fa-building"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Companies -->
+        <div class="col-md-3 col-sm-6">
+          <div class="company-stat-card">
+            <div>
+              <span class="text-muted small fw-medium d-block mb-1">{{ page.companies_stat_active_label|default:"Active Companies" }}</span>
+              <h3 class="fw-bold mb-0 text-success">{{ active_companies_count }}</h3>
+            </div>
+            <div class="stat-icon-circle" style="background: #ECFDF5; color: #10B981;">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Blogs Across All -->
+        <div class="col-md-3 col-sm-6">
+          <div class="company-stat-card">
+            <div>
+              <span class="text-muted small fw-medium d-block mb-1">{{ page.companies_stat_blogs_label|default:"Total Blogs" }}</span>
+              <h3 class="fw-bold mb-0 text-primary">{{ total_blogs_across_all }}</h3>
+            </div>
+            <div class="stat-icon-circle" style="background: #EFF6FF; color: #3B82F6;">
+              <i class="fa-solid fa-newspaper"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Members Across All -->
+        <div class="col-md-3 col-sm-6">
+          <div class="company-stat-card">
+            <div>
+              <span class="text-muted small fw-medium d-block mb-1">{{ page.companies_stat_members_label|default:"Total Members" }}</span>
+              <h3 class="fw-bold mb-0 text-warning">{{ total_members_across_all }}</h3>
+            </div>
+            <div class="stat-icon-circle" style="background: #FFFBEB; color: #F59E0B;">
+              <i class="fa-solid fa-users"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Companies Card with Table -->
+      <div class="bp-card mb-4">
+        <div class="bp-card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <h3 class="bp-card-title mb-0">
+              {{ page.dashboard_tab_companies_title|default:"Registered Companies" }} ({{ companies_data|length }})
+            </h3>
+          </div>
+
+          <!-- Search Bar -->
+          <div style="min-width: 260px; max-width: 380px;" class="flex-grow-1 flex-md-grow-0">
+            <form method="GET" action="{% url 'companies_management' %}" class="d-flex align-items-center">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white border-end-0" style="border-radius: 9999px 0 0 9999px; border-color: #E5E7EB;">
+                  <i class="fa-solid fa-magnifying-glass text-muted"></i>
+                </span>
+                <input type="text" 
+                       name="q" 
+                       value="{{ search_query }}" 
+                       class="form-control border-start-0 border-end-0" 
+                       placeholder="{{ page.companies_search_placeholder|default:'Search company by name or domain...' }}"
+                       style="border-color: #E5E7EB; font-size: 0.85rem;">
+                {% if search_query %}
+                  <a href="{% url 'companies_management' %}" class="input-group-text bg-white border-start-0 text-muted" title="Clear Search">
+                    <i class="fa-solid fa-xmark"></i>
+                  </a>
+                {% endif %}
+                <button class="btn btn-primary btn-sm px-3 fw-semibold" type="submit" style="border-radius: 0 9999px 9999px 0; font-size: 0.82rem;">
+                  Search
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table bp-table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>{{ page.th_company_name_label|default:"COMPANY NAME" }}</th>
+                <th>{{ page.th_company_domain_label|default:"DOMAIN / SLUG" }}</th>
+                <th>{{ page.th_company_admin_label|default:"COMPANY ADMIN" }}</th>
+                <th class="text-center">{{ page.th_company_blogs_label|default:"TOTAL BLOGS" }}</th>
+                <th class="text-center">{{ page.th_company_members_label|default:"MEMBERS" }}</th>
+                <th class="text-center">{{ page.th_company_status_label|default:"STATUS" }}</th>
+                <th class="text-end">{{ page.th_company_actions_label|default:"ACTIONS" }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for comp in companies_data %}
+                <tr>
+                  <!-- Company Name + Logo / Avatar -->
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      {% if comp.company.logo %}
+                        <img src="{{ comp.company.logo.url }}" alt="{{ comp.name }}" class="rounded-circle object-fit-cover" style="width: 38px; height: 38px; border: 1px solid #E5E7EB;">
+                      {% else %}
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                             style="width: 38px; height: 38px; background: #E0E7FF; color: #4338CA; font-size: 0.95rem;">
+                          {{ comp.name|slice:":1"|upper }}
+                        </div>
+                      {% endif %}
+                      <div>
+                        <div class="fw-semibold text-dark">{{ comp.name }}</div>
+                        <small class="text-muted">{{ comp.created_at|date:"M d, Y" }}</small>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Domain / Slug -->
+                  <td>
+                    <span class="badge rounded-pill bg-light text-secondary px-3 py-1 font-monospace" style="border: 1px solid #E5E7EB; font-size: 0.82rem;">
+                      {{ comp.domain }}
+                    </span>
+                  </td>
+
+                  <!-- Admin Contact -->
+                  <td>
+                    <div class="fw-medium text-dark" style="font-size: 0.9rem;">{{ comp.admin_name }}</div>
+                    <small class="text-muted">{{ comp.admin_email }}</small>
+                  </td>
+
+                  <!-- Total Blogs -->
+                  <td class="text-center">
+                    <span class="badge rounded-pill bg-light text-dark px-3 py-2 fw-bold" style="border: 1px solid #E5E7EB; font-size: 0.85rem;">
+                      {{ comp.total_blogs }}
+                    </span>
+                  </td>
+
+                  <!-- Members -->
+                  <td class="text-center">
+                    <span class="badge rounded-pill bg-light text-dark px-3 py-2 fw-bold" style="border: 1px solid #E5E7EB; font-size: 0.85rem;">
+                      <i class="fa-solid fa-users me-1 text-muted"></i> {{ comp.total_members }}
+                    </span>
+                  </td>
+
+                  <!-- Status -->
+                  <td class="text-center">
+                    {% if comp.approval_status == 'approved' or comp.status == 'active' %}
+                      <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2 fw-bold" style="font-size: 0.82rem;">
+                        <i class="fa-solid fa-circle-check me-1"></i> Active
+                      </span>
+                    {% elif comp.approval_status == 'pending' %}
+                      <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis px-3 py-2 fw-bold" style="font-size: 0.82rem;">
+                        <i class="fa-regular fa-clock me-1"></i> Pending
+                      </span>
+                    {% else %}
+                      <span class="badge rounded-pill bg-danger-subtle text-danger px-3 py-2 fw-bold" style="font-size: 0.82rem;">
+                        <i class="fa-solid fa-ban me-1"></i> Inactive
+                      </span>
+                    {% endif %}
+                  </td>
+
+                  <!-- Actions (Icon Only) -->
+                  <td class="text-end">
+                    <div class="d-inline-flex align-items-center gap-1">
+                      <!-- View Details Button → opens company detail page -->
+                      <a href="/companies/{{ comp.company.id }}/"
+                         class="btn btn-sm btn-outline-primary rounded d-inline-flex align-items-center justify-content-center"
+                         style="width: 30px; height: 28px; padding: 0;"
+                         title="View Details">
+                        <i class="fa-solid fa-eye" style="font-size: 0.85rem;"></i>
+                      </a>
+
+                      <!-- Remove Company Icon Button -->
+                      <button type="button" 
+                              class="btn btn-sm btn-outline-danger rounded d-inline-flex align-items-center justify-content-center btn-remove-company" 
+                              style="width: 30px; height: 28px; padding: 0;"
+                              data-company-id="{{ comp.company.id }}" 
+                              data-company-name="{{ comp.name }}"
+                              title="Remove Company">
+                        <i class="fa-solid fa-trash-can" style="font-size: 0.85rem;"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="7" class="text-center py-5 text-muted">
+                    <i class="fa-regular fa-building fs-1 d-block mb-3 text-secondary opacity-50"></i>
+                    <p class="mb-0 fw-medium">{{ page.no_companies_text|default:"No companies registered yet." }}</p>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Controls (10 items per page) -->
+        {% if companies_page_obj.paginator.num_pages > 1 %}
+        <div class="p-3 border-top d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <small class="text-muted">
+            Showing {{ companies_page_obj.start_index }} to {{ companies_page_obj.end_index }} of {{ companies_page_obj.paginator.count }} companies
+          </small>
+          <nav aria-label="Companies Page Navigation">
+            <ul class="pagination pagination-sm mb-0">
+              {% if companies_page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link rounded-pill me-1 px-3" href="?page={{ companies_page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                    &laquo; Previous
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link rounded-pill me-1 px-3">&laquo; Previous</span>
+                </li>
+              {% endif %}
+
+              {% for p_num in companies_page_obj.paginator.page_range %}
+                {% if companies_page_obj.number == p_num %}
+                  <li class="page-item active"><span class="page-link rounded-circle mx-1" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">{{ p_num }}</span></li>
+                {% elif p_num > companies_page_obj.number|add:"-3" and p_num < companies_page_obj.number|add:"3" %}
+                  <li class="page-item">
+                    <a class="page-link rounded-circle mx-1" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;" href="?page={{ p_num }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                      {{ p_num }}
+                    </a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+
+              {% if companies_page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link rounded-pill ms-1 px-3" href="?page={{ companies_page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                    Next &raquo;
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link rounded-pill ms-1 px-3">Next &raquo;</span>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+        {% endif %}
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- REMOVE COMPANY CONFIRMATION MODAL (Matching Image 2) -->
+<div class="modal fade" id="removeCompanyModal" tabindex="-1" aria-labelledby="removeCompanyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-body p-4 text-center">
+        <!-- Trash Icon Circle -->
+        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background: #fee2e2; color: #dc2626;">
+          <i class="fa-solid fa-trash-can fs-3"></i>
+        </div>
+
+        <!-- Heading & Subtext (100% Dynamic CMS Fields) -->
+        <h5 class="fw-bold mb-2 text-dark">{{ page.modal_remove_company_title|default:"Remove Company?" }}</h5>
+        <p class="text-secondary small mb-3">
+          {{ page.modal_remove_company_confirm_text|default:"Are you sure you want to permanently remove this company? All associated data will be removed. This action cannot be undone." }}
+        </p>
+
+        <!-- Company Info Pill -->
+        <div class="p-2 mb-4 rounded-3 text-truncate bg-light border small text-dark fw-medium" id="rm_company_preview">
+          🏢 Company Name
+        </div>
+
+        <!-- Action Form -->
+        <form method="POST" id="removeCompanyForm" action="{% url 'companies_management' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action_type" value="remove_company">
+          <input type="hidden" name="company_id" id="rm_company_id">
+          <div class="d-flex justify-content-center gap-2">
+            <button type="button" class="btn btn-light px-4 fw-semibold rounded-pill" data-bs-dismiss="modal">
+              {{ page.modal_remove_company_btn_cancel|default:"Cancel" }}
+            </button>
+            <button type="submit" class="btn btn-danger px-4 fw-semibold rounded-pill text-white shadow-sm" id="btnConfirmDeleteCompany">
+              {{ page.modal_remove_company_btn_confirm|default:"Yes, Delete" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW COMPANY DETAILS MODAL -->
+<div class="modal fade" id="viewCompanyModal" tabindex="-1" aria-labelledby="viewCompanyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header border-bottom py-3 px-4 bg-light">
+        <div class="d-flex align-items-center gap-3">
+          <div id="vm_logo_wrap"></div>
+          <div>
+            <h5 class="modal-title fw-bold text-dark mb-0" id="vm_name">Company Name</h5>
+            <small class="text-muted" id="vm_domain">domain</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="row g-3">
+          <!-- Left Column: Company & Admin Details -->
+          <div class="col-md-7">
+            <h6 class="fw-bold text-primary mb-3">
+              <i class="fa-solid fa-circle-info me-1"></i> Company Information
+            </h6>
+            <div class="list-group list-group-flush border rounded-3 mb-3 small">
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Domain / Slug:</span>
+                <span class="fw-semibold text-dark font-monospace" id="vm_slug">-</span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Website Name:</span>
+                <span class="fw-semibold text-dark" id="vm_website_name">-</span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Website URL:</span>
+                <span id="vm_website_url_wrap"><span class="text-muted">-</span></span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Registration Date:</span>
+                <span class="fw-semibold text-dark" id="vm_created">-</span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Account Status:</span>
+                <span id="vm_status_badge">-</span>
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-primary mb-3">
+              <i class="fa-solid fa-user-shield me-1"></i> Admin & Contact
+            </h6>
+            <div class="list-group list-group-flush border rounded-3 small">
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Company Admin:</span>
+                <span class="fw-semibold text-dark" id="vm_admin_name">-</span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Admin Email:</span>
+                <span class="fw-semibold text-dark" id="vm_admin_email">-</span>
+              </div>
+              <div class="list-group-item d-flex justify-content-between py-2">
+                <span class="text-muted">Contact Person:</span>
+                <span class="fw-semibold text-dark" id="vm_contact_person">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Stats & API -->
+          <div class="col-md-5">
+            <h6 class="fw-bold text-primary mb-3">
+              <i class="fa-solid fa-chart-pie me-1"></i> Workspace Stats
+            </h6>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <div class="p-3 border rounded-3 text-center bg-light">
+                  <div class="text-muted small mb-1">Total Blogs</div>
+                  <h4 class="fw-bold text-primary mb-0" id="vm_total_blogs">0</h4>
+                  <small class="text-success fw-medium" id="vm_live_blogs">0 Live</small>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-3 border rounded-3 text-center bg-light">
+                  <div class="text-muted small mb-1">Members</div>
+                  <h4 class="fw-bold text-warning mb-0" id="vm_members">0</h4>
+                  <small class="text-muted fw-medium">Active Users</small>
+                </div>
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-primary mb-2">
+              <i class="fa-solid fa-key me-1"></i> API Key
+            </h6>
+            <div class="p-2 bg-light border rounded-3 font-monospace small text-break text-muted mb-3" id="vm_api_key">
+              -
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-top py-2 px-4 bg-light">
+        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // 1. Remove Company Modal
+  const removeCompanyModalEl = document.getElementById('removeCompanyModal');
+  if (removeCompanyModalEl && typeof bootstrap !== 'undefined') {
+    const removeCompanyModal = new bootstrap.Modal(removeCompanyModalEl);
+    
+    document.querySelectorAll('.btn-remove-company').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const companyId = this.dataset.companyId;
+        const companyName = this.dataset.companyName;
+        
+        const previewEl = document.getElementById('rm_company_preview');
+        const inputId = document.getElementById('rm_company_id');
+        
+        if (previewEl) previewEl.innerHTML = '🏢 ' + companyName;
+        if (inputId) inputId.value = companyId;
+        
+        removeCompanyModal.show();
+      });
+    });
+
+    const removeCompanyForm = document.getElementById('removeCompanyForm');
+    const btnConfirmDeleteCompany = document.getElementById('btnConfirmDeleteCompany');
+    if (removeCompanyForm && btnConfirmDeleteCompany) {
+      removeCompanyForm.addEventListener('submit', function() {
+        btnConfirmDeleteCompany.disabled = true;
+        btnConfirmDeleteCompany.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Deleting...';
+      });
+    }
+  }
+
+  // 2. View Company Details Modal
+  const viewCompanyModalEl = document.getElementById('viewCompanyModal');
+  if (viewCompanyModalEl && typeof bootstrap !== 'undefined') {
+    const viewCompanyModal = new bootstrap.Modal(viewCompanyModalEl);
+
+    document.querySelectorAll('.btn-view-company').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const d = this.dataset;
+
+        document.getElementById('vm_name').textContent = d.companyName || '-';
+        document.getElementById('vm_domain').textContent = d.domain || '-';
+        document.getElementById('vm_slug').textContent = d.domain || '-';
+        document.getElementById('vm_website_name').textContent = d.websiteName || '-';
+        
+        const urlWrap = document.getElementById('vm_website_url_wrap');
+        if (d.websiteUrl) {
+          urlWrap.innerHTML = '<a href="' + d.websiteUrl + '" target="_blank" rel="noopener noreferrer" class="text-primary text-decoration-none d-inline-flex align-items-center gap-1">' + d.websiteUrl + ' <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7rem;"></i></a>';
+        } else {
+          urlWrap.innerHTML = '<span class="text-muted">Not specified</span>';
+        }
+
+        document.getElementById('vm_created').textContent = d.created || '-';
+        document.getElementById('vm_admin_name').textContent = d.adminName || '-';
+        document.getElementById('vm_admin_email').textContent = d.adminEmail || '-';
+        document.getElementById('vm_contact_person').textContent = d.contactPerson || '-';
+        document.getElementById('vm_total_blogs').textContent = d.totalBlogs || '0';
+        document.getElementById('vm_live_blogs').textContent = (d.publishedBlogs || '0') + ' Live';
+        document.getElementById('vm_members').textContent = d.members || '0';
+        document.getElementById('vm_api_key').textContent = d.apiKey || '-';
+
+        const logoWrap = document.getElementById('vm_logo_wrap');
+        if (d.logo) {
+          logoWrap.innerHTML = '<img src="' + d.logo + '" class="rounded-circle object-fit-cover" style="width: 44px; height: 44px; border: 1px solid #E5E7EB;">';
+        } else {
+          logoWrap.innerHTML = '<div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px; background: #E0E7FF; color: #4338CA; font-size: 1.1rem;">' + (d.companyName ? d.companyName.charAt(0).toUpperCase() : 'C') + '</div>';
+        }
+
+        const statusBadge = document.getElementById('vm_status_badge');
+        if (d.status === 'active' || d.approval === 'approved') {
+          statusBadge.innerHTML = '<span class="badge rounded-pill bg-success-subtle text-success px-3 py-1 fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Active</span>';
+        } else if (d.approval === 'pending') {
+          statusBadge.innerHTML = '<span class="badge rounded-pill bg-warning-subtle text-warning-emphasis px-3 py-1 fw-bold"><i class="fa-regular fa-clock me-1"></i> Pending</span>';
+        } else {
+          statusBadge.innerHTML = '<span class="badge rounded-pill bg-danger-subtle text-danger px-3 py-1 fw-bold"><i class="fa-solid fa-ban me-1"></i> Inactive</span>';
+        }
+
+        viewCompanyModal.show();
+      });
+    });
+  }
+});
+</script>
+{% endblock %}

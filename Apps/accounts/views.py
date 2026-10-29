@@ -16,9 +16,30 @@ def user_dashboard_view(request):
         return redirect(get_login_url())
 
     from django.utils import timezone
+    from django.contrib import messages
     from Apps.companies.models import UserProfile, CompanyMembership
     from Apps.accounts.models import User
     from Apps.blogs.models import BlogPage
+
+    # Handle Super Admin actions (e.g. Remove Company)
+    if request.method == 'POST':
+        action_type = request.POST.get('action_type')
+        if action_type == 'remove_company':
+            if not (request.user.role == User.Role.SUPER_ADMIN or request.user.is_superuser):
+                messages.error(request, "Permission denied. Only Super Admin can delete a company.")
+                return redirect('/dashboard/')
+            company_id = request.POST.get('company_id')
+            from Apps.companies.models import Company
+            try:
+                comp_to_del = Company.objects.get(id=company_id)
+                comp_name = comp_to_del.company_name
+                comp_to_del.delete()
+                messages.success(request, f"Company '{comp_name}' has been successfully removed.")
+            except Company.DoesNotExist:
+                messages.error(request, "Company not found.")
+            except Exception as e:
+                messages.error(request, f"Error deleting company: {str(e)}")
+            return redirect('/dashboard/')
 
     # 1. Logged-in user ki company find karein
     profile = UserProfile.objects.filter(user=request.user).select_related('company').first()
@@ -133,6 +154,44 @@ def user_dashboard_view(request):
 
         writers_data.sort(key=lambda x: x['total_posts'], reverse=True)
 
+    # Super Admin Companies Data
+    companies_data = []
+    is_superadmin = (request.user.role == User.Role.SUPER_ADMIN or request.user.is_superuser)
+    if is_superadmin:
+        from Apps.companies.models import Company
+        all_companies = Company.objects.all().order_by('-created_at')
+        for comp in all_companies:
+            comp_blogs_count = BlogPage.objects.filter(company=comp).count()
+            comp_members_count = User.objects.filter(
+                models.Q(userprofile__company=comp) | models.Q(company_memberships__company=comp)
+            ).distinct().count()
+            admin_user = User.objects.filter(
+                models.Q(userprofile__company=comp) | models.Q(company_memberships__company=comp),
+                role=User.Role.COMPANY_ADMIN
+            ).first()
+            published_blogs = BlogPage.objects.filter(company=comp, live=True).count()
+            draft_blogs = comp_blogs_count - published_blogs
+            companies_data.append({
+                'company': comp,
+                'name': comp.company_name,
+                'domain': comp.domain or comp.slug or '-',
+                'website_url': comp.website_url or '',
+                'website_name': comp.website_name or '',
+                'contact_person': comp.contact_person or '-',
+                'email': comp.email or '-',
+                'admin_name': admin_user.get_full_name() or admin_user.admin_username if admin_user else (comp.contact_person or '-'),
+                'admin_email': admin_user.email if admin_user else (comp.email or '-'),
+                'total_blogs': comp_blogs_count,
+                'published_blogs': published_blogs,
+                'draft_blogs': draft_blogs,
+                'total_members': comp_members_count,
+                'status': comp.status,
+                'approval_status': comp.approval_status,
+                'slug': comp.slug,
+                'api_key': comp.api_key,
+                'created_at': comp.created_at,
+            })
+
     employee_blogs = dashboard_blogs_qs.select_related('category', 'featured_image').order_by('-latest_revision_created_at')
 
     notifications = request.user.notifications.all()[:10]
@@ -160,6 +219,8 @@ def user_dashboard_view(request):
         'top_devices': top_devices,
         'top_browsers': top_browsers,
         'writers_data': writers_data,
+        'companies_data': companies_data,
+        'is_superadmin': is_superadmin,
         'employee_blogs': employee_blogs,
         'recent_blogs': dashboard_blogs_qs.order_by('-latest_revision_created_at')[:5]
     })
@@ -171,9 +232,220 @@ def logout_view(request):
     return redirect(get_login_url())
 
 
+def companies_management_view(request):
+    """
+    Dedicated Companies Management Page for Super Admin.
+    Lists all registered client companies with stats and management actions.
+    Restricted exclusively to Super Admins.
+    """
+    if not request.user.is_authenticated:
+        return redirect(get_login_url())
+
+    from Apps.accounts.models import User as UserModel, UserDashboardPage
+    from Apps.companies.models import Company
+    from Apps.blogs.models import BlogPage
+    from django.contrib import messages
+
+    # Permission check: Strictly Super Admin only
+    is_superadmin = (request.user.role == UserModel.Role.SUPER_ADMIN or request.user.is_superuser)
+    if not is_superadmin:
+        messages.error(request, "Access restricted. Companies management is for Super Admins only.")
+        return redirect('/dashboard/')
+
+    # Handle Remove Company POST action
+    if request.method == 'POST':
+        action_type = request.POST.get('action_type')
+        if action_type == 'remove_company':
+            company_id = request.POST.get('company_id')
+            try:
+                comp_to_del = Company.objects.get(id=company_id)
+                comp_name = comp_to_del.company_name
+                comp_to_del.delete()
+                messages.success(request, f"Company '{comp_name}' has been successfully removed.")
+            except Company.DoesNotExist:
+                messages.error(request, "Company not found.")
+            except Exception as e:
+                messages.error(request, f"Error deleting company: {str(e)}")
+            return redirect('/companies/')
+
+    dashboard_page = UserDashboardPage.objects.live().first()
+    context = dashboard_page.get_context(request) if dashboard_page else {}
+    sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
+
+    # Search filter
+    search_query = request.GET.get('q', '').strip()
+    companies_qs = Company.objects.all().order_by('-created_at')
+    if search_query:
+        companies_qs = companies_qs.filter(
+            models.Q(company_name__icontains=search_query) |
+            models.Q(domain__icontains=search_query) |
+            models.Q(slug__icontains=search_query)
+        )
+
+    # Calculate summary metrics
+    all_companies = Company.objects.all()
+    total_companies_count = all_companies.count()
+    active_companies_count = all_companies.filter(
+        models.Q(status='active') | models.Q(approval_status='approved')
+    ).count()
+    total_blogs_across_all = BlogPage.objects.count()
+    total_members_across_all = UserModel.objects.exclude(role=UserModel.Role.SUPER_ADMIN).count()
+
+    # Build companies data list
+    companies_data = []
+    for comp in companies_qs:
+        comp_blogs_count = BlogPage.objects.filter(company=comp).count()
+        comp_members_count = UserModel.objects.filter(
+            models.Q(userprofile__company=comp) | models.Q(company_memberships__company=comp)
+        ).distinct().count()
+        admin_user = UserModel.objects.filter(
+            models.Q(userprofile__company=comp) | models.Q(company_memberships__company=comp),
+            role=UserModel.Role.COMPANY_ADMIN
+        ).first()
+
+        published_blogs = BlogPage.objects.filter(company=comp, live=True).count()
+        draft_blogs = comp_blogs_count - published_blogs
+
+        companies_data.append({
+            'company': comp,
+            'name': comp.company_name,
+            'domain': comp.domain or comp.slug or '-',
+            'website_url': comp.website_url or '',
+            'website_name': comp.website_name or '',
+            'contact_person': comp.contact_person or '-',
+            'email': comp.email or '-',
+            'admin_name': admin_user.get_full_name() or admin_user.admin_username if admin_user else (comp.contact_person or '-'),
+            'admin_email': admin_user.email if admin_user else (comp.email or '-'),
+            'total_blogs': comp_blogs_count,
+            'published_blogs': published_blogs,
+            'draft_blogs': draft_blogs,
+            'total_members': comp_members_count,
+            'status': comp.status,
+            'approval_status': comp.approval_status,
+            'slug': comp.slug,
+            'api_key': comp.api_key,
+            'created_at': comp.created_at,
+        })
+
+    # Pagination: 10 companies per page
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(companies_data, 10)
+    try:
+        companies_page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        companies_page_obj = paginator.page(1)
+    except EmptyPage:
+        companies_page_obj = paginator.page(paginator.num_pages)
+
+    notifications = request.user.notifications.all()[:10] if request.user.is_authenticated else []
+    unread_notifications_count = request.user.notifications.filter(is_read=False).count() if request.user.is_authenticated else 0
+
+    context.update({
+        'page': dashboard_page,
+        'sidebar_links': sidebar_links,
+        'user': request.user,
+        'companies_data': companies_page_obj,
+        'companies_page_obj': companies_page_obj,
+        'total_companies_count': total_companies_count,
+        'active_companies_count': active_companies_count,
+        'total_blogs_across_all': total_blogs_across_all,
+        'total_members_across_all': total_members_across_all,
+        'search_query': search_query,
+        'notifications': notifications,
+        'unread_notifications_count': unread_notifications_count,
+        'active_tab': 'companies',
+    })
+    return render(request, 'accounts/companies_list.html', context)
+
+
+def company_detail_view(request, company_id):
+    """
+    Dedicated Company Detail Page for Super Admin.
+    Shows full details of a single company.
+    Restricted exclusively to Super Admins.
+    """
+    if not request.user.is_authenticated:
+        return redirect(get_login_url())
+
+    from Apps.accounts.models import User as UserModel, UserDashboardPage
+    from Apps.companies.models import Company
+    from Apps.blogs.models import BlogPage
+    from django.contrib import messages
+    from django.shortcuts import get_object_or_404
+
+    is_superadmin = (request.user.role == UserModel.Role.SUPER_ADMIN or request.user.is_superuser)
+    if not is_superadmin:
+        messages.error(request, "Access restricted. Company details are for Super Admins only.")
+        return redirect('/dashboard/')
+
+    comp = get_object_or_404(Company, id=company_id)
+
+    comp_blogs_count = BlogPage.objects.filter(company=comp).count()
+    published_blogs = BlogPage.objects.filter(company=comp, live=True).count()
+    draft_blogs = comp_blogs_count - published_blogs
+    comp_members_count = UserModel.objects.filter(
+        models.Q(userprofile__company=comp) | models.Q(company_memberships__company=comp)
+    ).distinct().count()
+    admin_user = UserModel.objects.filter(
+        models.Q(userprofile__company=comp) | models.Q(company_memberships__company=comp),
+        role=UserModel.Role.COMPANY_ADMIN
+    ).first()
+
+    # All members list
+    members_qs = UserModel.objects.filter(
+        models.Q(userprofile__company=comp) | models.Q(company_memberships__company=comp)
+    ).distinct().order_by('role', 'first_name')
+
+    # All blogs list (recent 10)
+    recent_blogs = BlogPage.objects.filter(company=comp).order_by('-last_published_at')[:10]
+
+    company_data = {
+        'company': comp,
+        'name': comp.company_name,
+        'domain': comp.domain or comp.slug or '-',
+        'slug': comp.slug,
+        'website_url': comp.website_url or '',
+        'website_name': comp.website_name or '',
+        'contact_person': comp.contact_person or '-',
+        'email': comp.email or '-',
+        'admin_name': admin_user.get_full_name() or admin_user.admin_username if admin_user else (comp.contact_person or '-'),
+        'admin_email': admin_user.email if admin_user else (comp.email or '-'),
+        'total_blogs': comp_blogs_count,
+        'published_blogs': published_blogs,
+        'draft_blogs': draft_blogs,
+        'total_members': comp_members_count,
+        'status': comp.status,
+        'approval_status': comp.approval_status,
+        'api_key': comp.api_key,
+        'created_at': comp.created_at,
+    }
+
+    dashboard_page = UserDashboardPage.objects.live().first()
+    context = dashboard_page.get_context(request) if dashboard_page else {}
+    sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
+    notifications = request.user.notifications.all()[:10] if request.user.is_authenticated else []
+    unread_notifications_count = request.user.notifications.filter(is_read=False).count() if request.user.is_authenticated else 0
+
+    context.update({
+        'page': dashboard_page,
+        'sidebar_links': sidebar_links,
+        'user': request.user,
+        'comp': company_data,
+        'admin_user': admin_user,
+        'members': members_qs,
+        'recent_blogs': recent_blogs,
+        'notifications': notifications,
+        'unread_notifications_count': unread_notifications_count,
+        'active_tab': 'companies',
+    })
+    return render(request, 'accounts/company_detail.html', context)
+
+
 def settings_view(request):
     if not request.user.is_authenticated:
         return redirect(get_login_url())
+
 
     from Apps.accounts.models import User as UserModel
     if request.user.role == UserModel.Role.COMPANY_USER:

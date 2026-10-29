@@ -41,11 +41,14 @@
       <!-- Messages Alert -->
       {% if messages %}
         <div class="container-fluid px-0 mb-3">
-          {% for message in messages %}
-            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show mb-2" role="alert">
-              {{ message }}
+          {% regroup messages by message as unique_messages %}
+          {% for group in unique_messages %}
+            {% with msg=group.list.0 %}
+            <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show mb-2 shadow-sm" role="alert">
+              {{ msg }}
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+            {% endwith %}
           {% endfor %}
         </div>
       {% endif %}
@@ -264,6 +267,16 @@
         }
       });
     });
+
+    // Prevent double form submission on fast double-clicks
+    if (modalForm) {
+      modalForm.addEventListener('submit', function () {
+        if (confirmBtn) {
+          confirmBtn.disabled = true;
+          confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Processing...';
+        }
+      });
+    }
   });
 </script>
 {% endblock %}

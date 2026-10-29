@@ -1,0 +1,295 @@
+{% extends "companies/base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}{{ comp.name }} — Company Details | {{ page.brand_name|default:"BlogPro" }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  .cd-header {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+  .cd-logo {
+    width: 64px; height: 64px; border-radius: 14px;
+    object-fit: cover; border: 1px solid #E5E7EB;
+    flex-shrink: 0;
+  }
+  .cd-logo-placeholder {
+    width: 64px; height: 64px; border-radius: 14px;
+    background: #EEF2FF; color: #4F46E5;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; font-weight: 700;
+    border: 1px solid #C7D2FE; flex-shrink: 0;
+  }
+  .cd-stat-box {
+    text-align: center;
+    padding: 0.6rem 1.2rem;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    min-width: 80px;
+  }
+  .cd-stat-box .sn { font-size: 1.4rem; font-weight: 700; color: #111827; display: block; }
+  .cd-stat-box .sl { font-size: 0.7rem; color: #6B7280; text-transform: uppercase; letter-spacing: 0.04em; }
+  .cd-card {
+    background: #fff; border-radius: 14px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    padding: 1.25rem;
+    height: 100%;
+  }
+  .cd-card-title {
+    font-size: 0.8rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: #6B7280; margin-bottom: 0.9rem;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .cd-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.45rem 0; border-bottom: 1px solid #F3F4F6; font-size: 0.875rem;
+  }
+  .cd-row:last-child { border-bottom: none; }
+  .cd-lbl { color: #6B7280; font-weight: 500; }
+  .cd-val { color: #111827; font-weight: 600; text-align: right; max-width: 60%; word-break: break-all; }
+  .member-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0.45rem 0; border-bottom: 1px solid #F3F4F6; font-size: 0.85rem;
+  }
+  .member-row:last-child { border-bottom: none; }
+  .av {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.8rem;
+    background: #EEF2FF; color: #4F46E5; flex-shrink: 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bp-app-wrapper">
+  {% include "accounts/blocks/sidebar.html" %}
+
+  <div class="bp-main-container">
+    {% include "accounts/blocks/topbar.html" %}
+
+    <main class="bp-content-body">
+
+      <!-- Back -->
+      <a href="/companies/" class="d-inline-flex align-items-center gap-2 text-muted text-decoration-none mb-3 fw-medium" style="font-size:0.875rem;">
+        <i class="fa-solid fa-arrow-left"></i> Back to Companies
+      </a>
+
+      <!-- Flash Messages -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show mb-3 shadow-sm">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- WHITE HEADER -->
+      <div class="cd-header">
+        {% if comp.company.logo %}
+          <img src="{{ comp.company.logo.url }}" alt="{{ comp.name }}" class="cd-logo">
+        {% else %}
+          <div class="cd-logo-placeholder">{{ comp.name|first|upper }}</div>
+        {% endif %}
+
+        <div class="flex-grow-1">
+          <h1 class="fw-bold mb-1" style="font-size:1.4rem; color:#111827;">{{ comp.name }}</h1>
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            {% if comp.status == 'active' %}
+              <span class="badge" style="background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;padding:3px 10px;border-radius:20px;font-size:0.75rem;">
+                <i class="fa-solid fa-circle fa-xs" style="color:#34D399;"></i> Active
+              </span>
+            {% else %}
+              <span class="badge" style="background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;padding:3px 10px;border-radius:20px;font-size:0.75rem;">
+                {{ comp.status|title }}
+              </span>
+            {% endif %}
+            {% if comp.domain %}
+              <span class="badge" style="background:#F3F4F6;color:#374151;border:1px solid #E5E7EB;padding:3px 10px;border-radius:20px;font-size:0.75rem;">
+                <i class="fa-solid fa-link fa-xs"></i> {{ comp.domain }}
+              </span>
+            {% endif %}
+            <span class="badge" style="background:#F3F4F6;color:#374151;border:1px solid #E5E7EB;padding:3px 10px;border-radius:20px;font-size:0.75rem;">
+              <i class="fa-regular fa-calendar fa-xs"></i> Joined {{ comp.created_at|date:"M Y" }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="d-flex align-items-center gap-2 me-3">
+          <div class="cd-stat-box">
+            <span class="sn">{{ comp.total_blogs }}</span>
+            <span class="sl">Blogs</span>
+          </div>
+          <div class="cd-stat-box">
+            <span class="sn" style="color:#10B981;">{{ comp.published_blogs }}</span>
+            <span class="sl">Live</span>
+          </div>
+          <div class="cd-stat-box">
+            <span class="sn" style="color:#8B5CF6;">{{ comp.total_members }}</span>
+            <span class="sl">Members</span>
+          </div>
+        </div>
+
+        <!-- Remove Button -->
+        <form method="post" action="/companies/" onsubmit="return confirm('Remove {{ comp.name }}? This cannot be undone.');">
+          {% csrf_token %}
+          <input type="hidden" name="action_type" value="remove_company">
+          <input type="hidden" name="company_id" value="{{ comp.company.id }}">
+          <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:8px;">
+            <i class="fa-solid fa-trash-can me-1"></i> Remove
+          </button>
+        </form>
+      </div>
+
+      <!-- CONTENT GRID -->
+      <div class="row g-3">
+
+        <!-- LEFT: Company Info + Admin & Contact -->
+        <div class="col-lg-5 d-flex flex-column gap-3">
+
+          <!-- Company Information -->
+          <div class="cd-card">
+            <div class="cd-card-title">
+              <i class="fa-solid fa-building text-primary"></i> Company Information
+            </div>
+            <div class="cd-row">
+              <span class="cd-lbl">Domain / Slug</span>
+              <span class="cd-val"><code style="background:#F3F4F6;padding:2px 6px;border-radius:4px;font-size:0.82rem;">{{ comp.domain }}</code></span>
+            </div>
+            {% if comp.website_name %}
+            <div class="cd-row">
+              <span class="cd-lbl">Website Name</span>
+              <span class="cd-val">{{ comp.website_name }}</span>
+            </div>
+            {% endif %}
+            {% if comp.website_url %}
+            <div class="cd-row">
+              <span class="cd-lbl">Website URL</span>
+              <span class="cd-val">
+                <a href="{{ comp.website_url }}" target="_blank" rel="noopener" class="text-primary text-decoration-none">
+                  {{ comp.website_url|truncatechars:30 }} <i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i>
+                </a>
+              </span>
+            </div>
+            {% endif %}
+            <div class="cd-row">
+              <span class="cd-lbl">Registered On</span>
+              <span class="cd-val">{{ comp.created_at|date:"M d, Y" }}</span>
+            </div>
+            <div class="cd-row">
+              <span class="cd-lbl">Account Status</span>
+              <span class="cd-val">
+                {% if comp.status == 'active' %}
+                  <span class="badge" style="background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;padding:3px 10px;border-radius:20px;">
+                    <i class="fa-solid fa-circle-check fa-xs"></i> Active
+                  </span>
+                {% else %}
+                  <span class="badge" style="background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;padding:3px 10px;border-radius:20px;">
+                    {{ comp.status|title }}
+                  </span>
+                {% endif %}
+              </span>
+            </div>
+            <div class="cd-row">
+              <span class="cd-lbl">Approval</span>
+              <span class="cd-val">
+                {% if comp.approval_status == 'approved' %}
+                  <span class="badge" style="background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;padding:3px 10px;border-radius:20px;">Approved</span>
+                {% elif comp.approval_status == 'pending' %}
+                  <span class="badge" style="background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;padding:3px 10px;border-radius:20px;">Pending</span>
+                {% else %}
+                  <span class="badge" style="background:#F9FAFB;color:#374151;border:1px solid #E5E7EB;padding:3px 10px;border-radius:20px;">{{ comp.approval_status|title }}</span>
+                {% endif %}
+              </span>
+            </div>
+          </div>
+
+          <!-- Admin & Contact -->
+          <div class="cd-card">
+            <div class="cd-card-title">
+              <i class="fa-solid fa-user-tie" style="color:#6366F1;"></i> Admin & Contact
+            </div>
+            <div class="cd-row">
+              <span class="cd-lbl">Company Admin</span>
+              <span class="cd-val">{{ comp.admin_name }}</span>
+            </div>
+            <div class="cd-row">
+              <span class="cd-lbl">Admin Email</span>
+              <span class="cd-val">
+                <a href="mailto:{{ comp.admin_email }}" class="text-primary text-decoration-none">{{ comp.admin_email }}</a>
+              </span>
+            </div>
+            <div class="cd-row">
+              <span class="cd-lbl">Contact Person</span>
+              <span class="cd-val">{{ comp.contact_person }}</span>
+            </div>
+            {% if comp.email %}
+            <div class="cd-row">
+              <span class="cd-lbl">Contact Email</span>
+              <span class="cd-val">
+                <a href="mailto:{{ comp.email }}" class="text-primary text-decoration-none">{{ comp.email }}</a>
+              </span>
+            </div>
+            {% endif %}
+          </div>
+
+        </div>
+
+        <!-- RIGHT: Team Members -->
+        <div class="col-lg-7">
+          <div class="cd-card">
+            <div class="cd-card-title">
+              <i class="fa-solid fa-users" style="color:#8B5CF6;"></i> Team Members
+              <span class="ms-auto badge" style="background:#EDE9FE;color:#7C3AED;font-size:0.72rem;font-weight:600;border-radius:20px;padding:3px 10px;">{{ comp.total_members }}</span>
+            </div>
+
+            {% if members %}
+              {% for member in members %}
+              <div class="member-row">
+                <div class="av">{{ member.first_name|first|upper }}{{ member.last_name|first|upper }}</div>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold" style="font-size:0.85rem;color:#111827;">
+                    {{ member.get_full_name|default:member.admin_username }}
+                  </div>
+                  <div class="text-muted" style="font-size:0.75rem;">{{ member.email }}</div>
+                </div>
+                <div>
+                  {% if member.role == 'company_admin' %}
+                    <span class="badge" style="background:#EEF2FF;color:#4338CA;font-size:0.68rem;padding:3px 10px;border-radius:20px;font-weight:600;">Admin</span>
+                  {% else %}
+                    <span class="badge" style="background:#F9FAFB;color:#374151;border:1px solid #E5E7EB;font-size:0.68rem;padding:3px 10px;border-radius:20px;">Member</span>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="text-center py-4 text-muted">
+                <i class="fa-regular fa-users fa-2x d-block mb-2 opacity-25"></i>
+                No members found.
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div><!-- /row -->
+
+    </main>
+  </div>
+</div>
+{% endblock %}
