@@ -21,9 +21,8 @@
   .settings-breadcrumb .active { color: #0f172a; font-weight: 600; }
   .bp-settings-nav {
     display: flex;
-    gap: 0.5rem;
-    border-bottom: 1px solid #e2e8f0;
-    margin-bottom: 1.75rem;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
     padding-bottom: 0.5rem;
     overflow-x: auto;
   }
@@ -31,55 +30,76 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.65rem 1.15rem;
+    padding: 0.65rem 1.25rem;
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 600;
     color: #64748b;
-    border: none;
-    background: transparent;
-    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 999px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.2s ease;
     text-decoration: none;
     white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
   }
-  .bp-settings-tab:hover { color: #0f172a; background: #f1f5f9; }
-  .bp-settings-tab.active { color: #2563eb !important; background: #eff6ff !important; font-weight: 600; }
+  .bp-settings-tab:hover { color: #2563eb; background: #eff6ff; border-color: #bfdbfe; }
+  .bp-settings-tab.active {
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
+    border-color: transparent !important;
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3) !important;
+  }
   .bp-settings-card {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 14px;
     border: 1px solid #e2e8f0;
     padding: 1.75rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    border-top: 3.5px solid #2563eb;
+    transition: all 0.25s ease;
   }
+  .bp-settings-card:hover {
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+  }
+  .card-gen { border-top-color: #2563eb !important; }
+  .card-mod { border-top-color: #9333ea !important; }
+  .card-fields { border-top-color: #059669 !important; }
+
   .bp-settings-section-header { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #f1f5f9; }
   .bp-settings-title { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0 0 0.35rem 0; display: flex; align-items: center; gap: 0.6rem; }
   .bp-settings-sub { font-size: 0.85rem; color: #64748b; margin: 0; }
   .bp-form-label { font-size: 0.85rem; font-weight: 600; color: #0f172a; margin-bottom: 0.4rem; display: block; }
   .bp-form-control {
     width: 100%;
-    padding: 0.6rem 0.85rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    padding: 0.65rem 0.95rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
     font-size: 0.9rem;
     color: #0f172a;
     background-color: #fff;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
-  .bp-form-control:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+  .bp-form-control:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
   .bp-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 1.15rem 0; border-bottom: 1px solid #f8fafc; }
   .bp-toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
   .bp-toggle-label { font-size: 0.92rem; font-weight: 600; color: #0f172a; margin-bottom: 0.2rem; }
   .bp-toggle-desc { font-size: 0.82rem; color: #64748b; margin: 0; }
   .bp-btn-save {
-    background: #2563eb; color: #fff; border: none;
-    padding: 0.65rem 1.4rem; border-radius: 8px;
-    font-size: 0.88rem; font-weight: 600; cursor: pointer;
-    transition: background 0.15s ease;
-    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #fff; border: none;
+    padding: 0.65rem 1.6rem; border-radius: 999px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    transition: all 0.2s ease;
+    display: inline-flex; align-items: center; gap: 0.5rem;
   }
-  .bp-btn-save:hover { background: #1d4ed8; color: #fff; }
+  .bp-btn-save:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+    color: #fff;
+  }
 </style>
 {% endblock %}
 
@@ -137,7 +157,7 @@
 
         <!-- 1. GENERAL SUB-SECTION -->
         <div id="section-general" class="comment-tab-pane">
-          <div class="bp-settings-card">
+          <div class="bp-settings-card card-gen">
             <div class="bp-settings-section-header">
               <h2 class="bp-settings-title"><i class="fa-solid fa-sliders text-primary"></i> {{ page.comments_gen_heading|default:"General" }}</h2>
               <p class="bp-settings-sub">{{ page.comments_gen_subtext|default:"Configure core comment status, nested replies, and display limits." }}</p>
@@ -170,9 +190,9 @@
 
         <!-- 2. MODERATION SUB-SECTION -->
         <div id="section-moderation" class="comment-tab-pane d-none">
-          <div class="bp-settings-card">
+          <div class="bp-settings-card card-mod">
             <div class="bp-settings-section-header">
-              <h2 class="bp-settings-title"><i class="fa-solid fa-shield-halved text-primary"></i> {{ page.comments_mod_heading|default:"Moderation" }}</h2>
+              <h2 class="bp-settings-title"><i class="fa-solid fa-shield-halved" style="color: #9333ea;"></i> {{ page.comments_mod_heading|default:"Moderation" }}</h2>
               <p class="bp-settings-sub">{{ page.comments_mod_subtext|default:"Set automated review rules and visitor notices." }}</p>
             </div>
 
@@ -198,9 +218,9 @@
 
         <!-- 3. FORM FIELDS SUB-SECTION -->
         <div id="section-form_fields" class="comment-tab-pane d-none">
-          <div class="bp-settings-card">
+          <div class="bp-settings-card card-fields">
             <div class="bp-settings-section-header">
-              <h2 class="bp-settings-title"><i class="fa-solid fa-list-check text-primary"></i> {{ page.comments_fields_heading|default:"Form Fields" }}</h2>
+              <h2 class="bp-settings-title"><i class="fa-solid fa-list-check" style="color: #059669;"></i> {{ page.comments_fields_heading|default:"Form Fields" }}</h2>
               <p class="bp-settings-sub">{{ page.comments_fields_subtext|default:"Configure input requirements for comment submissions." }}</p>
             </div>
 

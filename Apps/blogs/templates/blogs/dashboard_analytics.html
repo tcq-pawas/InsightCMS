@@ -10,11 +10,104 @@
 <style>
   .analytics-card {
     background: #ffffff;
-    border-radius: 10px;
+    border-radius: 14px;
     border: 1px solid #e2e8f0;
-    padding: 1rem 1.15rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    padding: 1.15rem 1.25rem;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
   }
+  .analytics-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  /* Colorful Top Accent Borders */
+  .card-accent-blue {
+    border-top: 3.5px solid #2563eb !important;
+  }
+  .card-accent-purple {
+    border-top: 3.5px solid #a855f7 !important;
+  }
+  .card-accent-emerald {
+    border-top: 3.5px solid #059669 !important;
+  }
+  .card-accent-amber {
+    border-top: 3.5px solid #d97706 !important;
+  }
+  .card-accent-indigo {
+    border-top: 3.5px solid #6366f1 !important;
+  }
+  .card-accent-gradient {
+    border-top: 3.5px solid #3b82f6 !important;
+    border-image: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899) 1;
+  }
+
+  /* Gradient Icon Badges */
+  .icon-badge-gradient {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff !important;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  }
+  .badge-grad-blue {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+  .badge-grad-purple {
+    background: linear-gradient(135deg, #9333ea, #db2777);
+    box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+  }
+  .badge-grad-emerald {
+    background: linear-gradient(135deg, #059669, #10b981);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+  }
+  .badge-grad-amber {
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+  }
+  .badge-grad-indigo {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  }
+
+  /* Rank Badges */
+  .rank-badge {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .rank-1 {
+    background: linear-gradient(135deg, #fbbf24, #d97706);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.35);
+  }
+  .rank-2 {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(100, 116, 139, 0.3);
+  }
+  .rank-3 {
+    background: linear-gradient(135deg, #fb923c, #c2410c);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(194, 65, 12, 0.3);
+  }
+  .rank-default {
+    background: #f1f5f9;
+    color: #64748b;
+  }
+
   .stat-badge-trend {
     font-size: 0.75rem;
     padding: 0.2rem 0.5rem;
@@ -23,8 +116,15 @@
   }
   .filter-btn-group .btn {
     font-size: 0.8rem;
-    padding: 0.35rem 0.85rem;
+    padding: 0.38rem 0.95rem;
     border-radius: 999px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  .filter-btn-group .btn-primary {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    border: none;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
   }
   /* Compact spacing overrides for analytics page */
   .bp-content-body { padding: 1.25rem 1.5rem !important; }
@@ -54,10 +154,10 @@
         </div>
 
         <div class="btn-group filter-btn-group bg-white p-1 rounded-pill shadow-sm border" role="group">
-          <a href="?range=today" class="btn {% if time_range == 'today' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">Today</a>
-          <a href="?range=7days" class="btn {% if time_range == '7days' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">7 Days</a>
-          <a href="?range=30days" class="btn {% if time_range == '30days' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">30 Days</a>
-          <a href="?range=all" class="btn {% if time_range == 'all' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">All Time</a>
+          <a href="?range=today" class="btn {% if time_range == 'today' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">{{ dashboard_page.filter_today_label|default:"Today" }}</a>
+          <a href="?range=7days" class="btn {% if time_range == '7days' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">{{ dashboard_page.filter_7days_label|default:"7 Days" }}</a>
+          <a href="?range=30days" class="btn {% if time_range == '30days' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">{{ dashboard_page.filter_30days_label|default:"30 Days" }}</a>
+          <a href="?range=all" class="btn {% if time_range == 'all' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">{{ dashboard_page.filter_all_label|default:"All Time" }}</a>
         </div>
       </div>
 
@@ -73,15 +173,15 @@
         </div>
       {% endif %}
 
-      <!-- 4 Top KPI Cards (Dynamic Values & Labels from Wagtail) -->
+      <!-- 5 Top KPI Cards (Dynamic Values & Labels from Wagtail + Conversions) -->
       <div class="row g-2 mb-3">
         
         <!-- Total Views -->
-        <div class="col-sm-6 col-lg-3">
-          <div class="analytics-card">
+        <div class="col-sm-6 col-lg">
+          <div class="analytics-card card-accent-blue">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_total_views_label|default:"Total Views" }}</span>
-              <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #eff6ff; color: #2563eb;">
+              <div class="icon-badge-gradient badge-grad-blue">
                 <i class="fa-solid fa-eye"></i>
               </div>
             </div>
@@ -91,11 +191,11 @@
         </div>
 
         <!-- Unique Visitors -->
-        <div class="col-sm-6 col-lg-3">
-          <div class="analytics-card">
+        <div class="col-sm-6 col-lg">
+          <div class="analytics-card card-accent-purple">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_unique_visitors_label|default:"Unique Visitors" }}</span>
-              <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #fdf4ff; color: #c026d3;">
+              <div class="icon-badge-gradient badge-grad-purple">
                 <i class="fa-solid fa-users"></i>
               </div>
             </div>
@@ -105,11 +205,11 @@
         </div>
 
         <!-- Avg Views per Post -->
-        <div class="col-sm-6 col-lg-3">
-          <div class="analytics-card">
+        <div class="col-sm-6 col-lg">
+          <div class="analytics-card card-accent-emerald">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_avg_views_label|default:"Avg Views / Post" }}</span>
-              <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #ecfdf5; color: #059669;">
+              <div class="icon-badge-gradient badge-grad-emerald">
                 <i class="fa-solid fa-arrow-trend-up"></i>
               </div>
             </div>
@@ -119,11 +219,11 @@
         </div>
 
         <!-- Published Articles -->
-        <div class="col-sm-6 col-lg-3">
-          <div class="analytics-card">
+        <div class="col-sm-6 col-lg">
+          <div class="analytics-card card-accent-amber">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_live_articles_label|default:"Live Articles" }}</span>
-              <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #fffbeb; color: #d97706;">
+              <div class="icon-badge-gradient badge-grad-amber">
                 <i class="fa-solid fa-newspaper"></i>
               </div>
             </div>
@@ -132,17 +232,41 @@
           </div>
         </div>
 
+        <!-- Conversions & Conversion Rate -->
+        <div class="col-sm-6 col-lg">
+          <div class="analytics-card card-accent-indigo">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_conversions_label|default:"Conversions" }}</span>
+              <div class="icon-badge-gradient badge-grad-indigo">
+                <i class="fa-solid fa-bullseye"></i>
+              </div>
+            </div>
+            <div class="d-flex align-items-baseline gap-2">
+              <div class="fs-3 fw-bold text-dark">{{ total_conversions|default:0 }}</div>
+              <span class="badge rounded-pill fw-bold px-2 py-1" style="font-size: 0.75rem; background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe;">
+                {{ conversion_rate }}% {{ dashboard_page.card_conversions_badge_suffix|default:"CR" }}
+              </span>
+            </div>
+            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.card_conversions_sub|default:"Subscribers & Leads" }}</div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Main Traffic Chart -->
-      <div class="analytics-card mb-3">
+      <div class="analytics-card card-accent-blue mb-3">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <div>
-            <h5 class="fw-bold mb-0" style="font-size: 1rem;">{{ dashboard_page.chart_heading|default:"Daily Pageviews Trend" }}</h5>
-            <small class="text-muted" style="font-size: 0.78rem;">{{ dashboard_page.chart_subtext|default:"Visitor readership performance over selected period" }}</small>
+          <div class="d-flex align-items-center gap-2">
+            <span class="icon-badge-gradient badge-grad-blue" style="width: 32px; height: 32px; font-size: 0.82rem;">
+              <i class="fa-solid fa-chart-line"></i>
+            </span>
+            <div>
+              <h5 class="fw-bold mb-0" style="font-size: 1rem;">{{ dashboard_page.chart_heading|default:"Daily Pageviews Trend" }}</h5>
+              <small class="text-muted" style="font-size: 0.78rem;">{{ dashboard_page.chart_subtext|default:"Visitor readership performance over selected period" }}</small>
+            </div>
           </div>
-          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill" style="font-size: 0.72rem;">
-            <i class="fa-solid fa-chart-simple me-1"></i> {{ dashboard_page.chart_badge_text|default:"Blogger-Style Stats" }}
+          <span class="badge border px-3 py-1 rounded-pill" style="font-size: 0.74rem; background: linear-gradient(135deg, #eff6ff, #f5f3ff); color: #2563eb; border-color: #bfdbfe !important;">
+            <i class="fa-solid fa-chart-simple text-primary me-1"></i> {{ dashboard_page.chart_badge_text|default:"Blogger-Style Stats" }}
           </span>
         </div>
         <div style="height: 200px; position: relative;">
@@ -155,11 +279,16 @@
 
         <!-- Left: Popular Articles -->
         <div class="col-lg-8">
-          <div class="analytics-card">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <div>
-                <h5 class="fw-bold mb-0" style="font-size: 1rem;"><i class="fa-solid fa-fire text-danger me-2"></i> {{ dashboard_page.popular_articles_heading|default:"Popular Articles" }}</h5>
-                <small class="text-muted" style="font-size: 0.78rem;">{{ dashboard_page.popular_articles_subtext|default:"Top articles ranked by visitor pageviews" }}</small>
+          <div class="analytics-card card-accent-amber">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="d-flex align-items-center gap-2">
+                <span class="icon-badge-gradient badge-grad-amber" style="width: 32px; height: 32px; font-size: 0.82rem;">
+                  <i class="fa-solid fa-fire"></i>
+                </span>
+                <div>
+                  <h5 class="fw-bold mb-0" style="font-size: 1rem;">{{ dashboard_page.popular_articles_heading|default:"Popular Articles" }}</h5>
+                  <small class="text-muted" style="font-size: 0.78rem;">{{ dashboard_page.popular_articles_subtext|default:"Top articles ranked by visitor pageviews" }}</small>
+                </div>
               </div>
             </div>
 
@@ -171,43 +300,53 @@
                     <th scope="col">{{ dashboard_page.th_article_label|default:"Article" }}</th>
                     <th scope="col">{{ dashboard_page.th_author_label|default:"Author" }}</th>
                     <th scope="col" class="text-center">{{ dashboard_page.th_views_label|default:"Views" }}</th>
+                    <th scope="col" class="text-center">{{ dashboard_page.th_leads_label|default:"Leads" }}</th>
                     <th scope="col" class="text-end">{{ dashboard_page.th_action_label|default:"Action" }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for post in popular_blogs %}
                     <tr>
-                      <td class="fw-bold text-muted" style="font-size: 0.85rem;">{{ forloop.counter }}</td>
+                      <td>
+                        <span class="rank-badge {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-default{% endif %}">
+                          {{ forloop.counter }}
+                        </span>
+                      </td>
                       <td>
                         <div class="d-flex flex-column">
                           <span class="fw-semibold text-dark text-truncate" style="max-width: 320px;">{{ post.title }}</span>
                           <small class="text-muted">
-                            {% if post.category %}<span class="badge bg-light text-secondary border me-1">{{ post.category.name }}</span>{% endif %}
+                            {% if post.category %}<span class="badge me-1" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">{{ post.category.name }}</span>{% endif %}
                             {{ post.first_published_at|default:post.latest_revision_created_at|date:"M d, Y" }}
                           </small>
                         </div>
                       </td>
-                      <td class="text-muted" style="font-size: 0.82rem;">
-                        {% if post.author %}
-                          {{ post.author.get_full_name|default:post.author.username }}
-                        {% else %}
-                          Admin
-                        {% endif %}
+                      <td>
+                        <span class="badge rounded-pill" style="background: #f1f5f9; color: #475569; font-weight: 500;">
+                          <i class="fa-solid fa-user-pen me-1 text-primary"></i>
+                          {% if post.author %}{{ post.author.get_full_name|default:post.author.username }}{% else %}Admin{% endif %}
+                        </span>
                       </td>
                       <td class="text-center">
-                        <span class="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill fw-bold">
+                        <span class="badge rounded-pill fw-bold px-3 py-1" style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;">
                           {{ post.views_count|default:0 }}
                         </span>
                       </td>
+                      <td class="text-center">
+                        <span class="badge rounded-pill fw-bold px-3 py-1
+                          {% if post.conversions_count %}style="background: #dcfce7; color: #15803d; border: 1px solid #86efac;"{% else %}style="background: #f1f5f9; color: #64748b;"{% endif %}">
+                          {{ post.conversions_count|default:0 }}
+                        </span>
+                      </td>
                       <td class="text-end">
-                        <a href="{{ post.url }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-3" style="font-size: 0.75rem;">
-                          <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> {{ dashboard_page.btn_view_label|default:"View" }}
+                        <a href="{{ post.url }}" target="_blank" class="btn btn-sm rounded-pill px-3" style="font-size: 0.75rem; background: #f8fafc; border: 1px solid #cbd5e1; color: #334155; font-weight: 600;">
+                          <i class="fa-solid fa-arrow-up-right-from-square me-1 text-primary"></i> {{ dashboard_page.btn_view_label|default:"View" }}
                         </a>
                       </td>
                     </tr>
                   {% empty %}
                     <tr>
-                      <td colspan="5" class="text-center py-4 text-muted">
+                      <td colspan="6" class="text-center py-4 text-muted">
                         <i class="fa-solid fa-chart-pie fa-2x mb-2 text-secondary opacity-50"></i>
                         <div>{{ dashboard_page.no_views_text|default:"No blog views recorded yet for this period." }}</div>
                       </td>
@@ -224,12 +363,19 @@
         <div class="col-lg-4">
           
           <!-- Referral Sources -->
-          <div class="analytics-card mb-3">
-            <h5 class="fw-bold mb-1" style="font-size: 1rem;"><i class="fa-solid fa-route text-success me-2"></i> {{ dashboard_page.traffic_sources_heading|default:"Traffic Sources" }}</h5>
-            <small class="text-muted d-block mb-2" style="font-size: 0.78rem;">{{ dashboard_page.traffic_sources_subtext|default:"Where your visitors came from" }}</small>
+          <div class="analytics-card card-accent-emerald mb-3">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="icon-badge-gradient badge-grad-emerald" style="width: 32px; height: 32px; font-size: 0.82rem;">
+                <i class="fa-solid fa-route"></i>
+              </span>
+              <div>
+                <h5 class="fw-bold mb-0" style="font-size: 1rem;">{{ dashboard_page.traffic_sources_heading|default:"Traffic Sources" }}</h5>
+                <small class="text-muted d-block" style="font-size: 0.78rem;">{{ dashboard_page.traffic_sources_subtext|default:"Where your visitors came from" }}</small>
+              </div>
+            </div>
 
             {% if referrers_list %}
-              <div class="d-flex flex-column gap-3">
+              <div class="d-flex flex-column gap-3 mt-3">
                 {% for ref in referrers_list %}
                   <div>
                     <div class="d-flex justify-content-between mb-1" style="font-size: 0.82rem;">
@@ -238,14 +384,14 @@
                         {% elif 'Twitter' in ref.referrer_domain %}<i class="fa-brands fa-x-twitter text-dark me-1"></i>
                         {% elif 'Facebook' in ref.referrer_domain %}<i class="fa-brands fa-facebook text-primary me-1"></i>
                         {% elif 'LinkedIn' in ref.referrer_domain %}<i class="fa-brands fa-linkedin text-info me-1"></i>
-                        {% elif 'Direct' in ref.referrer_domain %}<i class="fa-solid fa-link text-muted me-1"></i>
+                        {% elif 'Direct' in ref.referrer_domain %}<i class="fa-solid fa-link text-success me-1"></i>
                         {% else %}<i class="fa-solid fa-globe text-secondary me-1"></i>{% endif %}
                         {{ ref.referrer_domain }}
                       </span>
-                      <span class="text-muted">{{ ref.count }} <small>({{ ref.percentage }}%)</small></span>
+                      <span class="badge rounded-pill" style="background: #f1f5f9; color: #334155;">{{ ref.count }} <small class="text-muted">({{ ref.percentage }}%)</small></span>
                     </div>
-                    <div class="progress" style="height: 6px;">
-                      <div class="progress-bar bg-primary" role="progressbar" style="width: {{ ref.percentage }}%;"></div>
+                    <div class="progress" style="height: 6px; border-radius: 999px;">
+                      <div class="progress-bar {% if 'Google' in ref.referrer_domain %}bg-danger{% elif 'Twitter' in ref.referrer_domain %}bg-dark{% elif 'Facebook' in ref.referrer_domain %}bg-primary{% elif 'LinkedIn' in ref.referrer_domain %}bg-info{% elif 'Direct' in ref.referrer_domain %}bg-success{% else %}bg-primary{% endif %}" role="progressbar" style="width: {{ ref.percentage }}%; border-radius: 999px;"></div>
                     </div>
                   </div>
                 {% endfor %}
@@ -258,38 +404,45 @@
           </div>
 
           <!-- Devices Breakdown -->
-          <div class="analytics-card">
-            <h5 class="fw-bold mb-1" style="font-size: 1rem;"><i class="fa-solid fa-mobile-screen text-info me-2"></i> {{ dashboard_page.devices_heading|default:"Devices & Browsers" }}</h5>
-            <small class="text-muted d-block mb-2" style="font-size: 0.78rem;">{{ dashboard_page.devices_subtext|default:"Visitor hardware & software" }}</small>
+          <div class="analytics-card card-accent-purple">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="icon-badge-gradient badge-grad-purple" style="width: 32px; height: 32px; font-size: 0.82rem;">
+                <i class="fa-solid fa-mobile-screen"></i>
+              </span>
+              <div>
+                <h5 class="fw-bold mb-0" style="font-size: 1rem;">{{ dashboard_page.devices_heading|default:"Devices & Browsers" }}</h5>
+                <small class="text-muted d-block" style="font-size: 0.78rem;">{{ dashboard_page.devices_subtext|default:"Visitor hardware & software" }}</small>
+              </div>
+            </div>
 
-            <div class="mb-3">
-              <label class="form-label text-muted fw-semibold mb-2" style="font-size: 0.78rem;">{{ dashboard_page.device_usage_label|default:"DEVICE USAGE" }}</label>
+            <div class="mb-3 mt-3">
+              <label class="form-label text-muted fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">{{ dashboard_page.device_usage_label|default:"DEVICE USAGE" }}</label>
               {% for dev in devices_list %}
                 <div class="d-flex justify-content-between align-items-center mb-2" style="font-size: 0.82rem;">
                   <span>
-                    {% if dev.device_type == 'Mobile' %}<i class="fa-solid fa-mobile-screen-button text-muted me-1"></i>
-                    {% elif dev.device_type == 'Tablet' %}<i class="fa-solid fa-tablet-screen-button text-muted me-1"></i>
-                    {% else %}<i class="fa-solid fa-desktop text-muted me-1"></i>{% endif %}
-                    {{ dev.device_type }}
+                    {% if dev.device_type == 'Mobile' %}<i class="fa-solid fa-mobile-screen-button text-purple me-1" style="color: #9333ea;"></i>
+                    {% elif dev.device_type == 'Tablet' %}<i class="fa-solid fa-tablet-screen-button text-info me-1" style="color: #0284c7;"></i>
+                    {% else %}<i class="fa-solid fa-desktop text-primary me-1" style="color: #2563eb;"></i>{% endif %}
+                    <span class="fw-medium text-dark">{{ dev.device_type }}</span>
                   </span>
-                  <span class="badge bg-light text-dark border">{{ dev.percentage }}%</span>
+                  <span class="badge rounded-pill px-2 py-1" style="background: #f3e8ff; color: #7e22ce; font-weight: 600;">{{ dev.percentage }}%</span>
                 </div>
               {% empty %}
-                <span class="text-muted" style="font-size: 0.8rem;">Desktop (100%)</span>
+                <span class="badge rounded-pill px-2 py-1" style="background: #eff6ff; color: #1d4ed8;">Desktop (100%)</span>
               {% endfor %}
             </div>
 
             <hr class="my-3 opacity-25">
 
             <div>
-              <label class="form-label text-muted fw-semibold mb-2" style="font-size: 0.78rem;">{{ dashboard_page.top_browsers_label|default:"TOP BROWSERS" }}</label>
+              <label class="form-label text-muted fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">{{ dashboard_page.top_browsers_label|default:"TOP BROWSERS" }}</label>
               <div class="d-flex flex-wrap gap-2">
                 {% for b in browsers_list %}
-                  <span class="badge bg-light text-secondary border px-2 py-1 rounded-pill" style="font-size: 0.78rem;">
-                    {{ b.browser }}: {{ b.count }}
+                  <span class="badge border px-3 py-1 rounded-pill" style="font-size: 0.78rem; background: #f8fafc; border-color: #cbd5e1 !important; color: #1e293b; font-weight: 600;">
+                    <i class="fa-solid fa-globe me-1 text-primary"></i> {{ b.browser }}: <span class="text-primary">{{ b.count }}</span>
                   </span>
                 {% empty %}
-                  <span class="text-muted" style="font-size: 0.8rem;">Chrome, Safari</span>
+                  <span class="badge border px-2 py-1 rounded-pill" style="background: #f8fafc; color: #64748b;">Chrome, Safari</span>
                 {% endfor %}
               </div>
             </div>
@@ -309,9 +462,14 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-  const ctx = document.getElementById('analyticsChart');
-  if (ctx) {
-    new Chart(ctx, {
+  const canvasEl = document.getElementById('analyticsChart');
+  if (canvasEl) {
+    const ctx = canvasEl.getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.25)');
+    gradient.addColorStop(1, 'rgba(37, 99, 235, 0.00)');
+
+    new Chart(canvasEl, {
       type: 'line',
       data: {
         labels: {{ chart_labels|safe|default:"['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']" }},
@@ -319,12 +477,18 @@
           label: 'Views',
           data: {{ chart_views|safe|default:"[0, 0, 0, 0, 0, 0, 0]" }},
           borderColor: '#2563eb',
-          backgroundColor: 'rgba(37, 99, 235, 0.08)',
-          tension: 0.35,
+          borderWidth: 2.5,
+          backgroundColor: gradient,
+          tension: 0.38,
           fill: true,
           pointBackgroundColor: '#2563eb',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
           pointRadius: 4,
-          pointHoverRadius: 6
+          pointHoverRadius: 7,
+          pointHoverBackgroundColor: '#1d4ed8',
+          pointHoverBorderColor: '#ffffff',
+          pointHoverBorderWidth: 2
         }]
       },
       options: {

@@ -507,3 +507,62 @@ class BlogPostView(models.Model):
     def __str__(self):
         return f"View on '{self.blog.title}' ({self.referrer_domain}) at {self.created_at}"
 
+
+class BlogConversion(models.Model):
+    """Tracks reader conversions (newsletter subscribe, lead capture, CTA click) per blog post."""
+    TYPE_NEWSLETTER = 'newsletter'
+    TYPE_LEAD = 'lead'
+    TYPE_CTA = 'cta_click'
+    TYPE_CHOICES = [
+        (TYPE_NEWSLETTER, 'Newsletter Subscription'),
+        (TYPE_LEAD, 'Lead Capture'),
+        (TYPE_CTA, 'CTA Button Click'),
+    ]
+
+    blog = models.ForeignKey(
+        'blogs.BlogPage',
+        on_delete=models.CASCADE,
+        related_name='conversions',
+        verbose_name=_('Blog Post')
+    )
+    company = models.ForeignKey(
+        'companies.Company',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='blog_conversions',
+        verbose_name=_('Company')
+    )
+    conversion_type = models.CharField(
+        max_length=30,
+        choices=TYPE_CHOICES,
+        default=TYPE_NEWSLETTER,
+        verbose_name=_('Conversion Type')
+    )
+    visitor_email = models.EmailField(
+        blank=True,
+        default='',
+        verbose_name=_('Visitor Email')
+    )
+    session_key = models.CharField(
+        max_length=64,
+        db_index=True,
+        blank=True,
+        default=''
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True
+    )
+
+    class Meta:
+        verbose_name = _('Blog Conversion')
+        verbose_name_plural = _('Blog Conversions')
+        indexes = [
+            models.Index(fields=['blog', 'created_at']),
+            models.Index(fields=['company', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"Conversion ({self.conversion_type}) on '{self.blog.title}' ({self.visitor_email or 'anonymous'})"
+

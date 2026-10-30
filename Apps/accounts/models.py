@@ -594,6 +594,23 @@ class UserDashboardPage(Page):
     traffic_sources_subtext = models.CharField(max_length=255, blank=True, default="Where your visitors came from", verbose_name="Traffic Sources Subtext")
     devices_heading = models.CharField(max_length=150, blank=True, default="Devices & Browsers", verbose_name="Devices & Browsers Heading")
     devices_subtext = models.CharField(max_length=255, blank=True, default="Visitor hardware & software", verbose_name="Devices & Browsers Subtext")
+    filter_today_label = models.CharField(max_length=50, blank=True, default="Today", verbose_name="Filter: Today Label")
+    filter_7days_label = models.CharField(max_length=50, blank=True, default="7 Days", verbose_name="Filter: 7 Days Label")
+    filter_30days_label = models.CharField(max_length=50, blank=True, default="30 Days", verbose_name="Filter: 30 Days Label")
+    filter_all_label = models.CharField(max_length=50, blank=True, default="All Time", verbose_name="Filter: All Time Label")
+    card_conversions_label = models.CharField(max_length=50, blank=True, default="Conversions", verbose_name="Card 5: Conversions Label")
+    card_conversions_sub = models.CharField(max_length=100, blank=True, default="Subscribers & Leads", verbose_name="Card 5 Subtext")
+    card_conversions_badge_suffix = models.CharField(max_length=20, blank=True, default="CR", verbose_name="Card 5 Badge Suffix")
+    th_article_label = models.CharField(max_length=50, blank=True, default="Article", verbose_name="Table: Article Column")
+    th_author_label = models.CharField(max_length=50, blank=True, default="Author", verbose_name="Table: Author Column")
+    th_views_label = models.CharField(max_length=50, blank=True, default="Views", verbose_name="Table: Views Column")
+    th_leads_label = models.CharField(max_length=50, blank=True, default="Leads", verbose_name="Table: Leads Column")
+    th_action_label = models.CharField(max_length=50, blank=True, default="Action", verbose_name="Table: Action Column")
+    btn_view_label = models.CharField(max_length=50, blank=True, default="View", verbose_name="Button: View Label")
+    no_views_text = models.CharField(max_length=200, blank=True, default="No blog views recorded yet for this period.", verbose_name="Empty Views Message")
+    no_referrer_text = models.CharField(max_length=200, blank=True, default="No referrer data yet. Visits will appear here.", verbose_name="Empty Referrers Message")
+    device_usage_label = models.CharField(max_length=50, blank=True, default="DEVICE USAGE", verbose_name="Device Usage Section Label")
+    top_browsers_label = models.CharField(max_length=50, blank=True, default="TOP BROWSERS", verbose_name="Top Browsers Section Label")
 
     # 11. SEO & Growth Page Configuration (Editable from Wagtail CMS)
     seo_page_title = models.CharField(max_length=150, blank=True, default="SEO & Growth", verbose_name="SEO Page Title")
@@ -649,6 +666,23 @@ class UserDashboardPage(Page):
             FieldPanel("traffic_sources_subtext"),
             FieldPanel("devices_heading"),
             FieldPanel("devices_subtext"),
+            FieldPanel("filter_today_label"),
+            FieldPanel("filter_7days_label"),
+            FieldPanel("filter_30days_label"),
+            FieldPanel("filter_all_label"),
+            FieldPanel("card_conversions_label"),
+            FieldPanel("card_conversions_sub"),
+            FieldPanel("card_conversions_badge_suffix"),
+            FieldPanel("th_article_label"),
+            FieldPanel("th_author_label"),
+            FieldPanel("th_views_label"),
+            FieldPanel("th_leads_label"),
+            FieldPanel("th_action_label"),
+            FieldPanel("btn_view_label"),
+            FieldPanel("no_views_text"),
+            FieldPanel("no_referrer_text"),
+            FieldPanel("device_usage_label"),
+            FieldPanel("top_browsers_label"),
         ], heading="Analytics & Reports Page Settings (Custom Headings & Labels)", classname="collapsible collapsed"),
         MultiFieldPanel([
             FieldPanel("seo_page_title"),

@@ -223,6 +223,74 @@
         </div>
       {% endif %}
 
+      <!-- ─── Newsletter / Lead Capture ─── -->
+      <div class="card border-0 shadow-sm rounded-4 mb-5 overflow-hidden" id="blog-subscribe-box">
+        <div class="d-flex" style="border-left: 4px solid #6366f1;">
+          <div class="p-4 w-100">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="rounded-circle d-flex align-items-center justify-content-center"
+                    style="width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+                <i class="fa-solid fa-envelope text-white" style="font-size:0.85rem;"></i>
+              </span>
+              <h5 class="fw-bold mb-0" style="color:#1e293b;">Stay in the loop</h5>
+            </div>
+            <p class="text-muted mb-3" style="font-size:0.88rem;">
+              Get notified when new articles like this are published. No spam, ever.
+            </p>
+            <form id="subscribeForm" class="d-flex gap-2 flex-wrap">
+              {% csrf_token %}
+              <input type="email" id="subscribeEmail" name="email" required
+                     placeholder="Enter your email address"
+                     class="form-control rounded-pill border"
+                     style="max-width:320px;font-size:0.88rem;" />
+              <button type="submit" class="btn rounded-pill px-4 fw-semibold"
+                      style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:0.88rem;">
+                <i class="fa-solid fa-paper-plane me-1"></i> Subscribe
+              </button>
+            </form>
+            <div id="subscribeMsg" class="mt-2" style="font-size:0.85rem;display:none;"></div>
+          </div>
+        </div>
+      </div>
+      <script>
+      (function(){
+        const form  = document.getElementById('subscribeForm');
+        const msg   = document.getElementById('subscribeMsg');
+        const box   = document.getElementById('blog-subscribe-box');
+        if (!form) return;
+        form.addEventListener('submit', function(e){
+          e.preventDefault();
+          const email   = document.getElementById('subscribeEmail').value.trim();
+          const csrf    = form.querySelector('[name=csrfmiddlewaretoken]').value;
+          const pageId  = {{ page.id }};
+          fetch('/blogs/' + pageId + '/conversions/submit/', {
+            method : 'POST',
+            headers: {'Content-Type':'application/json', 'X-CSRFToken': csrf},
+            body   : JSON.stringify({conversion_type:'newsletter', email: email})
+          })
+          .then(r => r.json())
+          .then(data => {
+            if (data.status === 'success' || data.status === 'ok' || data.status === 'duplicate') {
+              form.style.display = 'none';
+              msg.style.display  = 'block';
+              msg.innerHTML = '<span class="text-success fw-semibold">'
+                + '<i class="fa-solid fa-circle-check me-1"></i>'
+                + (data.status === 'duplicate' ? (data.message || "You're already subscribed — thank you!") : (data.message || "Thank you! You'll hear from us soon."))
+                + '</span>';
+            } else {
+              msg.style.display   = 'block';
+              msg.innerHTML = '<span class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i>' + (data.message || 'Something went wrong. Please try again.') + '</span>';
+            }
+          })
+          .catch(() => {
+            msg.style.display   = 'block';
+            msg.innerHTML = '<span class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i>Network error. Please try again.</span>';
+          });
+        });
+      })();
+      </script>
+      <!-- ─── End Newsletter / Lead Capture ─── -->
+
       <!-- ─── Comments Section ─── -->
       {% if page.allow_comments %}
       <div class="mt-5" id="comments">

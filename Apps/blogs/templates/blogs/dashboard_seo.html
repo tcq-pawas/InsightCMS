@@ -10,22 +10,53 @@
 <style>
   .seo-card {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 14px;
     border: 1px solid #e2e8f0;
-    padding: 1.25rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    padding: 1.25rem 1.4rem;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
     margin-bottom: 1.5rem;
+    transition: all 0.25s ease;
   }
-  .seo-score-circle {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    display: flex;
+  .seo-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+  }
+  .card-accent-blue { border-top: 3.5px solid #2563eb !important; }
+  .card-accent-purple { border-top: 3.5px solid #a855f7 !important; }
+  .card-accent-emerald { border-top: 3.5px solid #059669 !important; }
+  .card-accent-amber { border-top: 3.5px solid #d97706 !important; }
+
+  .icon-badge-gradient {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    font-weight: 700;
+    color: #ffffff !important;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
   }
+  .badge-grad-blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+  .badge-grad-purple { background: linear-gradient(135deg, #9333ea, #db2777); }
+  .badge-grad-emerald { background: linear-gradient(135deg, #059669, #10b981); }
+  .badge-grad-amber { background: linear-gradient(135deg, #d97706, #f59e0b); }
+
+  .seo-metric-box {
+    padding: 1rem 0.75rem;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+  }
+  .seo-metric-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+  }
+  .metric-blue { border-top: 3px solid #2563eb; }
+  .metric-purple { border-top: 3px solid #a855f7; }
+  .metric-emerald { border-top: 3px solid #059669; }
+  .metric-amber { border-top: 3px solid #d97706; }
 </style>
 {% endblock %}
 
@@ -49,7 +80,7 @@
           <p class="bp-page-sub mb-0">{{ dashboard_page.seo_page_subtext|default:"Manage XML sitemaps, robots.txt, 301 redirects, schema markup, and search visibility" }}</p>
         </div>
         <div>
-          <button type="button" class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addRedirectModal">
+          <button type="button" class="btn rounded-pill px-3 fw-semibold text-white shadow-sm" style="background: linear-gradient(135deg, #2563eb, #3b82f6); border: none;" data-bs-toggle="modal" data-bs-target="#addRedirectModal">
             <i class="fa-solid fa-plus me-1"></i> Add Custom Redirect
           </button>
         </div>
@@ -68,50 +99,46 @@
       {% endif %}
 
       <!-- Row 1: SEO Health Audit -->
-      <div class="seo-card">
+      <div class="seo-card card-accent-blue">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-          <div>
-            <h5 class="fw-bold mb-1">{{ dashboard_page.seo_audit_heading|default:"On-Page SEO Health Audit" }}</h5>
-            <small class="text-muted">{{ dashboard_page.seo_audit_subtext|default:"Optimization check across all your blog articles" }}</small>
+          <div class="d-flex align-items-center gap-2">
+            <span class="icon-badge-gradient badge-grad-blue">
+              <i class="fa-solid fa-shield-halved"></i>
+            </span>
+            <div>
+              <h5 class="fw-bold mb-0">{{ dashboard_page.seo_audit_heading|default:"On-Page SEO Health Audit" }}</h5>
+              <small class="text-muted">{{ dashboard_page.seo_audit_subtext|default:"Optimization check across all your blog articles" }}</small>
+            </div>
           </div>
-          <!-- <div class="d-flex align-items-center gap-3">
-            <div class="seo-score-circle {% if seo_score >= 80 %}bg-success-subtle text-success{% elif seo_score >= 50 %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %}">
-              {{ seo_score }}%
-            </div> -->
-            <!-- <div>
-              <div class="fw-semibold">Health Score</div>
-              <small class="text-muted">{% if seo_score >= 80 %}Great optimization{% elif seo_score >= 50 %}Fair — can improve{% else %}Needs attention{% endif %}</small>
-            </div> -->
-          <!-- </div> -->
         </div>
 
         <div class="row g-3 text-center">
           <div class="col-6 col-md-3">
-            <div class="p-3 rounded-3 bg-light border">
-              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">{{ dashboard_page.seo_card_titles_label|default:"Custom SEO Titles" }}</span>
-              <span class="fw-bold fs-5 text-dark">{{ has_meta_title }}</span>
-              <span class="text-muted" style="font-size: 0.78rem;">/ {{ total_blogs }}</span>
+            <div class="seo-metric-box metric-blue">
+              <span class="text-muted d-block mb-1" style="font-size: 0.8rem; font-weight: 500;">{{ dashboard_page.seo_card_titles_label|default:"Custom SEO Titles" }}</span>
+              <span class="fw-bold fs-4 text-primary">{{ has_meta_title }}</span>
+              <span class="text-muted" style="font-size: 0.82rem;">/ {{ total_blogs }}</span>
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="p-3 rounded-3 bg-light border">
-              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">{{ dashboard_page.seo_card_descriptions_label|default:"Search Descriptions" }}</span>
-              <span class="fw-bold fs-5 text-dark">{{ has_meta_desc }}</span>
-              <span class="text-muted" style="font-size: 0.78rem;">/ {{ total_blogs }}</span>
+            <div class="seo-metric-box metric-purple">
+              <span class="text-muted d-block mb-1" style="font-size: 0.8rem; font-weight: 500;">{{ dashboard_page.seo_card_descriptions_label|default:"Search Descriptions" }}</span>
+              <span class="fw-bold fs-4" style="color: #9333ea;">{{ has_meta_desc }}</span>
+              <span class="text-muted" style="font-size: 0.82rem;">/ {{ total_blogs }}</span>
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="p-3 rounded-3 bg-light border">
-              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">{{ dashboard_page.seo_card_og_label|default:"Featured / OG Images" }}</span>
-              <span class="fw-bold fs-5 text-dark">{{ has_og_image }}</span>
-              <span class="text-muted" style="font-size: 0.78rem;">/ {{ total_blogs }}</span>
+            <div class="seo-metric-box metric-emerald">
+              <span class="text-muted d-block mb-1" style="font-size: 0.8rem; font-weight: 500;">{{ dashboard_page.seo_card_og_label|default:"Featured / OG Images" }}</span>
+              <span class="fw-bold fs-4" style="color: #059669;">{{ has_og_image }}</span>
+              <span class="text-muted" style="font-size: 0.82rem;">/ {{ total_blogs }}</span>
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="p-3 rounded-3 bg-light border">
-              <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">{{ dashboard_page.seo_card_canonical_label|default:"Canonical Links Set" }}</span>
-              <span class="fw-bold fs-5 text-dark">{{ has_canonical }}</span>
-              <span class="text-muted" style="font-size: 0.78rem;">/ {{ total_blogs }}</span>
+            <div class="seo-metric-box metric-amber">
+              <span class="text-muted d-block mb-1" style="font-size: 0.8rem; font-weight: 500;">{{ dashboard_page.seo_card_canonical_label|default:"Canonical Links Set" }}</span>
+              <span class="fw-bold fs-4" style="color: #d97706;">{{ has_canonical }}</span>
+              <span class="text-muted" style="font-size: 0.82rem;">/ {{ total_blogs }}</span>
             </div>
           </div>
         </div>
@@ -122,26 +149,31 @@
         
         <!-- XML Sitemap Card -->
         <div class="col-md-6">
-          <div class="seo-card h-100">
+          <div class="seo-card card-accent-emerald h-100">
             <div class="d-flex justify-content-between align-items-start mb-2">
-              <div>
-                <h5 class="fw-bold mb-1"><i class="fa-solid fa-sitemap text-primary me-2"></i> {{ dashboard_page.sitemap_card_heading|default:"XML Sitemap" }}</h5>
-                <small class="text-muted">{{ dashboard_page.sitemap_card_subtext|default:"Google & Bing crawler auto-index map" }}</small>
+              <div class="d-flex align-items-center gap-2">
+                <span class="icon-badge-gradient badge-grad-emerald" style="width: 32px; height: 32px; font-size: 0.82rem;">
+                  <i class="fa-solid fa-sitemap"></i>
+                </span>
+                <div>
+                  <h5 class="fw-bold mb-0">{{ dashboard_page.sitemap_card_heading|default:"XML Sitemap" }}</h5>
+                  <small class="text-muted">{{ dashboard_page.sitemap_card_subtext|default:"Google & Bing crawler auto-index map" }}</small>
+                </div>
               </div>
-              <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1">Active</span>
+              <span class="badge rounded-pill px-3 py-1 fw-bold" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac;">Active</span>
             </div>
             <p class="text-muted mt-2" style="font-size: 0.82rem;">
               Your XML sitemap dynamically updates whenever posts are published or edited. Search engines use this URL to discover new articles.
             </p>
-            <div class="p-2 bg-light rounded border text-truncate mb-3" style="font-size: 0.8rem; font-family: monospace;">
+            <div class="p-2 rounded border text-truncate mb-3" style="font-size: 0.8rem; font-family: monospace; background: #f8fafc; border-color: #cbd5e1 !important; color: #0f172a;">
               {{ sitemap_url }}
             </div>
-            <div class="d-flex gap-2">
-              <a href="/sitemap.xml" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+            <div class="d-flex gap-2 flex-wrap">
+              <a href="/sitemap.xml" target="_blank" class="btn btn-sm rounded-pill px-3 fw-semibold text-white" style="background: linear-gradient(135deg, #059669, #10b981); border: none;">
                 <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> View Live Sitemap
               </a>
-              <a href="https://search.google.com/search-console/sitemaps" target="_blank" class="btn btn-light btn-sm border rounded-pill px-3 text-muted">
-                Submit to Google Search Console
+              <a href="https://search.google.com/search-console/sitemaps" target="_blank" class="btn btn-light btn-sm border rounded-pill px-3 text-secondary fw-semibold">
+                Submit to Google Console
               </a>
             </div>
           </div>
@@ -149,22 +181,27 @@
 
         <!-- Robots.txt Card -->
         <div class="col-md-6">
-          <div class="seo-card h-100">
+          <div class="seo-card card-accent-purple h-100">
             <div class="d-flex justify-content-between align-items-start mb-2">
-              <div>
-                <h5 class="fw-bold mb-1"><i class="fa-solid fa-robot text-secondary me-2"></i> {{ dashboard_page.robots_card_heading|default:"Robots.txt" }}</h5>
-                <small class="text-muted">{{ dashboard_page.robots_card_subtext|default:"Crawler directives & bot control" }}</small>
+              <div class="d-flex align-items-center gap-2">
+                <span class="icon-badge-gradient badge-grad-purple" style="width: 32px; height: 32px; font-size: 0.82rem;">
+                  <i class="fa-solid fa-robot"></i>
+                </span>
+                <div>
+                  <h5 class="fw-bold mb-0">{{ dashboard_page.robots_card_heading|default:"Robots.txt" }}</h5>
+                  <small class="text-muted">{{ dashboard_page.robots_card_subtext|default:"Crawler directives & bot control" }}</small>
+                </div>
               </div>
-              <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1">Active</span>
+              <span class="badge rounded-pill px-3 py-1 fw-bold" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac;">Active</span>
             </div>
             <p class="text-muted mt-2" style="font-size: 0.82rem;">
               Directs search bots to public blog articles while protecting admin, cms, and private dashboard directories from indexing.
             </p>
-            <div class="p-2 bg-light rounded border text-truncate mb-3" style="font-size: 0.8rem; font-family: monospace;">
+            <div class="p-2 rounded border text-truncate mb-3" style="font-size: 0.8rem; font-family: monospace; background: #f8fafc; border-color: #cbd5e1 !important; color: #0f172a;">
               {{ robots_url }}
             </div>
             <div>
-              <a href="/robots.txt" target="_blank" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+              <a href="/robots.txt" target="_blank" class="btn btn-sm rounded-pill px-3 fw-semibold text-white" style="background: linear-gradient(135deg, #9333ea, #a855f7); border: none;">
                 <i class="fa-solid fa-file-lines me-1"></i> View robots.txt
               </a>
             </div>
@@ -174,13 +211,18 @@
       </div>
 
       <!-- Row 3: Custom Redirects (Blogger-style 301 / 302 Management) -->
-      <div class="seo-card">
+      <div class="seo-card card-accent-amber">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-          <div>
-            <h5 class="fw-bold mb-0"><i class="fa-solid fa-shuffle text-warning me-2"></i> {{ dashboard_page.redirects_table_heading|default:"Custom Redirects (301 Permanent / 302 Temporary)" }}</h5>
-            <small class="text-muted">{{ dashboard_page.redirects_table_subtext|default:"Blogger-style error & redirect management to prevent 404 broken links" }}</small>
+          <div class="d-flex align-items-center gap-2">
+            <span class="icon-badge-gradient badge-grad-amber" style="width: 32px; height: 32px; font-size: 0.82rem;">
+              <i class="fa-solid fa-shuffle"></i>
+            </span>
+            <div>
+              <h5 class="fw-bold mb-0">{{ dashboard_page.redirects_table_heading|default:"Custom Redirects (301 Permanent / 302 Temporary)" }}</h5>
+              <small class="text-muted">{{ dashboard_page.redirects_table_subtext|default:"Blogger-style error & redirect management to prevent 404 broken links" }}</small>
+            </div>
           </div>
-          <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addRedirectModal">
+          <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold" style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a;" data-bs-toggle="modal" data-bs-target="#addRedirectModal">
             <i class="fa-solid fa-plus me-1"></i> {{ dashboard_page.btn_add_redirect_label|default:"Add Redirect" }}
           </button>
         </div>

@@ -20,6 +20,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseNotAllowed
+from django.views.decorators.http import require_http_methods
 from Apps.blogs.models import BlogPage, BlogIndexPage, BlogCategory
 from wagtail.images.models import Image
 
@@ -1112,6 +1113,22 @@ def dashboard_analytics_view(request):
     published_posts = blogs_qs.filter(live=True).count()
     avg_views_per_post = round(total_views / total_posts, 1) if total_posts > 0 else 0
 
+    # Conversions tracking (Newsletter / Leads / CTA)
+    from Apps.blogs.models import BlogConversion
+    conversions_qs = BlogConversion.objects.all()
+    if company:
+        conversions_qs = conversions_qs.filter(company=company)
+    if is_employee:
+        conversions_qs = conversions_qs.filter(blog__author=request.user)
+
+    if range_start:
+        filtered_conversions = conversions_qs.filter(created_at__date__gte=range_start)
+    else:
+        filtered_conversions = conversions_qs
+
+    total_conversions = filtered_conversions.count()
+    conversion_rate = round((total_conversions / unique_visitors * 100), 1) if unique_visitors > 0 else 0
+
     # Chart generation
     chart_labels = []
     chart_views = []
@@ -1128,7 +1145,8 @@ def dashboard_analytics_view(request):
 
     # Popular Articles ranked table
     popular_blogs = list(blogs_qs.filter(live=True).annotate(
-        views_count=Count('page_views')
+        views_count=Count('page_views'),
+        conversions_count=Count('conversions')
     ).order_by('-views_count')[:15])
 
     # Traffic Sources / Referrers breakdown
@@ -1168,6 +1186,8 @@ def dashboard_analytics_view(request):
         'total_posts': total_posts,
         'published_posts': published_posts,
         'avg_views_per_post': avg_views_per_post,
+        'total_conversions': total_conversions,
+        'conversion_rate': conversion_rate,
         'chart_labels': chart_labels,
         'chart_views': chart_views,
         'popular_blogs': popular_blogs,
@@ -1297,4 +1317,75 @@ Disallow: /api/
 Sitemap: {sitemap_url}
 """
     return HttpResponse(content, content_type="text/plain")
+
+
+@require_http_methods(["POST"])
+def blog_conversion_submit(request, page_id=None, slug=None):
+    """Handles subscriber/lead conversion submissions from blog post pages."""
+    import json
+    from datetime import timedelta
+    from django.utils import timezone
+    from django.http import JsonResponse
+    from Apps.blogs.models import BlogPage, BlogConversion
+
+    try:
+        # Support JSON or POST form data
+        if request.content_type == 'application/json':
+            data = json.loads(request.body.decode('utf-8'))
+        else:
+            data = request.POST
+
+        blog = None
+        if page_id:
+            blog = BlogPage.objects.filter(id=page_id).first()
+        elif slug:
+            blog = BlogPage.objects.filter(slug=slug).first()
+        elif 'blog_id' in data:
+            blog = BlogPage.objects.filter(id=data['blog_id']).first()
+        elif 'slug' in data:
+            blog = BlogPage.objects.filter(slug=data['slug']).first()
+
+        if not blog:
+            return JsonResponse({'status': 'error', 'message': 'Blog post not found.'}, status=404)
+
+        email = data.get('email', '').strip().lower()
+        conv_type = data.get('conversion_type', BlogConversion.TYPE_NEWSLETTER)
+
+        if conv_type in (BlogConversion.TYPE_NEWSLETTER, BlogConversion.TYPE_LEAD) and not email:
+            return JsonResponse({'status': 'error', 'message': 'Please provide a valid email address.'}, status=400)
+
+        # Ensure session exists
+        if not request.session.session_key:
+            request.session.save()
+        session_key = request.session.session_key or 'anonymous'
+
+        # Check duplicate conversion within 24h for same email and blog
+        if email:
+            twenty_four_hours_ago = timezone.now() - timedelta(hours=24)
+            already_subscribed = BlogConversion.objects.filter(
+                blog=blog,
+                visitor_email=email,
+                created_at__gte=twenty_four_hours_ago
+            ).exists()
+            if already_subscribed:
+                return JsonResponse({
+                    'status': 'duplicate',
+                    'message': 'You are already subscribed to updates for this blog!'
+                })
+
+        conversion = BlogConversion.objects.create(
+            blog=blog,
+            company=blog.company,
+            conversion_type=conv_type,
+            visitor_email=email,
+            session_key=session_key,
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Thank you! You have successfully subscribed to updates.'
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
 

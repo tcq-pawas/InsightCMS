@@ -43,6 +43,7 @@ from Apps.blogs.views import (
     dashboard_analytics_view,
     dashboard_seo_view,
     dashboard_redirect_add,
+    blog_conversion_submit,
     dashboard_redirect_delete,
     robots_txt,
 )
@@ -103,6 +104,10 @@ urlpatterns = [
     path('blogs/<int:page_id>/comments/submit/', comment_submit, name='comment_submit'),
     path('blogs/<slug:slug>/comments/submit/', comment_submit_by_slug, name='comment_submit_slug'),
     path('blogs/<slug:slug>/comments/api/', comment_submit_by_slug, name='comment_api_slug'),
+    # Public conversion / newsletter lead submit
+    path('blogs/<int:page_id>/conversions/submit/', blog_conversion_submit, name='blog_conversion_submit'),
+    path('blogs/<slug:slug>/conversions/submit/', blog_conversion_submit, name='blog_conversion_submit_slug'),
+    path('blogs/conversions/submit/', blog_conversion_submit, name='blog_conversion_submit_general'),
     path('settings/', settings_view, name='settings'),
     path('settings/blog/comments/', blog_comments_settings_view, name='blog_comments_settings'),
     path('settings/users/', manage_users_settings_view, name='manage_users_settings'),

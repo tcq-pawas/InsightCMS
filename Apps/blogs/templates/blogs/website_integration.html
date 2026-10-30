@@ -9,38 +9,104 @@
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <style>
   .integration-card {
-    background:#ffffff;border-radius:16px;border:1px solid #E5E7EB;
-    padding:28px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,.05);
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #E2E8F0;
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    overflow: hidden;
   }
+  .integration-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
+  }
+  .card-step-1 { border-top: 4px solid #3B82F6; }
+  .card-step-2 { border-top: 4px solid #8B5CF6; }
+  .card-step-3 { border-top: 4px solid #10B981; }
+
   .step-badge {
-    background:#EEF2FF;color:#4F46E5;font-weight:700;padding:4px 12px;
-    border-radius:20px;font-size:.8rem;margin-bottom:8px;display:inline-block;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    margin-bottom: 10px;
+    display: inline-block;
   }
+  .step-badge-blue { background: #EFF6FF; color: #1D4ED8; border: 1px solid #DBEAFE; }
+  .step-badge-purple { background: #FAF5FF; color: #7C3AED; border: 1px solid #E9D5FF; }
+  .step-badge-green { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
+
   .lang-tabs-bar {
-    display:flex;gap:0;border-bottom:2px solid #E5E7EB;margin-bottom:0;overflow-x:auto;
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid #E2E8F0;
+    margin-bottom: 0;
+    overflow-x: auto;
+    padding-bottom: 2px;
   }
   .lang-tab-btn {
-    padding:9px 18px;border:none;background:transparent;color:#6B7280;font-weight:600;
-    font-size:.88rem;cursor:pointer;border-bottom:3px solid transparent;
-    margin-bottom:-2px;white-space:nowrap;transition:all .18s;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: #64748B;
+    font-weight: 600;
+    font-size: 0.86rem;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
   }
-  .lang-tab-btn:hover { color:#111827; }
-  .lang-tab-btn.active { color:#2563EB;border-bottom:3px solid #2563EB;background:transparent; }
+  .lang-tab-btn:hover { color: #1E293B; background: #F1F5F9; }
+  .lang-tab-btn.active {
+    color: #4F46E5;
+    border-bottom: 3px solid #4F46E5;
+    background: #EEF2FF;
+  }
   .code-wrapper {
-    position:relative;border-radius:0 0 12px 12px;overflow:hidden;background:#111827;
+    position: relative;
+    border-radius: 0 0 14px 14px;
+    overflow: hidden;
+    background: #0F172A;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
   }
   .code-block {
-    background:#111827;color:#F3F4F6;padding:22px 20px 20px;
-    font-family:'Courier New',Courier,monospace;font-size:.88rem;
-    overflow-x:auto;overflow-y:auto;line-height:1.65;height:420px;margin-bottom:0;
+    background: #0F172A;
+    color: #F8FAFC;
+    padding: 24px 22px 22px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.88rem;
+    overflow-x: auto;
+    overflow-y: auto;
+    line-height: 1.65;
+    height: 420px;
+    margin-bottom: 0;
   }
   .code-copy-icon-btn {
-    position:absolute;top:12px;right:14px;background:transparent;color:#9CA3AF;
-    border:none;padding:6px;font-size:1.1rem;cursor:pointer;
-    transition:all .2s ease;z-index:10;display:inline-flex;
-    align-items:center;justify-content:center;
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: rgba(255,255,255,0.08);
+    color: #94A3B8;
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
-  .code-copy-icon-btn:hover { color:#FFFFFF;transform:scale(1.15); }
+  .code-copy-icon-btn:hover {
+    color: #FFFFFF;
+    background: rgba(255,255,255,0.18);
+    transform: translateY(-1px);
+  }
 </style>
 {% endblock %}
 
@@ -54,8 +120,11 @@
       <!-- Page Header -->
       <div class="bp-page-header mb-4">
         <div>
-          <h1 class="bp-page-title" style="font-size:1.8rem;font-weight:700;color:#111827;">
-            <i class="fa-solid fa-code-compare me-2 text-primary"></i> {{ settings_page.integration_page_title|default:"Website Integration Guide" }}
+          <h1 class="bp-page-title d-flex align-items-center gap-2" style="font-size:1.8rem;font-weight:700;color:#111827;">
+            <span class="d-inline-flex align-items-center justify-content-center rounded-3 shadow-sm" style="width: 42px; height: 42px; background: linear-gradient(135deg, #4F46E5, #06B6D4); color: #fff;">
+              <i class="fa-solid fa-code" style="font-size: 1.2rem;"></i>
+            </span>
+            <span>{{ settings_page.integration_page_title|default:"Website Integration Guide" }}</span>
           </h1>
           <p class="bp-page-sub" style="color:#6B7280;font-size:.95rem;">
             {{ settings_page.integration_page_subtext|default:"Step-by-step instructions for integrating blogs on any website." }}
@@ -64,28 +133,28 @@
       </div>
 
       <!-- Step 1 -->
-      <div class="integration-card">
-        <span class="step-badge">{{ settings_page.integration_step1_badge|default:"Step 1" }}</span>
+      <div class="integration-card card-step-1">
+        <span class="step-badge step-badge-blue">{{ settings_page.integration_step1_badge|default:"Step 1" }}</span>
         <h3 style="font-size:1.15rem;font-weight:700;color:#1F2937;margin-bottom:8px;">{{ settings_page.integration_step1_title|default:"Your Live RSS Feed Endpoint" }}</h3>
         <p style="color:#4B5563;font-size:.9rem;margin-bottom:16px;">
-          {{ settings_page.integration_step1_desc_prefix|default:"All blogs published under" }} <strong>{{ company_name }}</strong> {{ settings_page.integration_step1_desc_suffix|default:"are live at this RSS XML endpoint:" }}
+          {{ settings_page.integration_step1_desc_prefix|default:"All blogs published under" }} <strong class="text-primary">{{ company_name }}</strong> {{ settings_page.integration_step1_desc_suffix|default:"are live at this RSS XML endpoint:" }}
         </p>
         <div class="d-flex gap-2">
           <input type="text" id="rssFeedInput" readonly
                  value="{{ cms_base_url }}/company/{{ company_slug }}/rss/"
                  class="form-control"
-                 style="background:#F9FAFB;font-family:monospace;font-size:.9rem;font-weight:600;color:#374151;">
-          <button onclick="copyRssUrl()" class="btn btn-primary px-4 fw-semibold" style="white-space:nowrap;">
+                 style="background:#F8FAFC;border-color:#CBD5E1;font-family:monospace;font-size:.9rem;font-weight:600;color:#1E293B;">
+          <button onclick="copyRssUrl()" class="btn btn-primary px-4 fw-semibold shadow-sm" style="white-space:nowrap;background:linear-gradient(135deg, #4F46E5, #3B82F6);border:none;">
             <i class="fa-regular fa-copy me-1"></i> {{ settings_page.integration_step1_copy_btn_text|default:"Copy URL" }}
           </button>
         </div>
         {% if company.website_url %}
-        <p class="mt-2 mb-0" style="font-size:0.82rem;color:#10B981;">
+        <p class="mt-2 mb-0" style="font-size:0.82rem;color:#059669;">
           <i class="fa-solid fa-circle-check me-1"></i>
           {{ settings_page.integration_step1_website_active_text|default:"Using your website URL:" }} <strong>{{ company.website_url }}</strong>
         </p>
         {% else %}
-        <p class="mt-2 mb-0" style="font-size:0.82rem;color:#F59E0B;">
+        <p class="mt-2 mb-0" style="font-size:0.82rem;color:#D97706;">
           <i class="fa-solid fa-triangle-exclamation me-1"></i>
           {{ settings_page.integration_step1_website_fallback_text|default:"Showing local URL. Set your website URL in Settings to show your real domain here." }}
         </p>
@@ -93,8 +162,8 @@
       </div>
 
       <!-- Step 2: GFG-style language tabs -->
-      <div class="integration-card">
-        <span class="step-badge">{{ settings_page.integration_step2_badge|default:"Step 2" }}</span>
+      <div class="integration-card card-step-2">
+        <span class="step-badge step-badge-purple">{{ settings_page.integration_step2_badge|default:"Step 2" }}</span>
         <h3 style="font-size:1.15rem;font-weight:700;color:#1F2937;margin-bottom:4px;">{{ settings_page.integration_step2_title|default:"Embed Blogs on Your Website" }}</h3>
         <p style="color:#4B5563;font-size:.9rem;margin-bottom:20px;">
           {{ settings_page.integration_step2_subtext|default:"Pick your framework — copy the snippet and paste it in your project." }}
@@ -114,7 +183,7 @@
 
         <div class="code-wrapper">
           <button onclick="copyLangCode()" class="code-copy-icon-btn" title="Copy Code">
-            <i class="fa-regular fa-copy"></i>
+            <i class="fa-regular fa-copy"></i> Copy Snippet
           </button>
           <pre class="code-block"><code id="lang_code_display"></code></pre>
         </div>
@@ -122,13 +191,13 @@
       </div>
 
       <!-- Step 3 -->
-      <div class="integration-card">
-        <span class="step-badge">{{ settings_page.integration_step3_badge|default:"Step 3" }}</span>
+      <div class="integration-card card-step-3">
+        <span class="step-badge step-badge-green">{{ settings_page.integration_step3_badge|default:"Step 3" }}</span>
         <h3 style="font-size:1.15rem;font-weight:700;color:#1F2937;margin-bottom:12px;">{{ settings_page.integration_step3_title|default:"How It Works" }}</h3>
         <ol style="color:#4B5563;font-size:.95rem;line-height:1.8;padding-left:20px;margin-bottom:0;">
-          <li>{{ settings_page.integration_step3_point1|default:"Copy the RSS Feed URL from Step 1." }}</li>
-          <li>{{ settings_page.integration_step3_point2|default:"Pick your framework tab in Step 2, copy the snippet, and paste it in your project." }}</li>
-          <li>{{ settings_page.integration_step3_point3|default:"Whenever you publish or update a blog here, it instantly syncs to your website!" }}</li>
+          <li><span class="fw-semibold text-dark">{{ settings_page.integration_step3_point1|default:"Copy the RSS Feed URL from Step 1." }}</span></li>
+          <li><span class="fw-semibold text-dark">{{ settings_page.integration_step3_point2|default:"Pick your framework tab in Step 2, copy the snippet, and paste it in your project." }}</span></li>
+          <li><span class="fw-semibold text-dark">{{ settings_page.integration_step3_point3|default:"Whenever you publish or update a blog here, it instantly syncs to your website!" }}</span></li>
         </ol>
       </div>
 

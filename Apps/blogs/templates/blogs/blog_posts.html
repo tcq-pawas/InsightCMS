@@ -8,6 +8,67 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <link rel="stylesheet" href="{% static 'css/blog_posts.css' %}">
+<style>
+  .bp-blog-card-item {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 1.15rem;
+    transition: all 0.25s ease;
+    border-left: 4px solid #3b82f6;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+  }
+  .bp-blog-card-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.08);
+    border-color: #cbd5e1;
+    border-left-color: #2563eb;
+  }
+  .bp-action-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+  .bp-action-circle:hover {
+    transform: scale(1.08);
+  }
+  .btn-act-blue { background: #eff6ff; color: #2563eb; border-color: #dbeafe; }
+  .btn-act-blue:hover { background: #2563eb; color: #ffffff; }
+  .btn-act-red { background: #fef2f2; color: #dc2626; border-color: #fee2e2; }
+  .btn-act-red:hover { background: #dc2626; color: #ffffff; }
+  .btn-act-green { background: #ecfdf5; color: #059669; border-color: #d1fae5; }
+  .btn-act-green:hover { background: #059669; color: #ffffff; }
+  .btn-act-amber { background: #fffbeb; color: #d97706; border-color: #fef3c7; }
+  .btn-act-amber:hover { background: #d97706; color: #ffffff; }
+
+  .bp-create-btn {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #ffffff !important;
+    border-radius: 999px;
+    padding: 0.5rem 1.25rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+  }
+  .bp-create-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -24,15 +85,15 @@
     <main class="bp-content-body">
 
       <!-- Dynamic Page Header -->
-      <div class="bp-page-header mb-4">
+      <div class="bp-page-header mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-          <h1 class="bp-page-title">{{ page.page_heading|default:"Blog Posts" }}</h1>
-          <p class="bp-page-sub">{{ page.page_subtext|default:"Manage all blog posts across your workspace" }}</p>
+          <h1 class="bp-page-title mb-1"><i class="fa-solid fa-newspaper text-primary me-2"></i> {{ page.page_heading|default:"Blog Posts" }}</h1>
+          <p class="bp-page-sub mb-0">{{ page.page_subtext|default:"Manage all blog posts across your workspace" }}</p>
         </div>
         {% if user.role != 'super_admin' and not user.is_superuser and request.user.role != 'super_admin' and not request.user.is_superuser %}
         <div>
-            <a href="/blog-posts/create/" class="bp-btn-primary">
-                <i class="fa-solid fa-plus me-1"></i> {{ page.create_button_text|default:"Create Blog Post" }}
+            <a href="/blog-posts/create/" class="bp-create-btn">
+                <i class="fa-solid fa-plus"></i> {{ page.create_button_text|default:"Create Blog Post" }}
             </a>
         </div>
         {% endif %}
@@ -59,35 +120,39 @@
         <div class="bp-blog-card-item">
           <!-- 1. Left Thumbnail -->
           {% if blog.featured_image %}
-            {% image blog.featured_image fill-60x60 class="bp-blog-thumb" %}
+            {% image blog.featured_image fill-60x60 class="bp-blog-thumb rounded-3 shadow-sm" %}
           {% elif blog.effective_thumbnail_url %}
-            <img src="{{ blog.effective_thumbnail_url }}" alt="{{ blog.title }}" class="bp-blog-thumb" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+            <img src="{{ blog.effective_thumbnail_url }}" alt="{{ blog.title }}" class="bp-blog-thumb rounded-3 shadow-sm" style="width: 60px; height: 60px; object-fit: cover;">
           {% else %}
-            <div class="bp-blog-thumb-fallback"><i class="fa-solid fa-pen-nib"></i></div>
+            <div class="bp-blog-thumb-fallback rounded-3" style="width: 60px; height: 60px; background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;"><i class="fa-solid fa-pen-nib"></i></div>
           {% endif %}
 
           <!-- 2. Middle Content (Title + Meta + Short Description) -->
-          <div class="bp-blog-content">
-            <a href="{% url 'dashboard_blog_edit' blog.id %}" class="bp-blog-title">
-              <span>🚀</span> {{ blog.title }}
+          <div class="bp-blog-content" style="flex: 1;">
+            <a href="{% url 'dashboard_blog_edit' blog.id %}" class="bp-blog-title text-decoration-none fw-bold text-dark fs-6 d-block mb-1">
+              {{ blog.title }}
             </a>
-            <div class="bp-blog-meta">
+            <div class="bp-blog-meta d-flex align-items-center gap-2 flex-wrap" style="font-size: 0.82rem;">
               <span>
                 {% if blog.approval_status == 'rejected' %}
-                  <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background-color: #fde8e8 !important; color: #9b1c1c !important; border: 1px solid #f8b4b4;">❌ Rejected</span>
+                  <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background-color: #fee2e2 !important; color: #991b1b !important; border: 1px solid #fecaca;">❌ Rejected</span>
                 {% elif blog.live and blog.approval_status == 'approved' %}
-                  <strong class="text-success">Published</strong>
+                  <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background-color: #dcfce7 !important; color: #166534 !important; border: 1px solid #bbf7d0;">✓ Published</span>
                 {% else %}
-                  <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background-color: #fff8e1 !important; color: #b78103 !important; border: 1px solid #ffe082;">⏳ Waiting for Approval</span>
+                  <span class="badge rounded-pill px-3 py-1 fw-semibold" style="background-color: #fef3c7 !important; color: #92400e !important; border: 1px solid #fde68a;">⏳ Waiting Approval</span>
                 {% endif %}
-                · {{ blog.first_published_at|date:"M d, Y"|default:blog.latest_revision_created_at|date:"M d, Y" }}
-                · <a href="{% url 'dashboard_comments' %}?status=all" class="text-decoration-none text-muted" title="View & Moderate Comments">
-                    <i class="fa-regular fa-comment me-1" style="color: #2563eb;"></i>{{ blog.comments.count }}
-                  </a>
               </span>
 
+              <span class="text-muted">
+                {{ blog.first_published_at|date:"M d, Y"|default:blog.latest_revision_created_at|date:"M d, Y" }}
+              </span>
+
+              <a href="{% url 'dashboard_comments' %}?status=all" class="badge rounded-pill text-decoration-none px-2 py-1" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;" title="View & Moderate Comments">
+                <i class="fa-regular fa-comment me-1"></i>{{ blog.comments.count }}
+              </a>
+
               {% if blog.short_description %}
-              <div class="bp-blog-short-pill" title="{{ blog.short_description }}">
+              <div class="bp-blog-short-pill text-muted text-truncate" style="max-width: 320px; font-size: 0.78rem; background: #f8fafc; padding: 0.15rem 0.6rem; border-radius: 999px; border: 1px solid #e2e8f0;" title="{{ blog.short_description }}">
                 {{ blog.short_description }}
               </div>
               {% endif %}
@@ -95,15 +160,15 @@
           </div>
 
           <!-- 3. Right Action Icons & Meta Indicators -->
-          <div class="bp-blog-actions">
+          <div class="bp-blog-actions d-flex align-items-center gap-2">
             <!-- Edit Action -->
-            <a href="{% url 'dashboard_blog_edit' blog.id %}" class="bp-icon-btn" title="Edit Blog">
+            <a href="{% url 'dashboard_blog_edit' blog.id %}" class="bp-action-circle btn-act-blue" title="Edit Blog">
               <i class="fa-solid fa-pen-to-square"></i>
             </a>
 
             <!-- Delete Action (Triggers Custom Modal) -->
             <button type="button" 
-                    class="bp-icon-btn bp-icon-btn-danger border-0 bg-transparent btn-blog-action" 
+                    class="bp-action-circle btn-act-red border-0 btn-blog-action" 
                     title="Delete Post"
                     data-action="delete"
                     data-url="{% url 'dashboard_blog_delete' blog.id %}"
@@ -115,11 +180,11 @@
             <!-- Company Admin: Toggle Publish / Unpublish -->
             <form method="post" action="{% url 'dashboard_blog_toggle_publish' blog.id %}" class="d-inline">
               {% csrf_token %}
-              <button type="submit" class="bp-icon-btn border-0 bg-transparent" title="Toggle Publish Status (Publish/Unpublish)">
+              <button type="submit" class="bp-action-circle btn-act-amber border-0" title="Toggle Publish Status (Publish/Unpublish)">
                 {% if blog.live %}
-                  <i class="fa-regular fa-eye text-success" title="Published"></i>
+                  <i class="fa-solid fa-eye text-success" title="Live"></i>
                 {% else %}
-                  <i class="fa-regular fa-eye-slash text-secondary" title="Unpublished"></i>
+                  <i class="fa-solid fa-eye-slash text-muted" title="Hidden"></i>
                 {% endif %}
               </button>
             </form>
@@ -128,8 +193,8 @@
             {% if not blog.live or blog.approval_status != 'approved' %}
               <!-- Approve Button (Triggers Custom Modal) -->
               <button type="button" 
-                      class="btn btn-sm btn-success fw-semibold px-2 py-1 shadow-sm d-inline-flex align-items-center gap-1 btn-blog-action" 
-                      style="font-size: 0.78rem; border-radius: 6px;"
+                      class="btn btn-sm btn-success fw-semibold px-2 py-1 shadow-sm d-inline-flex align-items-center gap-1 btn-blog-action rounded-pill" 
+                      style="font-size: 0.78rem;"
                       data-action="approve"
                       data-url="{% url 'dashboard_blog_approve' blog.id %}"
                       data-title="{{ blog.title }}">
@@ -138,8 +203,8 @@
 
               <!-- Reject Button (Triggers Custom Modal) -->
               <button type="button" 
-                      class="btn btn-sm btn-outline-danger fw-semibold px-2 py-1 shadow-sm d-inline-flex align-items-center gap-1 btn-blog-action" 
-                      style="font-size: 0.78rem; border-radius: 6px;"
+                      class="btn btn-sm btn-outline-danger fw-semibold px-2 py-1 shadow-sm d-inline-flex align-items-center gap-1 btn-blog-action rounded-pill" 
+                      style="font-size: 0.78rem;"
                       data-action="reject"
                       data-url="{% url 'dashboard_blog_reject' blog.id %}"
                       data-title="{{ blog.title }}">
@@ -150,7 +215,7 @@
 
             <!-- Live Post Link -->
             {% if blog.live %}
-            <a href="{{ blog.url }}" target="_blank" class="bp-icon-btn" title="View Live Blog Page">
+            <a href="{{ blog.url }}" target="_blank" class="bp-action-circle btn-act-green" title="View Live Blog Page">
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </a>
             {% endif %}

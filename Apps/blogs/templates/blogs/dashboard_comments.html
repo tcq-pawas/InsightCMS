@@ -9,14 +9,62 @@
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <style>
   body { background: #f8fafc; }
-  .comment-row:hover { background: #f8fafc; }
-  .badge-pending  { background: #fef3c7; color: #92400e; }
-  .badge-approved { background: #d1fae5; color: #065f46; }
-  .badge-spam     { background: #fee2e2; color: #991b1b; }
-  .comment-snippet { max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tab-link { padding: 10px 22px; border-bottom: 2px solid transparent; font-weight: 600; color: #64748b; text-decoration: none; display:inline-block; font-size: 0.92rem; }
-  .tab-link.active { border-bottom-color: #2563eb; color: #2563eb; }
-  .tab-link:hover { color: #2563eb; }
+  .comment-stat-card {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    padding: 1.15rem 1.25rem;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    transition: all 0.25s ease;
+  }
+  .comment-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  }
+  .card-accent-blue { border-top: 3.5px solid #2563eb !important; }
+  .card-accent-amber { border-top: 3.5px solid #d97706 !important; }
+  .card-accent-emerald { border-top: 3.5px solid #059669 !important; }
+  .card-accent-red { border-top: 3.5px solid #dc2626 !important; }
+
+  .icon-badge-gradient {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff !important;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  }
+  .badge-grad-blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+  .badge-grad-amber { background: linear-gradient(135deg, #d97706, #f59e0b); }
+  .badge-grad-emerald { background: linear-gradient(135deg, #059669, #10b981); }
+  .badge-grad-red { background: linear-gradient(135deg, #dc2626, #ef4444); }
+
+  .badge-pending  { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .badge-approved { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+  .badge-spam, .badge-rejected { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+  .tab-link {
+    padding: 8px 20px;
+    border-radius: 999px;
+    font-weight: 600;
+    color: #64748b;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.88rem;
+    transition: all 0.2s ease;
+  }
+  .tab-link.active {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  }
+  .tab-link:hover:not(.active) {
+    background: #f1f5f9;
+    color: #1e293b;
+  }
   .reply-box { background: #f8fafc; border-left: 3px solid #2563eb; padding: 10px 14px; margin-top: 6px; border-radius: 6px; font-size: 0.83rem; }
 </style>
 {% endblock %}
@@ -36,6 +84,7 @@
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
         <div>
           <h4 class="fw-bold mb-1" style="color:#0f172a; font-size:1.5rem;">
+            <i class="fa-solid fa-comments text-primary me-2"></i>
             {% if selected_blog %}
               <span class="text-muted fw-normal" style="font-size:1.1rem;">{{ dashboard_page.blog_selector_label|default:"Blog:" }}</span> {{ selected_blog.title }}
             {% else %}
@@ -53,8 +102,8 @@
             {% if status_filter and status_filter != 'all' %}
               <input type="hidden" name="status" value="{{ status_filter }}">
             {% endif %}
-            <label class="small text-muted fw-semibold mb-0" style="white-space:nowrap;"><i class="fas fa-filter me-1"></i> {{ dashboard_page.filter_blog_label|default:"Filter Blog:" }}</label>
-            <select name="blog_id" onchange="this.form.submit()" class="form-select form-select-sm" style="min-width: 230px; font-size:0.85rem; border-radius:8px; border-color:#cbd5e1;">
+            <label class="small text-muted fw-semibold mb-0" style="white-space:nowrap;"><i class="fas fa-filter text-primary me-1"></i> {{ dashboard_page.filter_blog_label|default:"Filter Blog:" }}</label>
+            <select name="blog_id" onchange="this.form.submit()" class="form-select form-select-sm" style="min-width: 230px; font-size:0.85rem; border-radius:999px; border-color:#cbd5e1; padding-left: 1rem;">
               <option value="">{{ dashboard_page.all_blog_posts_option|default:"All Blog Posts" }} ({{ blogs_list|length }})</option>
               {% for b in blogs_list %}
                 <option value="{{ b.id }}" {% if selected_blog_id == b.id %}selected{% endif %}>
@@ -69,45 +118,45 @@
       <!-- Quick Summary Counts Banner -->
       <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-          <div class="p-3 bg-white rounded-3 shadow-sm d-flex align-items-center justify-content-between" style="border:1px solid #e2e8f0;">
+          <div class="comment-stat-card card-accent-blue d-flex align-items-center justify-content-between">
             <div>
               <span class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">{{ dashboard_page.card_total_comments_label|default:"Total Comments" }}</span>
-              <h4 class="fw-bold mb-0 mt-1" style="color:#0f172a; font-size:1.4rem;">{{ total_count }}</h4>
+              <h4 class="fw-bold mb-0 mt-1" style="color:#1e3a8a; font-size:1.5rem;">{{ total_count }}</h4>
             </div>
-            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px; height:38px; background:#EFF6FF; color:#2563EB;">
+            <div class="icon-badge-gradient badge-grad-blue">
               <i class="fas fa-comments"></i>
             </div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="p-3 bg-white rounded-3 shadow-sm d-flex align-items-center justify-content-between" style="border:1px solid #e2e8f0;">
+          <div class="comment-stat-card card-accent-amber d-flex align-items-center justify-content-between">
             <div>
               <span class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">{{ dashboard_page.card_pending_review_label|default:"Pending Review" }}</span>
-              <h4 class="fw-bold mb-0 mt-1" style="color:#D97706; font-size:1.4rem;">{{ pending_count }}</h4>
+              <h4 class="fw-bold mb-0 mt-1" style="color:#d97706; font-size:1.5rem;">{{ pending_count }}</h4>
             </div>
-            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px; height:38px; background:#FEF3C7; color:#D97706;">
+            <div class="icon-badge-gradient badge-grad-amber">
               <i class="fas fa-clock"></i>
             </div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="p-3 bg-white rounded-3 shadow-sm d-flex align-items-center justify-content-between" style="border:1px solid #e2e8f0;">
+          <div class="comment-stat-card card-accent-emerald d-flex align-items-center justify-content-between">
             <div>
               <span class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">{{ dashboard_page.card_approved_label|default:"Approved" }}</span>
-              <h4 class="fw-bold mb-0 mt-1" style="color:#059669; font-size:1.4rem;">{{ approved_count }}</h4>
+              <h4 class="fw-bold mb-0 mt-1" style="color:#059669; font-size:1.5rem;">{{ approved_count }}</h4>
             </div>
-            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px; height:38px; background:#D1FAE5; color:#059669;">
+            <div class="icon-badge-gradient badge-grad-emerald">
               <i class="fas fa-check-circle"></i>
             </div>
           </div>
         </div>
         <div class="col-6 col-md-3">
-          <div class="p-3 bg-white rounded-3 shadow-sm d-flex align-items-center justify-content-between" style="border:1px solid #e2e8f0;">
+          <div class="comment-stat-card card-accent-red d-flex align-items-center justify-content-between">
             <div>
               <span class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">{{ dashboard_page.card_rejected_label|default:"Rejected" }}</span>
-              <h4 class="fw-bold mb-0 mt-1" style="color:#DC2626; font-size:1.4rem;">{{ rejected_count }}</h4>
+              <h4 class="fw-bold mb-0 mt-1" style="color:#dc2626; font-size:1.5rem;">{{ rejected_count }}</h4>
             </div>
-            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:38px; height:38px; background:#FEE2E2; color:#DC2626;">
+            <div class="icon-badge-gradient badge-grad-red">
               <i class="fas fa-ban"></i>
             </div>
           </div>
@@ -121,11 +170,11 @@
       {% endfor %}
 
       <!-- Status Tabs -->
-      <div class="bg-white rounded-top-3 shadow-sm" style="border-bottom:1px solid #e2e8f0;">
-        <div class="px-3 d-flex gap-2">
-          <a href="?status=all{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}"      class="tab-link {% if status_filter == 'all' %}active{% endif %}">{{ dashboard_page.tab_all_label|default:"All" }}</a>
-          <a href="?status=pending{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}"  class="tab-link {% if status_filter == 'pending' %}active{% endif %}">
-            {{ dashboard_page.tab_pending_label|default:"Pending" }} {% if pending_count > 0 %}<span class="badge bg-warning text-dark ms-1">{{ pending_count }}</span>{% endif %}
+      <div class="bg-white rounded-4 shadow-sm p-2 mb-3" style="border: 1px solid #e2e8f0;">
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="?status=all{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" class="tab-link {% if status_filter == 'all' %}active{% endif %}">{{ dashboard_page.tab_all_label|default:"All" }}</a>
+          <a href="?status=pending{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" class="tab-link {% if status_filter == 'pending' %}active{% endif %}">
+            {{ dashboard_page.tab_pending_label|default:"Pending" }} {% if pending_count > 0 %}<span class="badge rounded-pill bg-warning text-dark ms-1">{{ pending_count }}</span>{% endif %}
           </a>
           <a href="?status=approved{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" class="tab-link {% if status_filter == 'approved' %}active{% endif %}">{{ dashboard_page.tab_approved_label|default:"Approved" }}</a>
           <a href="?status=rejected{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" class="tab-link {% if status_filter in 'rejected,spam' %}active{% endif %}">{{ dashboard_page.tab_rejected_label|default:"Rejected" }}</a>
@@ -133,7 +182,7 @@
       </div>
 
       <!-- Comments List Table -->
-      <div class="bg-white rounded-bottom-3 shadow-sm mb-5">
+      <div class="bg-white rounded-4 shadow-sm mb-5 border overflow-hidden">
         {% if comments %}
 
         <!-- Bulk Action Bar (hidden until checkboxes selected) -->
@@ -256,50 +305,50 @@
               <div class="d-flex gap-2 flex-wrap">
                 {% if comment.admin_user %}
                   <!-- Admin reply: Only Reply & Delete -->
-                  <button class="btn btn-sm" style="background:#dbeafe;color:#1e40af;border:none;font-size:0.8rem;"
+                  <button class="btn btn-sm rounded-pill px-3 py-1 fw-semibold" style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;font-size:0.78rem;"
                     data-bs-toggle="modal" data-bs-target="#replyModal{{ comment.id }}">
-                    <i class="fas fa-reply"></i> {{ dashboard_page.action_reply_btn|default:"Reply" }}
+                    <i class="fas fa-reply me-1"></i> {{ dashboard_page.action_reply_btn|default:"Reply" }}
                   </button>
                 {% elif comment.status == "rejected" or comment.status == "spam" %}
                   <!-- Rejected comment: Approve & Delete -->
                   <form method="post" action="{% url 'comment_approve' comment.id %}">{% csrf_token %}
-                    <button type="submit" class="btn btn-sm" style="background:#d1fae5;color:#065f46;border:none;font-size:0.8rem;" title="Approve / Restore">
-                      <i class="fas fa-check"></i> {{ dashboard_page.action_approve_btn|default:"Approve" }}
+                    <button type="submit" class="btn btn-sm rounded-pill px-3 py-1 fw-semibold" style="background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;font-size:0.78rem;" title="Approve / Restore">
+                      <i class="fas fa-check me-1"></i> {{ dashboard_page.action_approve_btn|default:"Approve" }}
                     </button>
                   </form>
                 {% elif comment.status == "pending" %}
                   <!-- Pending visitor comment: Reply, Approve, Reject, Delete -->
-                  <button class="btn btn-sm" style="background:#dbeafe;color:#1e40af;border:none;font-size:0.8rem;"
+                  <button class="btn btn-sm rounded-pill px-3 py-1 fw-semibold" style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;font-size:0.78rem;"
                     data-bs-toggle="modal" data-bs-target="#replyModal{{ comment.id }}">
-                    <i class="fas fa-reply"></i> {{ dashboard_page.action_reply_btn|default:"Reply" }}
+                    <i class="fas fa-reply me-1"></i> {{ dashboard_page.action_reply_btn|default:"Reply" }}
                   </button>
                   <form method="post" action="{% url 'comment_approve' comment.id %}">{% csrf_token %}
-                    <button type="submit" class="btn btn-sm" style="background:#d1fae5;color:#065f46;border:none;font-size:0.8rem;" title="Approve">
-                      <i class="fas fa-check"></i> {{ dashboard_page.action_approve_btn|default:"Approve" }}
+                    <button type="submit" class="btn btn-sm rounded-pill px-3 py-1 fw-semibold" style="background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;font-size:0.78rem;" title="Approve">
+                      <i class="fas fa-check me-1"></i> {{ dashboard_page.action_approve_btn|default:"Approve" }}
                     </button>
                   </form>
                   <form method="post" action="{% url 'comment_delete' comment.id %}">{% csrf_token %}
                     <input type="hidden" name="action" value="reject">
-                    <button type="submit" class="btn btn-sm" style="background:#fef3c7;color:#92400e;border:none;font-size:0.8rem;" title="Reject">
-                      <i class="fas fa-ban"></i> {{ dashboard_page.action_reject_btn|default:"Reject" }}
+                    <button type="submit" class="btn btn-sm rounded-pill px-3 py-1 fw-semibold" style="background:#fffbeb;color:#d97706;border:1px solid #fde68a;font-size:0.78rem;" title="Reject">
+                      <i class="fas fa-ban me-1"></i> {{ dashboard_page.action_reject_btn|default:"Reject" }}
                     </button>
                   </form>
                 {% else %}
                   <!-- Approved visitor comment: Reply, Reject, Delete -->
-                  <button class="btn btn-sm" style="background:#dbeafe;color:#1e40af;border:none;font-size:0.8rem;"
+                  <button class="btn btn-sm rounded-pill px-3 py-1 fw-semibold" style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;font-size:0.78rem;"
                     data-bs-toggle="modal" data-bs-target="#replyModal{{ comment.id }}">
-                    <i class="fas fa-reply"></i> {{ dashboard_page.action_reply_btn|default:"Reply" }}
+                    <i class="fas fa-reply me-1"></i> {{ dashboard_page.action_reply_btn|default:"Reply" }}
                   </button>
                   <form method="post" action="{% url 'comment_delete' comment.id %}">{% csrf_token %}
                     <input type="hidden" name="action" value="reject">
-                    <button type="submit" class="btn btn-sm" style="background:#fef3c7;color:#92400e;border:none;font-size:0.8rem;" title="Reject">
-                      <i class="fas fa-ban"></i> {{ dashboard_page.action_reject_btn|default:"Reject" }}
+                    <button type="submit" class="btn btn-sm rounded-pill px-3 py-1 fw-semibold" style="background:#fffbeb;color:#d97706;border:1px solid #fde68a;font-size:0.78rem;" title="Reject">
+                      <i class="fas fa-ban me-1"></i> {{ dashboard_page.action_reject_btn|default:"Reject" }}
                     </button>
                   </form>
                 {% endif %}
-                <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:none;font-size:0.8rem;"
-                  data-bs-toggle="modal" data-bs-target="#deleteModal{{ comment.id }}">
-                  <i class="fas fa-trash"></i>
+                <button class="btn btn-sm rounded-pill px-2.5 py-1 fw-semibold" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;font-size:0.78rem;"
+                  data-bs-toggle="modal" data-bs-target="#deleteModal{{ comment.id }}" title="Delete">
+                  <i class="fas fa-trash-alt"></i>
                 </button>
               </div>
             </td>
