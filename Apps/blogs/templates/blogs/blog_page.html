@@ -367,5 +367,92 @@ function togglePreviewReplies(commentId, replyCount) {
 }
 </script>
 
+<!-- Reader Engagement Tracking Script -->
+{% if current_blog_view_id %}
+<script>
+(function() {
+    const viewId = {{ current_blog_view_id }};
+    const startTime = Date.now();
+    let maxScroll = 0;
+    let interactionClicks = 0;
+    let hasInteracted = false;
+    let isSent = false;
+
+    // Track scroll depth
+    function calcScroll() {
+        const h = document.documentElement;
+        const b = document.body;
+        const st = 'scrollTop';
+        const sh = 'scrollHeight';
+        const percent = Math.round(((h[st]||b[st]) / ((h[sh]||b[sh]) - h.clientHeight)) * 100) || 0;
+        if (percent > maxScroll) {
+            maxScroll = Math.min(percent, 100);
+            if (maxScroll >= 25) {
+                hasInteracted = true;
+            }
+        }
+    }
+
+    window.addEventListener('scroll', calcScroll, { passive: true });
+
+    // Track user clicks / interactions (links, buttons, interactive elements)
+    ['click', 'keydown', 'touchstart'].forEach(function(evt) {
+        window.addEventListener(evt, function(e) {
+            hasInteracted = true;
+            if (evt === 'click') {
+                interactionClicks++;
+            }
+        }, { passive: true });
+    });
+
+    // Beacon sender
+    function sendEngagement() {
+        const durationSeconds = Math.round((Date.now() - startTime) / 1000);
+        // User not considered bounce if spent > 30s or scrolled >= 25% or interacted
+        const isBounce = !(durationSeconds >= 30 || maxScroll >= 25 || hasInteracted);
+
+        const payload = JSON.stringify({
+            view_id: viewId,
+            time_on_page: durationSeconds,
+            scroll_depth: maxScroll,
+            interactions_count: interactionClicks,
+            is_bounce: isBounce
+        });
+
+        const url = '/blogs/engagement/update/';
+        if (navigator.sendBeacon) {
+            const blob = new Blob([payload], { type: 'application/json' });
+            navigator.sendBeacon(url, blob);
+        } else {
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: payload,
+                keepalive: true
+            }).catch(function(){});
+        }
+    }
+
+    // Periodic heartbeat every 15s to capture active readers
+    const heartbeat = setInterval(function() {
+        calcScroll();
+        sendEngagement();
+    }, 15000);
+
+    // Final send on page unload
+    window.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') {
+            calcScroll();
+            sendEngagement();
+        }
+    });
+    window.addEventListener('beforeunload', function() {
+        calcScroll();
+        sendEngagement();
+    });
+})();
+</script>
+{% endif %}
+
 {% endblock %}
 

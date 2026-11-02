@@ -1,11 +1,106 @@
 <header class="bp-topbar">
-  <div class="bp-topbar-left">
-    <div class="bp-search-box">
+  <div class="bp-topbar-left position-relative">
+    <div class="bp-search-box" id="globalSearchContainer">
       <i class="fa-solid fa-magnifying-glass"></i>
-      <input type="text" placeholder="{{ page.search_placeholder|default:'Search anything...' }}">
-      <kbd class="bp-search-shortcut">{{ page.search_shortcut|default:'⌘K' }}</kbd>
+      <input type="text" id="globalSearchInput" placeholder="{{ page.search_placeholder|default:'Search anything...' }}" autocomplete="off">
+      <kbd class="bp-search-shortcut" title="Press Ctrl+K or ⌘K to search">{{ page.search_shortcut|default:'⌘K' }}</kbd>
+    </div>
+
+    <!-- Live Search Dropdown Results Popover -->
+    <div id="globalSearchResults" class="shadow-lg rounded-4 p-2" style="display:none; position:absolute; top:calc(100% + 6px); left:0; width:460px; max-width:92vw; max-height:480px; overflow-y:auto; background:#ffffff; border:1px solid #e2e8f0; z-index:9999;">
+      <div id="globalSearchContent"></div>
     </div>
   </div>
+
+  <script>
+  (function(){
+    const input = document.getElementById('globalSearchInput');
+    const resultsBox = document.getElementById('globalSearchResults');
+    const content = document.getElementById('globalSearchContent');
+    if (!input || !resultsBox || !content) return;
+
+    let debounceTimer = null;
+
+    // Keyboard shortcut: Ctrl+K or Cmd+K focuses search
+    window.addEventListener('keydown', function(e){
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        input.focus();
+        input.select();
+      } else if (e.key === 'Escape') {
+        resultsBox.style.display = 'none';
+      }
+    });
+
+    input.addEventListener('focus', function(){
+      if (input.value.trim().length >= 2) {
+        resultsBox.style.display = 'block';
+      }
+    });
+
+    input.addEventListener('input', function(){
+      clearTimeout(debounceTimer);
+      const query = input.value.trim();
+      if (query.length < 2) {
+        resultsBox.style.display = 'none';
+        content.innerHTML = '';
+        return;
+      }
+
+      debounceTimer = setTimeout(function(){
+        fetch('/dashboard/search/api/?q=' + encodeURIComponent(query))
+          .then(r => r.json())
+          .then(data => {
+            const list = data.results || [];
+            if (!list.length) {
+              content.innerHTML = '<div class="p-3 text-center text-muted small"><i class="fa-regular fa-face-frown me-1"></i> No matching articles, pages, or comments found.</div>';
+              resultsBox.style.display = 'block';
+              return;
+            }
+
+            let html = '<div class="d-flex flex-column gap-1">';
+            list.forEach(item => {
+              html += `
+                <a href="${item.url}" class="d-flex align-items-center justify-content-between p-2 rounded-3 text-decoration-none text-dark hover-bg-light" style="transition:background 0.15s; font-size:0.83rem;">
+                  <div class="d-flex align-items-center gap-2 min-w-0">
+                    <span style="width:28px; height:28px; border-radius:8px; background:#f1f5f9; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
+                      <i class="${item.icon}" style="font-size:0.8rem;"></i>
+                    </span>
+                    <div class="min-w-0">
+                      <div class="fw-semibold text-truncate" style="color:#0f172a;">${item.title}</div>
+                      <div class="text-muted text-truncate" style="font-size:0.73rem;">${item.subtitle}</div>
+                    </div>
+                  </div>
+                  <span class="badge bg-light text-secondary border rounded-pill px-2 py-1 ms-2" style="font-size:0.68rem; flex-shrink:0;">
+                    ${item.category}
+                  </span>
+                </a>
+              `;
+            });
+            html += '</div>';
+            content.innerHTML = html;
+            resultsBox.style.display = 'block';
+          })
+          .catch(() => {
+            content.innerHTML = '<div class="p-2 text-center text-danger small">Search temporarily unavailable.</div>';
+          });
+      }, 250);
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', function(e){
+      if (!input.contains(e.target) && !resultsBox.contains(e.target)) {
+        resultsBox.style.display = 'none';
+      }
+    });
+  })();
+  </script>
+  <style>
+    .hover-bg-light:hover {
+      background-color: #f8fafc !important;
+      border-radius: 8px;
+    }
+  </style>
 
   <div class="bp-topbar-right d-flex align-items-center gap-3">
 

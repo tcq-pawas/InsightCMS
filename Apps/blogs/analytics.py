@@ -1,4 +1,4 @@
-﻿import re
+import re
 from urllib.parse import urlparse
 from django.utils import timezone
 from datetime import timedelta
@@ -135,8 +135,13 @@ def track_blog_view(request, blog_page):
             created_at__gte=fifteen_minutes_ago
         ).exists()
 
+        # If a view exists within 15 minutes, return it so frontend can still update engagement
         if recent_view:
-            return None
+            return BlogPostView.objects.filter(
+                blog=blog_page,
+                session_key=session_key,
+                created_at__gte=fifteen_minutes_ago
+            ).order_by('-created_at').first()
 
         ip = get_client_ip(request)
         ua_string = request.META.get('HTTP_USER_AGENT', '')

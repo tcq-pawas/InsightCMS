@@ -23,6 +23,24 @@
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
   }
 
+  /* Clean Print / PDF Export Styling */
+  @media print {
+    .bp-sidebar, .bp-topbar, .filter-btn-group, .btn-group, .btn, form, #globalSearchResults {
+      display: none !important;
+    }
+    .bp-app-wrapper, .bp-main-container, .bp-content-body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    .analytics-card, .card {
+      box-shadow: none !important;
+      border: 1px solid #cbd5e1 !important;
+      page-break-inside: avoid;
+    }
+  }
+
   /* Colorful Top Accent Borders */
   .card-accent-blue {
     border-top: 3.5px solid #2563eb !important;
@@ -153,11 +171,47 @@
           <p class="bp-page-sub mb-0">{{ dashboard_page.analytics_subtext|default:"Track reader views, unique visitors, referral sources, and popular articles" }}</p>
         </div>
 
-        <div class="btn-group filter-btn-group bg-white p-1 rounded-pill shadow-sm border" role="group">
-          <a href="?range=today" class="btn {% if time_range == 'today' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">{{ dashboard_page.filter_today_label|default:"Today" }}</a>
-          <a href="?range=7days" class="btn {% if time_range == '7days' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">{{ dashboard_page.filter_7days_label|default:"7 Days" }}</a>
-          <a href="?range=30days" class="btn {% if time_range == '30days' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">{{ dashboard_page.filter_30days_label|default:"30 Days" }}</a>
-          <a href="?range=all" class="btn {% if time_range == 'all' %}btn-primary text-white{% else %}btn-light text-muted{% endif %} rounded-pill">{{ dashboard_page.filter_all_label|default:"All Time" }}</a>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <!-- Unified Filters Form (Blog + Time Range Dropdowns) -->
+          <form method="get" class="d-flex flex-wrap align-items-center gap-2 m-0">
+            <!-- Blog Selector Dropdown -->
+            <div class="input-group input-group-sm shadow-sm" style="width: auto;">
+              <span class="input-group-text bg-white border-end-0 text-primary rounded-start-pill ps-3" style="border-color:#cbd5e1;">
+                <i class="fa-solid fa-book-open"></i>
+              </span>
+              <select name="blog_id" onchange="this.form.submit()" class="form-select form-select-sm border-start-0 rounded-end-pill fw-semibold text-secondary" style="min-width: 180px; max-width: 250px; font-size:0.83rem; border-color:#cbd5e1; cursor:pointer;" title="Filter analytics by specific blog">
+                <option value="">All Blogs ({{ blogs_list|length }})</option>
+                {% for b in blogs_list %}
+                  <option value="{{ b.id }}" {% if selected_blog_id == b.id %}selected{% endif %}>{{ b.title|truncatechars:30 }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Time Range Dropdown -->
+            <div class="input-group input-group-sm shadow-sm" style="width: auto;">
+              <span class="input-group-text bg-white border-end-0 text-primary rounded-start-pill ps-3" style="border-color:#cbd5e1;">
+                <i class="fa-regular fa-calendar-days"></i>
+              </span>
+              <select name="range" onchange="this.form.submit()" class="form-select form-select-sm border-start-0 rounded-end-pill fw-semibold text-secondary" style="min-width: 135px; font-size:0.83rem; border-color:#cbd5e1; cursor:pointer;" title="Filter by date range">
+                <option value="today" {% if time_range == 'today' %}selected{% endif %}>{{ dashboard_page.filter_today_label|default:"Today" }}</option>
+                <option value="7days" {% if time_range == '7days' %}selected{% endif %}>{{ dashboard_page.filter_7days_label|default:"Last 7 Days" }}</option>
+                <option value="30days" {% if time_range == '30days' %}selected{% endif %}>{{ dashboard_page.filter_30days_label|default:"Last 30 Days" }}</option>
+                <option value="all" {% if time_range == 'all' or not time_range %}selected{% endif %}>{{ dashboard_page.filter_all_label|default:"All Time" }}</option>
+              </select>
+            </div>
+          </form>
+
+          <!-- Export Buttons: CSV & PDF -->
+          <div class="btn-group shadow-sm" role="group">
+            <a href="?export=csv{% if time_range %}&range={{ time_range }}{% endif %}{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" class="btn btn-sm btn-outline-success rounded-start-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" title="Export Analytics Report to CSV / Excel">
+              <i class="fa-solid fa-file-csv"></i>
+              <span>Export CSV</span>
+            </a>
+            <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-danger rounded-end-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" title="Export or Print Analytics Report to PDF">
+              <i class="fa-solid fa-file-pdf"></i>
+              <span>Export PDF</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -170,6 +224,19 @@
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
           {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Active Blog Filter Badge -->
+      {% if selected_blog %}
+        <div class="alert alert-info py-2 px-3 rounded-3 d-flex align-items-center justify-content-between mb-3 border-0 shadow-sm" style="background:#e0f2fe; color:#0369a1;">
+          <div class="d-flex align-items-center gap-2 small fw-semibold">
+            <i class="fa-solid fa-circle-info fs-6"></i>
+            <span>Showing analytics filtered for: <u>"{{ selected_blog.title }}"</u></span>
+          </div>
+          <a href="?{% if time_range %}range={{ time_range }}{% endif %}" class="btn btn-sm btn-light rounded-pill px-2 py-0 text-muted border small" title="Clear blog filter">
+            <i class="fa-solid fa-xmark me-1"></i> Clear Filter
+          </a>
         </div>
       {% endif %}
 
@@ -204,17 +271,17 @@
           </div>
         </div>
 
-        <!-- Avg Views per Post -->
+        <!-- Avg Read Time (Engagement) -->
         <div class="col-sm-6 col-lg">
           <div class="analytics-card card-accent-emerald">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_avg_views_label|default:"Avg Views / Post" }}</span>
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Avg Time on Page</span>
               <div class="icon-badge-gradient badge-grad-emerald">
-                <i class="fa-solid fa-arrow-trend-up"></i>
+                <i class="fa-solid fa-stopwatch"></i>
               </div>
             </div>
-            <div class="fs-3 fw-bold text-dark">{{ avg_views_per_post|default:0 }}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.card_avg_views_sub|default:"Across published articles" }}</div>
+            <div class="fs-3 fw-bold text-dark">{{ avg_read_time_str|default:"0s" }}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">Active reading duration</div>
           </div>
         </div>
 
@@ -251,6 +318,68 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- Reader Engagement Metrics Bar (Time on Page, Scroll Depth, Pages per Visit, Bounce Rate) -->
+      <div class="card border-0 shadow-sm rounded-4 mb-3" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); border: 1px solid #e2e8f0 !important;">
+        <div class="card-body py-2 px-3">
+          <div class="d-flex align-items-center justify-content-between mb-2 pb-1 border-bottom border-light">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1">
+                <i class="fa-solid fa-gauge-high me-1"></i> Engagement Metrics
+              </span>
+              <small class="text-muted" style="font-size: 0.78rem;">Visitor interaction, depth & session quality</small>
+            </div>
+            <span class="text-muted small" style="font-size: 0.74rem;">CR = (Conversions / Unique Visitors) &times; 100</span>
+          </div>
+
+          <div class="row g-2 text-center">
+            <!-- Time on Page -->
+            <div class="col-6 col-md">
+              <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
+                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-clock text-primary me-1"></i> Time on Page</div>
+                <div class="fw-bold fs-5 text-dark">{{ avg_read_time_str|default:"0s" }}</div>
+                <small class="text-muted" style="font-size: 0.7rem;">Avg reading time</small>
+              </div>
+            </div>
+
+            <!-- Scroll Depth -->
+            <div class="col-6 col-md">
+              <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
+                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-angles-down text-info me-1"></i> Scroll Depth</div>
+                <div class="fw-bold fs-5 text-dark">{{ avg_scroll_depth|default:0 }}%</div>
+                <small class="text-muted" style="font-size: 0.7rem;">Average content read</small>
+              </div>
+            </div>
+
+            <!-- Interactions (Clicks) -->
+            <div class="col-6 col-md">
+              <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
+                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-arrow-pointer text-purple me-1" style="color: #9333ea;"></i> Interactions</div>
+                <div class="fw-bold fs-5 text-dark">{{ total_interactions|default:0 }}</div>
+                <small class="text-muted" style="font-size: 0.7rem;">Clicks & elements</small>
+              </div>
+            </div>
+
+            <!-- Pages per Visit -->
+            <div class="col-6 col-md">
+              <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
+                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-layer-group text-success me-1"></i> Pages / Visit</div>
+                <div class="fw-bold fs-5 text-dark">{{ pages_per_visit|default:1 }}</div>
+                <small class="text-muted" style="font-size: 0.7rem;">Per visitor session</small>
+              </div>
+            </div>
+
+            <!-- Bounce Rate -->
+            <div class="col-6 col-md">
+              <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
+                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-arrow-right-from-bracket text-warning me-1"></i> Bounce Rate</div>
+                <div class="fw-bold fs-5 text-dark">{{ bounce_rate|default:0 }}%</div>
+                <small class="text-muted" style="font-size: 0.7rem;">Single-touch exits</small>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Main Traffic Chart -->
@@ -449,7 +578,51 @@
 
           </div>
 
-        </div>
+          <!-- Conversions Breakdown by Type Card -->
+          <div class="analytics-card card-accent-indigo mt-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div class="d-flex align-items-center gap-2">
+                <span class="icon-badge-gradient badge-grad-indigo" style="width: 32px; height: 32px; font-size: 0.82rem;">
+                  <i class="fa-solid fa-bullseye"></i>
+                </span>
+                <div>
+                  <h5 class="fw-bold mb-0" style="font-size: 1rem;">Conversions Breakdown</h5>
+                  <small class="text-muted d-block" style="font-size: 0.78rem;">Actions completed by visitors</small>
+                </div>
+              </div>
+              <span class="badge rounded-pill fw-bold" style="background:#e0e7ff; color:#4338ca;">{{ total_conversions }} Total</span>
+            </div>
+
+            {% if conversion_breakdown %}
+              <div class="d-flex flex-column gap-2 mt-3">
+                {% for cb in conversion_breakdown %}
+                  <div>
+                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.82rem;">
+                      <span class="fw-semibold text-dark">
+                        {% if cb.type_key == 'newsletter' %}<i class="fa-regular fa-envelope text-primary me-1"></i>
+                        {% elif cb.type_key == 'lead' %}<i class="fa-solid fa-user-plus text-success me-1"></i>
+                        {% elif cb.type_key == 'cta_click' %}<i class="fa-solid fa-arrow-pointer text-info me-1"></i>
+                        {% elif cb.type_key == 'contact_form' %}<i class="fa-solid fa-message text-warning me-1"></i>
+                        {% elif cb.type_key == 'registration' %}<i class="fa-solid fa-id-card text-purple me-1"></i>
+                        {% elif cb.type_key == 'purchase' %}<i class="fa-solid fa-cart-shopping text-danger me-1"></i>
+                        {% else %}<i class="fa-solid fa-check text-secondary me-1"></i>{% endif %}
+                        {{ cb.label }}
+                      </span>
+                      <span class="badge rounded-pill" style="background: #f1f5f9; color: #334155;">{{ cb.count }} <small class="text-muted">({{ cb.percentage }}%)</small></span>
+                    </div>
+                    <div class="progress" style="height: 6px; border-radius: 999px;">
+                      <div class="progress-bar {% if cb.type_key == 'newsletter' %}bg-primary{% elif cb.type_key == 'lead' %}bg-success{% elif cb.type_key == 'cta_click' %}bg-info{% elif cb.type_key == 'contact_form' %}bg-warning{% else %}bg-indigo{% endif %}" role="progressbar" style="width: {{ cb.percentage }}%; border-radius: 999px;"></div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-center py-3 text-muted" style="font-size: 0.82rem;">
+                <i class="fa-solid fa-inbox fa-2x mb-2 text-secondary opacity-50 d-block"></i>
+                No conversions recorded for this period yet.
+              </div>
+            {% endif %}
+          </div>
 
       </div>
 

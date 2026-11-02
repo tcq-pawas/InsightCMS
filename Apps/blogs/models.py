@@ -311,8 +311,14 @@ class BlogPage(Page):
     def serve(self, request, *args, **kwargs):
         """Serve public view and record blog visit for Blogger-style analytics."""
         from Apps.blogs.analytics import track_blog_view
-        track_blog_view(request, self)
+        view_obj = track_blog_view(request, self)
+        request.current_blog_view_id = view_obj.id if view_obj else None
         return super().serve(request, *args, **kwargs)
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+        context['current_blog_view_id'] = getattr(request, 'current_blog_view_id', None)
+        return context
 
     def save(self, *args, **kwargs):
         """Auto-derive company from parent page if not set."""
@@ -494,6 +500,11 @@ class BlogPostView(models.Model):
     browser = models.CharField(max_length=50, blank=True, default='Other')        # Chrome, Safari, Firefox, Edge, etc.
     os = models.CharField(max_length=50, blank=True, default='Other')             # Windows, Android, iOS, macOS, Linux
     country = models.CharField(max_length=80, blank=True, default='Unknown')
+    # Engagement Tracking Metrics
+    time_on_page = models.PositiveIntegerField(default=0, help_text="Seconds spent actively reading/viewing the page")
+    scroll_depth = models.PositiveSmallIntegerField(default=0, help_text="Maximum scroll depth percentage (0-100)")
+    interactions_count = models.PositiveIntegerField(default=0, help_text="Clicks on links, buttons, videos, and interactive elements")
+    is_bounce = models.BooleanField(default=True, help_text="True if visitor left quickly without interaction or deep scroll")
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
@@ -509,14 +520,20 @@ class BlogPostView(models.Model):
 
 
 class BlogConversion(models.Model):
-    """Tracks reader conversions (newsletter subscribe, lead capture, CTA click) per blog post."""
+    """Tracks reader conversions (newsletter subscribe, lead capture, CTA click, contact form, registration, purchase) per blog post."""
     TYPE_NEWSLETTER = 'newsletter'
     TYPE_LEAD = 'lead'
     TYPE_CTA = 'cta_click'
+    TYPE_CONTACT_FORM = 'contact_form'
+    TYPE_REGISTRATION = 'registration'
+    TYPE_PURCHASE = 'purchase'
     TYPE_CHOICES = [
         (TYPE_NEWSLETTER, 'Newsletter Subscription'),
         (TYPE_LEAD, 'Lead Capture'),
         (TYPE_CTA, 'CTA Button Click'),
+        (TYPE_CONTACT_FORM, 'Contact Form Submission'),
+        (TYPE_REGISTRATION, 'Account Registration'),
+        (TYPE_PURCHASE, 'Product Purchase'),
     ]
 
     blog = models.ForeignKey(

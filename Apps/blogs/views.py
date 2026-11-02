@@ -1084,8 +1084,18 @@ def dashboard_analytics_view(request):
     if is_employee:
         views_qs = views_qs.filter(blog__author=request.user)
 
-    # Time range filter
+    # Time range & Blog filter
     time_range = request.GET.get('range', '30days')
+    blog_id = request.GET.get('blog_id', '').strip()
+    selected_blog = None
+    if blog_id:
+        try:
+            selected_blog = blogs_qs.filter(id=int(blog_id)).first()
+            if selected_blog:
+                views_qs = views_qs.filter(blog=selected_blog)
+        except (ValueError, TypeError):
+            blog_id = ''
+
     today = timezone.localdate()
     
     if time_range == 'today':
@@ -1113,13 +1123,15 @@ def dashboard_analytics_view(request):
     published_posts = blogs_qs.filter(live=True).count()
     avg_views_per_post = round(total_views / total_posts, 1) if total_posts > 0 else 0
 
-    # Conversions tracking (Newsletter / Leads / CTA)
+    # Conversions tracking (Newsletter / Leads / CTA / Contact / Registration / Purchase)
     from Apps.blogs.models import BlogConversion
     conversions_qs = BlogConversion.objects.all()
     if company:
         conversions_qs = conversions_qs.filter(company=company)
     if is_employee:
         conversions_qs = conversions_qs.filter(blog__author=request.user)
+    if selected_blog:
+        conversions_qs = conversions_qs.filter(blog=selected_blog)
 
     if range_start:
         filtered_conversions = conversions_qs.filter(created_at__date__gte=range_start)
@@ -1128,6 +1140,122 @@ def dashboard_analytics_view(request):
 
     total_conversions = filtered_conversions.count()
     conversion_rate = round((total_conversions / unique_visitors * 100), 1) if unique_visitors > 0 else 0
+
+    # Engagement Metrics (Time on Page, Scroll Depth, Bounce Rate, Pages per Visit, Interactions)
+    from django.db.models import Avg, Sum
+    engagement_data = filtered_views.aggregate(
+        avg_time=Avg('time_on_page'),
+        avg_scroll=Avg('scroll_depth'),
+        total_clicks=Sum('interactions_count')
+    )
+    raw_avg_time = int(engagement_data['avg_time'] or 0)
+    avg_scroll_depth = round(engagement_data['avg_scroll'] or 0)
+    total_interactions = int(engagement_data['total_clicks'] or 0)
+    
+    # Format read time nicely e.g. "2m 15s" or "45s"
+    if raw_avg_time >= 60:
+        mins = raw_avg_time // 60
+        secs = raw_avg_time % 60
+        avg_read_time_str = f"{mins}m {secs}s"
+    else:
+        avg_read_time_str = f"{raw_avg_time}s"
+
+    bounce_count = filtered_views.filter(is_bounce=True).count()
+    bounce_rate = round((bounce_count / total_views * 100), 1) if total_views > 0 else 0
+    pages_per_visit = round((total_views / unique_visitors), 1) if unique_visitors > 0 else 0
+
+    # Conversion Breakdown by Type
+    type_labels = {
+        BlogConversion.TYPE_NEWSLETTER: 'Newsletter Subscription',
+        BlogConversion.TYPE_LEAD: 'Lead Capture',
+        BlogConversion.TYPE_CTA: 'CTA Button Click',
+        BlogConversion.TYPE_CONTACT_FORM: 'Contact Form Submission',
+        BlogConversion.TYPE_REGISTRATION: 'Account Registration',
+        BlogConversion.TYPE_PURCHASE: 'Product Purchase',
+    }
+    conversion_breakdown = []
+    type_counts = filtered_conversions.values('conversion_type').annotate(count=Count('id')).order_by('-count')
+    for tc in type_counts:
+        t_key = tc['conversion_type']
+        t_count = tc['count']
+        pct = round((t_count / total_conversions * 100), 1) if total_conversions > 0 else 0
+        conversion_breakdown.append({
+            'type_key': t_key,
+            'label': type_labels.get(t_key, t_key.replace('_', ' ').title()),
+            'count': t_count,
+            'percentage': pct,
+        })
+
+    # CSV Export Handling
+    if request.GET.get('export') == 'csv':
+        import csv
+        from django.http import HttpResponse
+
+        filename = f"analytics_report_{today}.csv"
+        if selected_blog:
+            filename = f"analytics_{selected_blog.slug[:20]}_{today}.csv"
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        writer = csv.writer(response)
+        writer.writerow(['=== WEBSITE ANALYTICS & REPORTS ==='])
+        writer.writerow(['Company', company.company_name if company else 'All'])
+        writer.writerow(['Report Date', today.strftime('%Y-%m-%d')])
+        writer.writerow(['Time Range', time_range])
+        writer.writerow(['Filter Blog', selected_blog.title if selected_blog else 'All Blogs'])
+        writer.writerow([])
+
+        # Summary KPIs & Engagement Metrics
+        writer.writerow(['--- KEY METRICS & ENGAGEMENT ---'])
+        writer.writerow(['Metric', 'Value'])
+        writer.writerow(['Total Views', total_views])
+        writer.writerow(['Unique Visitors', unique_visitors])
+        writer.writerow(['Avg Time on Page', avg_read_time_str])
+        writer.writerow(['Avg Scroll Depth', f"{avg_scroll_depth}%"])
+        writer.writerow(['Total Interactions (Clicks)', total_interactions])
+        writer.writerow(['Pages per Visit', pages_per_visit])
+        writer.writerow(['Bounce Rate', f"{bounce_rate}%"])
+        writer.writerow(['Live Articles / Total', f"{published_posts} / {total_posts}"])
+        writer.writerow(['Total Conversions', total_conversions])
+        writer.writerow(['Conversion Rate (% CR)', f"{conversion_rate}%"])
+        writer.writerow([])
+
+        # Conversions Breakdown
+        writer.writerow(['--- CONVERSIONS BREAKDOWN ---'])
+        writer.writerow(['Action Type', 'Count', 'Percentage'])
+        for cb in conversion_breakdown:
+            writer.writerow([cb['label'], cb['count'], f"{cb['percentage']}%"])
+        writer.writerow([])
+
+        # Popular Articles
+        writer.writerow(['--- POPULAR ARTICLES ---'])
+        writer.writerow(['Rank', 'Article Title', 'Author', 'Views', 'Leads'])
+        for idx, post in enumerate(blogs_qs.filter(live=True).annotate(
+            v_cnt=Count('page_views'),
+            c_cnt=Count('conversions')
+        ).order_by('-v_cnt')[:30], 1):
+            author_name = post.author.get_full_name() if post.author else 'Admin'
+            writer.writerow([idx, post.title, author_name, post.v_cnt, post.c_cnt])
+        writer.writerow([])
+
+        # Traffic Sources
+        writer.writerow(['--- REFERRAL SOURCES ---'])
+        writer.writerow(['Traffic Source', 'Visits', 'Percentage'])
+        ref_items = filtered_views.values('referrer_domain').annotate(c=Count('id')).order_by('-c')[:15]
+        for r in ref_items:
+            pct = round((r['c'] / total_views * 100), 1) if total_views > 0 else 0
+            writer.writerow([r['referrer_domain'] or 'Direct', r['c'], f"{pct}%"])
+        writer.writerow([])
+
+        # Device Breakdown
+        writer.writerow(['--- DEVICE USAGE ---'])
+        dev_items = filtered_views.values('device_type').annotate(c=Count('id')).order_by('-c')
+        for d in dev_items:
+            pct = round((d['c'] / total_views * 100), 1) if total_views > 0 else 0
+            writer.writerow([d['device_type'] or 'Desktop', d['c'], f"{pct}%"])
+
+        return response
 
     # Chart generation
     chart_labels = []
@@ -1172,6 +1300,7 @@ def dashboard_analytics_view(request):
 
     dashboard_page = UserDashboardPage.objects.live().first()
     sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
+    blogs_list = list(blogs_qs.filter(live=True).order_by('title'))
 
     context = {
         'dashboard_page': dashboard_page,
@@ -1181,6 +1310,9 @@ def dashboard_analytics_view(request):
         'company': company,
         'is_employee': is_employee,
         'time_range': time_range,
+        'blogs_list': blogs_list,
+        'selected_blog': selected_blog,
+        'selected_blog_id': int(blog_id) if blog_id.isdigit() else None,
         'total_views': total_views,
         'unique_visitors': unique_visitors,
         'total_posts': total_posts,
@@ -1188,6 +1320,12 @@ def dashboard_analytics_view(request):
         'avg_views_per_post': avg_views_per_post,
         'total_conversions': total_conversions,
         'conversion_rate': conversion_rate,
+        'conversion_breakdown': conversion_breakdown,
+        'avg_read_time_str': avg_read_time_str,
+        'avg_scroll_depth': avg_scroll_depth,
+        'total_interactions': total_interactions,
+        'bounce_rate': bounce_rate,
+        'pages_per_visit': pages_per_visit,
         'chart_labels': chart_labels,
         'chart_views': chart_views,
         'popular_blogs': popular_blogs,
@@ -1387,5 +1525,139 @@ def blog_conversion_submit(request, page_id=None, slug=None):
         })
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def update_engagement_view(request):
+    """
+    Beacon endpoint to record real reader engagement:
+    - time_on_page (seconds)
+    - scroll_depth (percentage 0-100)
+    - is_bounce (boolean)
+    """
+    import json
+    try:
+        # Support both json payload and FormData / beacon string
+        if request.content_type and 'application/json' in request.content_type:
+            data = json.loads(request.body.decode('utf-8') or '{}')
+        else:
+            try:
+                data = json.loads(request.body.decode('utf-8')) if request.body else {}
+            except Exception:
+                data = request.POST.dict()
+
+        view_id = data.get('view_id')
+        if not view_id:
+            return JsonResponse({'status': 'ignored', 'message': 'No view_id provided'}, status=200)
+
+        from Apps.blogs.models import BlogPostView
+        view_obj = BlogPostView.objects.filter(id=int(view_id)).first()
+        if not view_obj:
+            return JsonResponse({'status': 'not_found'}, status=404)
+
+        time_on_page = int(data.get('time_on_page', 0))
+        scroll_depth = int(data.get('scroll_depth', 0))
+        interactions_count = int(data.get('interactions_count', 0))
+        is_bounce = bool(data.get('is_bounce', True))
+
+        # Only update if new values exceed current recorded values
+        updated = False
+        if time_on_page > view_obj.time_on_page:
+            view_obj.time_on_page = min(time_on_page, 7200)  # cap at 2 hours
+            updated = True
+        if scroll_depth > view_obj.scroll_depth:
+            view_obj.scroll_depth = min(scroll_depth, 100)
+            updated = True
+        if interactions_count > view_obj.interactions_count:
+            view_obj.interactions_count = interactions_count
+            updated = True
+        if view_obj.is_bounce and not is_bounce:
+            view_obj.is_bounce = False
+            updated = True
+
+        if updated:
+            view_obj.save(update_fields=['time_on_page', 'scroll_depth', 'interactions_count', 'is_bounce'])
+
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+@login_required(login_url='/login/')
+def global_dashboard_search(request):
+    """
+    Instant global search for the topbar 'Search anything...'.
+    Searches blog articles, categories, comments, and dashboard navigation.
+    """
+    from django.db.models import Q
+    query = request.GET.get('q', '').strip()
+    if not query:
+        return JsonResponse({'results': []})
+
+    company = _get_request_company(request.user)
+    results = []
+
+    # 1. Navigation / Quick Links match
+    quick_links = [
+        {'title': 'Analytics & Reports', 'subtitle': 'Track traffic, views & conversions', 'url': '/dashboard/analytics/', 'category': 'Page', 'icon': 'fa-solid fa-chart-line text-primary'},
+        {'title': 'SEO & Growth Management', 'subtitle': 'Sitemaps, robots.txt, 301 redirects', 'url': '/dashboard/seo/', 'category': 'Page', 'icon': 'fa-solid fa-magnifying-glass-chart text-info'},
+        {'title': 'Blog Posts List', 'subtitle': 'Manage and view all articles', 'url': '/blog-posts/', 'category': 'Page', 'icon': 'fa-solid fa-newspaper text-warning'},
+        {'title': 'Create New Blog Post', 'subtitle': 'Write a new article', 'url': '/dashboard/blogs/create/', 'category': 'Action', 'icon': 'fa-solid fa-pen-to-square text-success'},
+        {'title': 'Comments Moderation', 'subtitle': 'Approve, delete and reply to comments', 'url': '/dashboard/comments/', 'category': 'Page', 'icon': 'fa-regular fa-comments text-primary'},
+        {'title': 'General Settings', 'subtitle': 'Company branding & site configuration', 'url': '/dashboard/settings/', 'category': 'Settings', 'icon': 'fa-solid fa-gear text-secondary'},
+        {'title': 'Comment Settings', 'subtitle': 'Moderation and notification settings', 'url': '/dashboard/settings/blog/comments/', 'category': 'Settings', 'icon': 'fa-solid fa-sliders text-secondary'},
+        {'title': 'User Management', 'subtitle': 'Manage team members and permissions', 'url': '/dashboard/settings/users/', 'category': 'Settings', 'icon': 'fa-solid fa-users text-secondary'},
+        {'title': 'XML Sitemap', 'subtitle': 'Live crawler sitemap.xml', 'url': '/sitemap.xml', 'category': 'SEO', 'icon': 'fa-solid fa-sitemap text-emerald'},
+        {'title': 'Robots.txt', 'subtitle': 'Search bot instructions file', 'url': '/robots.txt', 'category': 'SEO', 'icon': 'fa-solid fa-robot text-purple'},
+    ]
+
+    q_lower = query.lower()
+    for link in quick_links:
+        if q_lower in link['title'].lower() or q_lower in link['subtitle'].lower():
+            results.append(link)
+
+    # 2. Blog Posts match
+    blogs_qs = BlogPage.objects.all()
+    if company:
+        blogs_qs = blogs_qs.filter(company=company)
+    if getattr(request.user, 'role', None) == 'company_user':
+        blogs_qs = blogs_qs.filter(author=request.user)
+
+    matching_blogs = blogs_qs.filter(
+        Q(title__icontains=query) | Q(intro__icontains=query) | Q(slug__icontains=query)
+    )[:6]
+
+    for b in matching_blogs:
+        results.append({
+            'title': b.title,
+            'subtitle': f"Status: {'Published' if b.live else 'Draft'} • {b.page_views.count()} views",
+            'url': f"/dashboard/blogs/{b.id}/edit/",
+            'category': 'Blog Post',
+            'icon': 'fa-solid fa-file-lines text-primary',
+            'view_url': b.url if b.live else None,
+        })
+
+    # 3. Comments match
+    from Apps.blogs.models import BlogComment
+    comments_qs = BlogComment.objects.all()
+    if company:
+        comments_qs = comments_qs.filter(company=company)
+    matching_comments = comments_qs.filter(
+        Q(author_name__icontains=query) | Q(content__icontains=query) | Q(author_email__icontains=query)
+    )[:4]
+
+    for c in matching_comments:
+        results.append({
+            'title': f"Comment by {c.author_name}: {c.content[:45]}...",
+            'subtitle': f"Status: {c.status.capitalize()} • on '{c.blog.title if c.blog else 'Article'}'",
+            'url': f"/dashboard/comments/",
+            'category': 'Comment',
+            'icon': 'fa-regular fa-comment-dots text-info',
+        })
+
+    return JsonResponse({'results': results[:12]})
+
+
 
 

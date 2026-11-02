@@ -44,6 +44,8 @@ from Apps.blogs.views import (
     dashboard_seo_view,
     dashboard_redirect_add,
     blog_conversion_submit,
+    update_engagement_view,
+    global_dashboard_search,
     dashboard_redirect_delete,
     robots_txt,
 )
@@ -108,6 +110,10 @@ urlpatterns = [
     path('blogs/<int:page_id>/conversions/submit/', blog_conversion_submit, name='blog_conversion_submit'),
     path('blogs/<slug:slug>/conversions/submit/', blog_conversion_submit, name='blog_conversion_submit_slug'),
     path('blogs/conversions/submit/', blog_conversion_submit, name='blog_conversion_submit_general'),
+    # Reader engagement beacon (time on page, scroll depth, bounce)
+    path('blogs/engagement/update/', update_engagement_view, name='update_engagement'),
+    # Global dashboard live search
+    path('dashboard/search/api/', global_dashboard_search, name='global_dashboard_search'),
     path('settings/', settings_view, name='settings'),
     path('settings/blog/comments/', blog_comments_settings_view, name='blog_comments_settings'),
     path('settings/users/', manage_users_settings_view, name='manage_users_settings'),
