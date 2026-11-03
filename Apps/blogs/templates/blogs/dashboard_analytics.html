@@ -180,7 +180,7 @@
                 <i class="fa-solid fa-book-open"></i>
               </span>
               <select name="blog_id" onchange="this.form.submit()" class="form-select form-select-sm border-start-0 rounded-end-pill fw-semibold text-secondary" style="min-width: 180px; max-width: 250px; font-size:0.83rem; border-color:#cbd5e1; cursor:pointer;" title="Filter analytics by specific blog">
-                <option value="">All Blogs ({{ blogs_list|length }})</option>
+                <option value="">{{ dashboard_page.filter_all_blogs_label|default:"All Blogs" }} ({{ blogs_list|length }})</option>
                 {% for b in blogs_list %}
                   <option value="{{ b.id }}" {% if selected_blog_id == b.id %}selected{% endif %}>{{ b.title|truncatechars:30 }}</option>
                 {% endfor %}
@@ -201,16 +201,33 @@
             </div>
           </form>
 
-          <!-- Export Buttons: CSV & PDF -->
-          <div class="btn-group shadow-sm" role="group">
-            <a href="?export=csv{% if time_range %}&range={{ time_range }}{% endif %}{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" class="btn btn-sm btn-outline-success rounded-start-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" title="Export Analytics Report to CSV / Excel">
-              <i class="fa-solid fa-file-csv"></i>
-              <span>Export CSV</span>
-            </a>
-            <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-danger rounded-end-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" title="Export or Print Analytics Report to PDF">
-              <i class="fa-solid fa-file-pdf"></i>
-              <span>Export PDF</span>
+          <!-- Export Dropdown: CSV & PDF -->
+          <div class="dropdown shadow-sm">
+            <button class="btn btn-sm btn-white border rounded-pill px-3 py-1 fw-semibold text-secondary d-inline-flex align-items-center gap-2 dropdown-toggle shadow-xs" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="background: #ffffff; border-color: #cbd5e1 !important; font-size: 0.83rem;">
+              <i class="fa-solid fa-cloud-arrow-down text-primary"></i>
+              <span>{{ dashboard_page.btn_export_dropdown_label|default:"Export Report" }}</span>
             </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1 py-1" aria-labelledby="exportDropdown" style="font-size: 0.83rem; min-width: 175px;">
+              <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" href="?export=csv{% if time_range %}&range={{ time_range }}{% endif %}{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}">
+                  <i class="fa-solid fa-file-csv text-success fs-6"></i>
+                  <div class="d-flex flex-column">
+                    <span class="fw-semibold">{{ dashboard_page.btn_export_csv_label|default:"Export CSV" }}</span>
+                    <small class="text-muted" style="font-size: 0.7rem;">Spreadsheet (.csv)</small>
+                  </div>
+                </a>
+              </li>
+              <li><hr class="dropdown-divider my-1 opacity-25"></li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" href="javascript:void(0)" onclick="window.print()">
+                  <i class="fa-solid fa-file-pdf text-danger fs-6"></i>
+                  <div class="d-flex flex-column">
+                    <span class="fw-semibold">{{ dashboard_page.btn_export_pdf_label|default:"Export PDF" }}</span>
+                    <small class="text-muted" style="font-size: 0.7rem;">Printable PDF report</small>
+                  </div>
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -232,10 +249,10 @@
         <div class="alert alert-info py-2 px-3 rounded-3 d-flex align-items-center justify-content-between mb-3 border-0 shadow-sm" style="background:#e0f2fe; color:#0369a1;">
           <div class="d-flex align-items-center gap-2 small fw-semibold">
             <i class="fa-solid fa-circle-info fs-6"></i>
-            <span>Showing analytics filtered for: <u>"{{ selected_blog.title }}"</u></span>
+            <span>{{ dashboard_page.filter_showing_badge_prefix|default:"Showing analytics filtered for:" }} <u>"{{ selected_blog.title }}"</u></span>
           </div>
           <a href="?{% if time_range %}range={{ time_range }}{% endif %}" class="btn btn-sm btn-light rounded-pill px-2 py-0 text-muted border small" title="Clear blog filter">
-            <i class="fa-solid fa-xmark me-1"></i> Clear Filter
+            <i class="fa-solid fa-xmark me-1"></i> {{ dashboard_page.btn_clear_filter_label|default:"Clear Filter" }}
           </a>
         </div>
       {% endif %}
@@ -275,13 +292,13 @@
         <div class="col-sm-6 col-lg">
           <div class="analytics-card card-accent-emerald">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Avg Time on Page</span>
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_avg_time_label|default:"Avg Time on Page" }}</span>
               <div class="icon-badge-gradient badge-grad-emerald">
                 <i class="fa-solid fa-stopwatch"></i>
               </div>
             </div>
             <div class="fs-3 fw-bold text-dark">{{ avg_read_time_str|default:"0s" }}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">Active reading duration</div>
+            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.card_avg_time_sub|default:"Active reading duration" }}</div>
           </div>
         </div>
 
@@ -326,56 +343,56 @@
           <div class="d-flex align-items-center justify-content-between mb-2 pb-1 border-bottom border-light">
             <div class="d-flex align-items-center gap-2">
               <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1">
-                <i class="fa-solid fa-gauge-high me-1"></i> Engagement Metrics
+                <i class="fa-solid fa-gauge-high me-1"></i> {{ dashboard_page.engagement_heading|default:"Engagement Metrics" }}
               </span>
-              <small class="text-muted" style="font-size: 0.78rem;">Visitor interaction, depth & session quality</small>
+              <small class="text-muted" style="font-size: 0.78rem;">{{ dashboard_page.engagement_subtext|default:"Visitor interaction, depth & session quality" }}</small>
             </div>
-            <span class="text-muted small" style="font-size: 0.74rem;">CR = (Conversions / Unique Visitors) &times; 100</span>
+            <span class="text-muted small" style="font-size: 0.74rem;">{{ dashboard_page.engagement_cr_formula|default:"CR = (Conversions / Unique Visitors) × 100" }}</span>
           </div>
 
           <div class="row g-2 text-center">
             <!-- Time on Page -->
             <div class="col-6 col-md">
               <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
-                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-clock text-primary me-1"></i> Time on Page</div>
+                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-clock text-primary me-1"></i> {{ dashboard_page.engagement_time_label|default:"Time on Page" }}</div>
                 <div class="fw-bold fs-5 text-dark">{{ avg_read_time_str|default:"0s" }}</div>
-                <small class="text-muted" style="font-size: 0.7rem;">Avg reading time</small>
+                <small class="text-muted" style="font-size: 0.7rem;">{{ dashboard_page.engagement_time_sub|default:"Avg reading time" }}</small>
               </div>
             </div>
 
             <!-- Scroll Depth -->
             <div class="col-6 col-md">
               <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
-                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-angles-down text-info me-1"></i> Scroll Depth</div>
+                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-angles-down text-info me-1"></i> {{ dashboard_page.engagement_scroll_label|default:"Scroll Depth" }}</div>
                 <div class="fw-bold fs-5 text-dark">{{ avg_scroll_depth|default:0 }}%</div>
-                <small class="text-muted" style="font-size: 0.7rem;">Average content read</small>
+                <small class="text-muted" style="font-size: 0.7rem;">{{ dashboard_page.engagement_scroll_sub|default:"Average content read" }}</small>
               </div>
             </div>
 
             <!-- Interactions (Clicks) -->
             <div class="col-6 col-md">
               <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
-                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-arrow-pointer text-purple me-1" style="color: #9333ea;"></i> Interactions</div>
+                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-arrow-pointer text-purple me-1" style="color: #9333ea;"></i> {{ dashboard_page.engagement_interactions_label|default:"Interactions" }}</div>
                 <div class="fw-bold fs-5 text-dark">{{ total_interactions|default:0 }}</div>
-                <small class="text-muted" style="font-size: 0.7rem;">Clicks & elements</small>
+                <small class="text-muted" style="font-size: 0.7rem;">{{ dashboard_page.engagement_interactions_sub|default:"Clicks & elements" }}</small>
               </div>
             </div>
 
             <!-- Pages per Visit -->
             <div class="col-6 col-md">
               <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
-                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-layer-group text-success me-1"></i> Pages / Visit</div>
+                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-layer-group text-success me-1"></i> {{ dashboard_page.engagement_pages_label|default:"Pages / Visit" }}</div>
                 <div class="fw-bold fs-5 text-dark">{{ pages_per_visit|default:1 }}</div>
-                <small class="text-muted" style="font-size: 0.7rem;">Per visitor session</small>
+                <small class="text-muted" style="font-size: 0.7rem;">{{ dashboard_page.engagement_pages_sub|default:"Per visitor session" }}</small>
               </div>
             </div>
 
             <!-- Bounce Rate -->
             <div class="col-6 col-md">
               <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
-                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-arrow-right-from-bracket text-warning me-1"></i> Bounce Rate</div>
+                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-arrow-right-from-bracket text-warning me-1"></i> {{ dashboard_page.engagement_bounce_label|default:"Bounce Rate" }}</div>
                 <div class="fw-bold fs-5 text-dark">{{ bounce_rate|default:0 }}%</div>
-                <small class="text-muted" style="font-size: 0.7rem;">Single-touch exits</small>
+                <small class="text-muted" style="font-size: 0.7rem;">{{ dashboard_page.engagement_bounce_sub|default:"Single-touch exits" }}</small>
               </div>
             </div>
           </div>
@@ -586,11 +603,11 @@
                   <i class="fa-solid fa-bullseye"></i>
                 </span>
                 <div>
-                  <h5 class="fw-bold mb-0" style="font-size: 1rem;">Conversions Breakdown</h5>
-                  <small class="text-muted d-block" style="font-size: 0.78rem;">Actions completed by visitors</small>
+                  <h5 class="fw-bold mb-0" style="font-size: 1rem;">{{ dashboard_page.conversions_breakdown_heading|default:"Conversions Breakdown" }}</h5>
+                  <small class="text-muted d-block" style="font-size: 0.78rem;">{{ dashboard_page.conversions_breakdown_subtext|default:"Actions completed by visitors" }}</small>
                 </div>
               </div>
-              <span class="badge rounded-pill fw-bold" style="background:#e0e7ff; color:#4338ca;">{{ total_conversions }} Total</span>
+              <span class="badge rounded-pill fw-bold" style="background:#e0e7ff; color:#4338ca;">{{ total_conversions }} {{ dashboard_page.conversions_total_suffix|default:"Total" }}</span>
             </div>
 
             {% if conversion_breakdown %}
@@ -619,7 +636,7 @@
             {% else %}
               <div class="text-center py-3 text-muted" style="font-size: 0.82rem;">
                 <i class="fa-solid fa-inbox fa-2x mb-2 text-secondary opacity-50 d-block"></i>
-                No conversions recorded for this period yet.
+                {{ dashboard_page.no_conversions_text|default:"No conversions recorded for this period yet." }}
               </div>
             {% endif %}
           </div>

@@ -612,6 +612,41 @@ class UserDashboardPage(Page):
     device_usage_label = models.CharField(max_length=50, blank=True, default="DEVICE USAGE", verbose_name="Device Usage Section Label")
     top_browsers_label = models.CharField(max_length=50, blank=True, default="TOP BROWSERS", verbose_name="Top Browsers Section Label")
 
+    # Engagement Metrics Bar Labels (Editable from CMS)
+    engagement_heading = models.CharField(max_length=100, blank=True, default="Engagement Metrics", verbose_name="Engagement Section Heading")
+    engagement_subtext = models.CharField(max_length=200, blank=True, default="Visitor interaction, depth & session quality", verbose_name="Engagement Section Subtitle")
+    engagement_time_label = models.CharField(max_length=50, blank=True, default="Time on Page", verbose_name="Engagement: Time on Page Label")
+    engagement_scroll_label = models.CharField(max_length=50, blank=True, default="Scroll Depth", verbose_name="Engagement: Scroll Depth Label")
+    engagement_interactions_label = models.CharField(max_length=50, blank=True, default="Interactions", verbose_name="Engagement: Interactions Label")
+    engagement_pages_label = models.CharField(max_length=50, blank=True, default="Pages / Visit", verbose_name="Engagement: Pages per Visit Label")
+    engagement_bounce_label = models.CharField(max_length=50, blank=True, default="Bounce Rate", verbose_name="Engagement: Bounce Rate Label")
+
+    # Conversions Breakdown Card Labels (Editable from CMS)
+    conversions_breakdown_heading = models.CharField(max_length=100, blank=True, default="Conversions Breakdown", verbose_name="Conversions Breakdown Heading")
+    conversions_breakdown_subtext = models.CharField(max_length=200, blank=True, default="Actions completed by visitors", verbose_name="Conversions Breakdown Subtitle")
+    no_conversions_text = models.CharField(max_length=200, blank=True, default="No conversions recorded for this period yet.", verbose_name="Empty Conversions Text")
+
+    # KPI Card: Avg Time on Page (Editable from CMS)
+    card_avg_time_label = models.CharField(max_length=50, blank=True, default="Avg Time on Page", verbose_name="KPI Card: Avg Time Label")
+    card_avg_time_sub = models.CharField(max_length=100, blank=True, default="Active reading duration", verbose_name="KPI Card: Avg Time Subtitle")
+
+    # Export Buttons Labels (Editable from CMS)
+    btn_export_dropdown_label = models.CharField(max_length=50, blank=True, default="Export Report", verbose_name="Button: Export Dropdown Label")
+    btn_export_csv_label = models.CharField(max_length=50, blank=True, default="Export CSV", verbose_name="Button: Export CSV Label")
+    btn_export_pdf_label = models.CharField(max_length=50, blank=True, default="Export PDF", verbose_name="Button: Export PDF Label")
+
+    # Additional Analytics Filter & Engagement Subtext Labels (Editable from CMS)
+    filter_all_blogs_label = models.CharField(max_length=50, blank=True, default="All Blogs", verbose_name="Filter: All Blogs Label")
+    btn_clear_filter_label = models.CharField(max_length=50, blank=True, default="Clear Filter", verbose_name="Button: Clear Filter Label")
+    filter_showing_badge_prefix = models.CharField(max_length=100, blank=True, default="Showing analytics filtered for:", verbose_name="Filter Badge Prefix")
+    engagement_cr_formula = models.CharField(max_length=100, blank=True, default="CR = (Conversions / Unique Visitors) × 100", verbose_name="Engagement CR Formula Text")
+    engagement_time_sub = models.CharField(max_length=50, blank=True, default="Avg reading time", verbose_name="Engagement: Time Subtitle")
+    engagement_scroll_sub = models.CharField(max_length=50, blank=True, default="Average content read", verbose_name="Engagement: Scroll Subtitle")
+    engagement_interactions_sub = models.CharField(max_length=50, blank=True, default="Clicks & elements", verbose_name="Engagement: Interactions Subtitle")
+    engagement_pages_sub = models.CharField(max_length=50, blank=True, default="Per visitor session", verbose_name="Engagement: Pages Subtitle")
+    engagement_bounce_sub = models.CharField(max_length=50, blank=True, default="Single-touch exits", verbose_name="Engagement: Bounce Subtitle")
+    conversions_total_suffix = models.CharField(max_length=30, blank=True, default="Total", verbose_name="Conversions Badge Suffix")
+
     # 11. SEO & Growth Page Configuration (Editable from Wagtail CMS)
     seo_page_title = models.CharField(max_length=150, blank=True, default="SEO & Growth", verbose_name="SEO Page Title")
     seo_page_subtext = models.CharField(max_length=255, blank=True, default="Manage XML sitemaps, robots.txt, 301 redirects, schema markup, and search visibility", verbose_name="SEO Page Subtitle")
@@ -683,6 +718,31 @@ class UserDashboardPage(Page):
             FieldPanel("no_referrer_text"),
             FieldPanel("device_usage_label"),
             FieldPanel("top_browsers_label"),
+            FieldPanel("engagement_heading"),
+            FieldPanel("engagement_subtext"),
+            FieldPanel("engagement_time_label"),
+            FieldPanel("engagement_scroll_label"),
+            FieldPanel("engagement_interactions_label"),
+            FieldPanel("engagement_pages_label"),
+            FieldPanel("engagement_bounce_label"),
+            FieldPanel("conversions_breakdown_heading"),
+            FieldPanel("conversions_breakdown_subtext"),
+            FieldPanel("no_conversions_text"),
+            FieldPanel("card_avg_time_label"),
+            FieldPanel("card_avg_time_sub"),
+            FieldPanel("btn_export_dropdown_label"),
+            FieldPanel("btn_export_csv_label"),
+            FieldPanel("btn_export_pdf_label"),
+            FieldPanel("filter_all_blogs_label"),
+            FieldPanel("btn_clear_filter_label"),
+            FieldPanel("filter_showing_badge_prefix"),
+            FieldPanel("engagement_cr_formula"),
+            FieldPanel("engagement_time_sub"),
+            FieldPanel("engagement_scroll_sub"),
+            FieldPanel("engagement_interactions_sub"),
+            FieldPanel("engagement_pages_sub"),
+            FieldPanel("engagement_bounce_sub"),
+            FieldPanel("conversions_total_suffix"),
         ], heading="Analytics & Reports Page Settings (Custom Headings & Labels)", classname="collapsible collapsed"),
         MultiFieldPanel([
             FieldPanel("seo_page_title"),
