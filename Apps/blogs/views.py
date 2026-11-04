@@ -19,7 +19,7 @@ from Apps.companies.api_permissions import HasValidCompanyAPIKey
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponseNotAllowed
+from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponse
 from django.views.decorators.http import require_http_methods
 from Apps.blogs.models import BlogPage, BlogIndexPage, BlogCategory
 from wagtail.images.models import Image
@@ -1059,15 +1059,15 @@ def comments_bulk_action(request):
 
 
 @login_required(login_url='/login/')
-def dashboard_analytics_view(request):
-    """Blogger-style Analytics & Reports Dashboard."""
+def _get_analytics_base_data(request):
+    """Shared analytics calculation across Overview, Engagement, Traffic, and Conversions."""
     company = _get_request_company(request.user)
     from datetime import timedelta
     from django.utils import timezone
-    from django.db.models import Count
+    from django.db.models import Count, Avg, Sum
     from Apps.accounts.models import User as UserModel
     from Apps.accounts.models import UserDashboardPage
-    from Apps.blogs.models import BlogPostView
+    from Apps.blogs.models import BlogPostView, BlogConversion, BlogPage
     
     is_employee = (request.user.role == UserModel.Role.COMPANY_USER)
     
@@ -1124,7 +1124,6 @@ def dashboard_analytics_view(request):
     avg_views_per_post = round(total_views / total_posts, 1) if total_posts > 0 else 0
 
     # Conversions tracking (Newsletter / Leads / CTA / Contact / Registration / Purchase)
-    from Apps.blogs.models import BlogConversion
     conversions_qs = BlogConversion.objects.all()
     if company:
         conversions_qs = conversions_qs.filter(company=company)
@@ -1141,8 +1140,7 @@ def dashboard_analytics_view(request):
     total_conversions = filtered_conversions.count()
     conversion_rate = round((total_conversions / unique_visitors * 100), 1) if unique_visitors > 0 else 0
 
-    # Engagement Metrics (Time on Page, Scroll Depth, Bounce Rate, Pages per Visit, Interactions)
-    from django.db.models import Avg, Sum
+    # Engagement Metrics
     engagement_data = filtered_views.aggregate(
         avg_time=Avg('time_on_page'),
         avg_scroll=Avg('scroll_depth'),
@@ -1152,7 +1150,6 @@ def dashboard_analytics_view(request):
     avg_scroll_depth = round(engagement_data['avg_scroll'] or 0)
     total_interactions = int(engagement_data['total_clicks'] or 0)
     
-    # Format read time nicely e.g. "2m 15s" or "45s"
     if raw_avg_time >= 60:
         mins = raw_avg_time // 60
         secs = raw_avg_time % 60
@@ -1186,7 +1183,64 @@ def dashboard_analytics_view(request):
             'percentage': pct,
         })
 
-    # CSV Export Handling
+    # Recent Conversions list for the Conversions sub-page
+    recent_conversions = list(filtered_conversions.select_related('blog').order_by('-created_at')[:30])
+
+    # Chart generation
+    chart_labels = []
+    chart_views = []
+    if time_range == 'today':
+        for hour in range(0, 24, 2):
+            chart_labels.append(f"{hour:02d}:00")
+            h_count = filtered_views.filter(created_at__hour__gte=hour, created_at__hour__lt=hour+2).count()
+            chart_views.append(h_count)
+    else:
+        for i in range(days_count - 1, -1, -1):
+            d = today - timedelta(days=i)
+            chart_labels.append(d.strftime('%b %d'))
+            chart_views.append(views_qs.filter(created_at__date=d).count())
+
+    # Popular Articles ranked table
+    popular_blogs = list(blogs_qs.filter(live=True).annotate(
+        views_count=Count('page_views'),
+        conversions_count=Count('conversions'),
+        avg_scroll=Avg('page_views__scroll_depth'),
+        avg_time=Avg('page_views__time_on_page')
+    ).order_by('-views_count')[:15])
+
+    # Traffic Sources / Referrers breakdown
+    referrers_list = list(filtered_views.values('referrer_domain').annotate(
+        count=Count('id')
+    ).order_by('-count')[:15])
+    for r in referrers_list:
+        r['percentage'] = round((r['count'] / total_views * 100), 1) if total_views > 0 else 0
+
+    # Devices breakdown
+    devices_list = list(filtered_views.values('device_type').annotate(
+        count=Count('id')
+    ).order_by('-count'))
+    for d in devices_list:
+        d['percentage'] = round((d['count'] / total_views * 100), 1) if total_views > 0 else 0
+
+    # Browsers breakdown
+    browsers_list = list(filtered_views.values('browser').annotate(
+        count=Count('id')
+    ).order_by('-count')[:10])
+    for b in browsers_list:
+        b['percentage'] = round((b['count'] / total_views * 100), 1) if total_views > 0 else 0
+
+    # Operating Systems breakdown
+    os_list = list(filtered_views.values('os').annotate(
+        count=Count('id')
+    ).order_by('-count')[:8])
+    for o in os_list:
+        o['percentage'] = round((o['count'] / total_views * 100), 1) if total_views > 0 else 0
+
+    dashboard_page = UserDashboardPage.objects.live().first()
+    sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
+    blogs_list = list(blogs_qs.filter(live=True).order_by('title'))
+
+    # CSV Export Handling (Works across all 4 sub-pages)
     if request.GET.get('export') == 'csv':
         import csv
         from django.http import HttpResponse
@@ -1231,78 +1285,20 @@ def dashboard_analytics_view(request):
         # Popular Articles
         writer.writerow(['--- POPULAR ARTICLES ---'])
         writer.writerow(['Rank', 'Article Title', 'Author', 'Views', 'Leads'])
-        for idx, post in enumerate(blogs_qs.filter(live=True).annotate(
-            v_cnt=Count('page_views'),
-            c_cnt=Count('conversions')
-        ).order_by('-v_cnt')[:30], 1):
+        for idx, post in enumerate(popular_blogs, 1):
             author_name = post.author.get_full_name() if post.author else 'Admin'
-            writer.writerow([idx, post.title, author_name, post.v_cnt, post.c_cnt])
+            writer.writerow([idx, post.title, author_name, getattr(post, 'views_count', 0), getattr(post, 'conversions_count', 0)])
         writer.writerow([])
 
         # Traffic Sources
         writer.writerow(['--- REFERRAL SOURCES ---'])
         writer.writerow(['Traffic Source', 'Visits', 'Percentage'])
-        ref_items = filtered_views.values('referrer_domain').annotate(c=Count('id')).order_by('-c')[:15]
-        for r in ref_items:
-            pct = round((r['c'] / total_views * 100), 1) if total_views > 0 else 0
-            writer.writerow([r['referrer_domain'] or 'Direct', r['c'], f"{pct}%"])
-        writer.writerow([])
-
-        # Device Breakdown
-        writer.writerow(['--- DEVICE USAGE ---'])
-        dev_items = filtered_views.values('device_type').annotate(c=Count('id')).order_by('-c')
-        for d in dev_items:
-            pct = round((d['c'] / total_views * 100), 1) if total_views > 0 else 0
-            writer.writerow([d['device_type'] or 'Desktop', d['c'], f"{pct}%"])
+        for r in referrers_list:
+            writer.writerow([r['referrer_domain'] or 'Direct', r['count'], f"{r['percentage']}%"])
 
         return response
 
-    # Chart generation
-    chart_labels = []
-    chart_views = []
-    if time_range == 'today':
-        for hour in range(0, 24, 2):
-            chart_labels.append(f"{hour:02d}:00")
-            h_count = filtered_views.filter(created_at__hour__gte=hour, created_at__hour__lt=hour+2).count()
-            chart_views.append(h_count)
-    else:
-        for i in range(days_count - 1, -1, -1):
-            d = today - timedelta(days=i)
-            chart_labels.append(d.strftime('%b %d'))
-            chart_views.append(views_qs.filter(created_at__date=d).count())
-
-    # Popular Articles ranked table
-    popular_blogs = list(blogs_qs.filter(live=True).annotate(
-        views_count=Count('page_views'),
-        conversions_count=Count('conversions')
-    ).order_by('-views_count')[:15])
-
-    # Traffic Sources / Referrers breakdown
-    referrers_list = list(filtered_views.values('referrer_domain').annotate(
-        count=Count('id')
-    ).order_by('-count')[:8])
-    for r in referrers_list:
-        r['percentage'] = round((r['count'] / total_views * 100), 1) if total_views > 0 else 0
-
-    # Devices breakdown
-    devices_list = list(filtered_views.values('device_type').annotate(
-        count=Count('id')
-    ).order_by('-count'))
-    for d in devices_list:
-        d['percentage'] = round((d['count'] / total_views * 100), 1) if total_views > 0 else 0
-
-    # Browsers breakdown
-    browsers_list = list(filtered_views.values('browser').annotate(
-        count=Count('id')
-    ).order_by('-count')[:5])
-    for b in browsers_list:
-        b['percentage'] = round((b['count'] / total_views * 100), 1) if total_views > 0 else 0
-
-    dashboard_page = UserDashboardPage.objects.live().first()
-    sidebar_links = dashboard_page.sidebar_links if dashboard_page else []
-    blogs_list = list(blogs_qs.filter(live=True).order_by('title'))
-
-    context = {
+    return {
         'dashboard_page': dashboard_page,
         'sidebar_links': sidebar_links,
         'active_tab': 'analytics',
@@ -1321,6 +1317,7 @@ def dashboard_analytics_view(request):
         'total_conversions': total_conversions,
         'conversion_rate': conversion_rate,
         'conversion_breakdown': conversion_breakdown,
+        'recent_conversions': recent_conversions,
         'avg_read_time_str': avg_read_time_str,
         'avg_scroll_depth': avg_scroll_depth,
         'total_interactions': total_interactions,
@@ -1332,8 +1329,48 @@ def dashboard_analytics_view(request):
         'referrers_list': referrers_list,
         'devices_list': devices_list,
         'browsers_list': browsers_list,
+        'os_list': os_list,
     }
-    return render(request, 'blogs/dashboard_analytics.html', context)
+
+
+@login_required(login_url='/login/')
+def dashboard_analytics_view(request):
+    """Main Analytics Overview: Clean & concise summary dashboard."""
+    data = _get_analytics_base_data(request)
+    if isinstance(data, HttpResponse):
+        return data
+    data['analytics_subtab'] = 'overview'
+    return render(request, 'blogs/dashboard_analytics.html', data)
+
+
+@login_required(login_url='/login/')
+def dashboard_engagement_view(request):
+    """Dedicated Engagement Analytics Dashboard."""
+    data = _get_analytics_base_data(request)
+    if isinstance(data, HttpResponse):
+        return data
+    data['analytics_subtab'] = 'engagement'
+    return render(request, 'blogs/dashboard_analytics_engagement.html', data)
+
+
+@login_required(login_url='/login/')
+def dashboard_traffic_view(request):
+    """Dedicated Traffic & Technology Analytics Dashboard."""
+    data = _get_analytics_base_data(request)
+    if isinstance(data, HttpResponse):
+        return data
+    data['analytics_subtab'] = 'traffic'
+    return render(request, 'blogs/dashboard_analytics_traffic.html', data)
+
+
+@login_required(login_url='/login/')
+def dashboard_conversions_view(request):
+    """Dedicated Conversions & Goal Tracking Dashboard."""
+    data = _get_analytics_base_data(request)
+    if isinstance(data, HttpResponse):
+        return data
+    data['analytics_subtab'] = 'conversions'
+    return render(request, 'blogs/dashboard_analytics_conversions.html', data)
 
 
 @login_required(login_url='/login/')

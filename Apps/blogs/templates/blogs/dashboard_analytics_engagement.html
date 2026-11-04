@@ -1,0 +1,318 @@
+{% extends "companies/base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}{{ dashboard_page.engagement_heading|default:"Engagement Metrics" }} | {% if company %}{{ company.company_name }}{% elif dashboard_page.brand_name %}{{ dashboard_page.brand_name }}{% else %}CMS Dashboard{% endif %}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+  .analytics-card {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    padding: 1.15rem 1.25rem;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .analytics-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  @media print {
+    .bp-sidebar, .bp-topbar, .filter-btn-group, .btn-group, .btn, form, #globalSearchResults {
+      display: none !important;
+    }
+    .bp-app-wrapper, .bp-main-container, .bp-content-body {
+      margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100% !important;
+    }
+    .analytics-card, .card {
+      box-shadow: none !important; border: 1px solid #cbd5e1 !important; page-break-inside: avoid;
+    }
+  }
+
+  .card-accent-blue { border-top: 3.5px solid #2563eb !important; }
+  .card-accent-purple { border-top: 3.5px solid #a855f7 !important; }
+  .card-accent-emerald { border-top: 3.5px solid #059669 !important; }
+  .card-accent-amber { border-top: 3.5px solid #d97706 !important; }
+  .card-accent-indigo { border-top: 3.5px solid #6366f1 !important; }
+
+  .icon-badge-gradient {
+    width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #ffffff !important; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  }
+  .badge-grad-blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+  .badge-grad-purple { background: linear-gradient(135deg, #9333ea, #db2777); }
+  .badge-grad-emerald { background: linear-gradient(135deg, #059669, #10b981); }
+  .badge-grad-amber { background: linear-gradient(135deg, #d97706, #f59e0b); }
+  .badge-grad-indigo { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+
+  .rank-badge {
+    width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700;
+  }
+  .rank-1 { background: linear-gradient(135deg, #fbbf24, #d97706); color: #fff; }
+  .rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); color: #fff; }
+  .rank-3 { background: linear-gradient(135deg, #fb923c, #c2410c); color: #fff; }
+  .rank-default { background: #f1f5f9; color: #64748b; }
+
+  .bp-content-body { padding: 1.25rem 1.5rem !important; }
+  .bp-page-title { font-size: 1.35rem !important; }
+  .bp-page-sub { font-size: 0.85rem !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bp-app-wrapper">
+
+  <!-- Sidebar -->
+  {% include "accounts/blocks/sidebar.html" with page=dashboard_page active_tab="analytics" %}
+
+  <div class="bp-main-container">
+
+    <!-- Topbar -->
+    {% include "accounts/blocks/topbar.html" with page=dashboard_page %}
+
+    <main class="bp-content-body">
+
+      <!-- Header & Filters -->
+      <div class="bp-page-header d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+          <h1 class="bp-page-title mb-1"><i class="fa-solid fa-gauge-high text-primary me-2"></i> {{ dashboard_page.engagement_heading|default:"Engagement Metrics" }}</h1>
+          <p class="bp-page-sub mb-0">{{ dashboard_page.engagement_subtext|default:"Visitor interaction, depth & session quality" }}</p>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <!-- Filters Form -->
+          <form method="get" class="d-flex flex-wrap align-items-center gap-2 m-0">
+            <!-- Blog Selector -->
+            <div class="input-group input-group-sm shadow-sm" style="width: auto;">
+              <span class="input-group-text bg-white border-end-0 text-primary rounded-start-pill ps-3" style="border-color:#cbd5e1;">
+                <i class="fa-solid fa-book-open"></i>
+              </span>
+              <select name="blog_id" onchange="this.form.submit()" class="form-select form-select-sm border-start-0 rounded-end-pill fw-semibold text-secondary" style="min-width: 180px; max-width: 250px; font-size:0.83rem; border-color:#cbd5e1; cursor:pointer;">
+                <option value="">{{ dashboard_page.filter_all_blogs_label|default:"All Blogs" }} ({{ blogs_list|length }})</option>
+                {% for b in blogs_list %}
+                  <option value="{{ b.id }}" {% if selected_blog_id == b.id %}selected{% endif %}>{{ b.title|truncatechars:30 }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Time Range Dropdown -->
+            <div class="input-group input-group-sm shadow-sm" style="width: auto;">
+              <span class="input-group-text bg-white border-end-0 text-primary rounded-start-pill ps-3" style="border-color:#cbd5e1;">
+                <i class="fa-regular fa-calendar-days"></i>
+              </span>
+              <select name="range" onchange="this.form.submit()" class="form-select form-select-sm border-start-0 rounded-end-pill fw-semibold text-secondary" style="min-width: 135px; font-size:0.83rem; border-color:#cbd5e1; cursor:pointer;">
+                <option value="today" {% if time_range == 'today' %}selected{% endif %}>{{ dashboard_page.filter_today_label|default:"Today" }}</option>
+                <option value="7days" {% if time_range == '7days' %}selected{% endif %}>{{ dashboard_page.filter_7days_label|default:"Last 7 Days" }}</option>
+                <option value="30days" {% if time_range == '30days' %}selected{% endif %}>{{ dashboard_page.filter_30days_label|default:"Last 30 Days" }}</option>
+                <option value="all" {% if time_range == 'all' or not time_range %}selected{% endif %}>{{ dashboard_page.filter_all_label|default:"All Time" }}</option>
+              </select>
+            </div>
+          </form>
+
+          <!-- Export Dropdown -->
+          <div class="dropdown shadow-sm">
+            <button class="btn btn-sm btn-white border rounded-pill px-3 py-1 fw-semibold text-secondary d-inline-flex align-items-center gap-2 dropdown-toggle shadow-xs" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="background: #ffffff; border-color: #cbd5e1 !important; font-size: 0.83rem;">
+              <i class="fa-solid fa-cloud-arrow-down text-primary"></i>
+              <span>{{ dashboard_page.btn_export_dropdown_label|default:"Export Report" }}</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1 py-1" aria-labelledby="exportDropdown" style="font-size: 0.83rem; min-width: 175px;">
+              <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" href="?export=csv{% if time_range %}&range={{ time_range }}{% endif %}{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}">
+                  <i class="fa-solid fa-file-csv text-success fs-6"></i>
+                  <div class="d-flex flex-column">
+                    <span class="fw-semibold">{{ dashboard_page.btn_export_csv_label|default:"Export CSV" }}</span>
+                    <small class="text-muted" style="font-size: 0.7rem;">Spreadsheet (.csv)</small>
+                  </div>
+                </a>
+              </li>
+              <li><hr class="dropdown-divider my-1 opacity-25"></li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" href="javascript:void(0)" onclick="window.print()">
+                  <i class="fa-solid fa-file-pdf text-danger fs-6"></i>
+                  <div class="d-flex flex-column">
+                    <span class="fw-semibold">{{ dashboard_page.btn_export_pdf_label|default:"Export PDF" }}</span>
+                    <small class="text-muted" style="font-size: 0.7rem;">Printable PDF report</small>
+                  </div>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Blog Filter Badge -->
+      {% if selected_blog %}
+        <div class="alert alert-info py-2 px-3 rounded-3 d-flex align-items-center justify-content-between mb-3 border-0 shadow-sm" style="background:#e0f2fe; color:#0369a1;">
+          <div class="d-flex align-items-center gap-2 small fw-semibold">
+            <i class="fa-solid fa-circle-info fs-6"></i>
+            <span>{{ dashboard_page.filter_showing_badge_prefix|default:"Showing analytics filtered for:" }} <u>"{{ selected_blog.title }}"</u></span>
+          </div>
+          <a href="?{% if time_range %}range={{ time_range }}{% endif %}" class="btn btn-sm btn-light rounded-pill px-2 py-0 text-muted border small">
+            <i class="fa-solid fa-xmark me-1"></i> {{ dashboard_page.btn_clear_filter_label|default:"Clear Filter" }}
+          </a>
+        </div>
+      {% endif %}
+
+      <!-- Shared Analytics Sub-navigation Pills -->
+      {% include "blogs/blocks/analytics_subnav.html" %}
+
+      <!-- 5 Engagement Cards -->
+      <div class="row g-2 mb-3">
+        <!-- Time on Page -->
+        <div class="col-sm-6 col-lg">
+          <div class="analytics-card card-accent-blue">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.engagement_time_label|default:"Time on Page" }}</span>
+              <div class="icon-badge-gradient badge-grad-blue">
+                <i class="fa-solid fa-clock"></i>
+              </div>
+            </div>
+            <div class="fs-3 fw-bold text-dark">{{ avg_read_time_str|default:"0s" }}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.engagement_time_sub|default:"Avg reading time" }}</div>
+          </div>
+        </div>
+
+        <!-- Scroll Depth -->
+        <div class="col-sm-6 col-lg">
+          <div class="analytics-card card-accent-emerald">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.engagement_scroll_label|default:"Scroll Depth" }}</span>
+              <div class="icon-badge-gradient badge-grad-emerald">
+                <i class="fa-solid fa-angles-down"></i>
+              </div>
+            </div>
+            <div class="fs-3 fw-bold text-dark">{{ avg_scroll_depth|default:0 }}%</div>
+            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.engagement_scroll_sub|default:"Average content read" }}</div>
+          </div>
+        </div>
+
+        <!-- Interactions -->
+        <div class="col-sm-6 col-lg">
+          <div class="analytics-card card-accent-purple">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.engagement_interactions_label|default:"Interactions" }}</span>
+              <div class="icon-badge-gradient badge-grad-purple">
+                <i class="fa-solid fa-arrow-pointer"></i>
+              </div>
+            </div>
+            <div class="fs-3 fw-bold text-dark">{{ total_interactions|default:0 }}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.engagement_interactions_sub|default:"Clicks & elements" }}</div>
+          </div>
+        </div>
+
+        <!-- Pages per Visit -->
+        <div class="col-sm-6 col-lg">
+          <div class="analytics-card card-accent-amber">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.engagement_pages_label|default:"Pages / Visit" }}</span>
+              <div class="icon-badge-gradient badge-grad-amber">
+                <i class="fa-solid fa-layer-group"></i>
+              </div>
+            </div>
+            <div class="fs-3 fw-bold text-dark">{{ pages_per_visit|default:1 }}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.engagement_pages_sub|default:"Per visitor session" }}</div>
+          </div>
+        </div>
+
+        <!-- Bounce Rate -->
+        <div class="col-sm-6 col-lg">
+          <div class="analytics-card card-accent-indigo">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.engagement_bounce_label|default:"Bounce Rate" }}</span>
+              <div class="icon-badge-gradient badge-grad-indigo">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              </div>
+            </div>
+            <div class="fs-3 fw-bold text-dark">{{ bounce_rate|default:0 }}%</div>
+            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.engagement_bounce_sub|default:"Single-touch exits" }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Articles Ranked by Engagement -->
+      <div class="analytics-card card-accent-emerald mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex align-items-center gap-2">
+            <span class="icon-badge-gradient badge-grad-emerald" style="width: 32px; height: 32px; font-size: 0.82rem;">
+              <i class="fa-solid fa-book-reader"></i>
+            </span>
+            <div>
+              <h5 class="fw-bold mb-0" style="font-size: 1rem;">{{ dashboard_page.engagement_depth_heading|default:"Article Engagement Depth" }}</h5>
+              <small class="text-muted" style="font-size: 0.78rem;">{{ dashboard_page.engagement_depth_subtext|default:"Reader time, scroll completion, and interaction per article" }}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr style="font-size: 0.8rem; color: #64748b;">
+                <th scope="col" style="width: 50px;">#</th>
+                <th scope="col">{{ dashboard_page.th_article_label|default:"Article" }}</th>
+                <th scope="col" class="text-center">{{ dashboard_page.th_views_label|default:"Views" }}</th>
+                <th scope="col" class="text-center">{{ dashboard_page.engagement_scroll_label|default:"Scroll Depth" }}</th>
+                <th scope="col" class="text-center">{{ dashboard_page.engagement_time_label|default:"Avg Time" }}</th>
+                <th scope="col" class="text-end">{{ dashboard_page.th_action_label|default:"Action" }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for post in popular_blogs %}
+                <tr>
+                  <td>
+                    <span class="rank-badge {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-default{% endif %}">
+                      {{ forloop.counter }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="d-flex flex-column">
+                      <span class="fw-semibold text-dark text-truncate" style="max-width: 380px;">{{ post.title }}</span>
+                      <small class="text-muted">
+                        {% if post.category %}<span class="badge me-1" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">{{ post.category.name }}</span>{% endif %}
+                        {{ post.first_published_at|default:post.latest_revision_created_at|date:"M d, Y" }}
+                      </small>
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge rounded-pill fw-bold px-3 py-1" style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;">
+                      {{ post.views_count|default:0 }}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <div class="d-inline-flex align-items-center gap-1">
+                      <span class="fw-semibold text-dark">{{ post.avg_scroll|default:0|floatformat:0 }}%</span>
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge rounded-pill fw-semibold px-2 py-1" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;">
+                      {{ post.avg_time|default:0|floatformat:0 }}s
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <a href="{{ post.url }}" target="_blank" class="btn btn-sm rounded-pill px-3" style="font-size: 0.75rem; background: #f8fafc; border: 1px solid #cbd5e1; color: #334155; font-weight: 600;">
+                      <i class="fa-solid fa-arrow-up-right-from-square me-1 text-primary"></i> {{ dashboard_page.btn_view_label|default:"View" }}
+                    </a>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-muted">
+                    <i class="fa-solid fa-chart-pie fa-2x mb-2 text-secondary opacity-50"></i>
+                    <div>{{ dashboard_page.no_views_text|default:"No blog views recorded yet for this period." }}</div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+</div>
+{% endblock %}

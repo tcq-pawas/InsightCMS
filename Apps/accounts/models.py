@@ -647,6 +647,43 @@ class UserDashboardPage(Page):
     engagement_bounce_sub = models.CharField(max_length=50, blank=True, default="Single-touch exits", verbose_name="Engagement: Bounce Subtitle")
     conversions_total_suffix = models.CharField(max_length=30, blank=True, default="Total", verbose_name="Conversions Badge Suffix")
 
+    # Sub-pages Configuration (Editable from CMS)
+    analytics_overview_tab_label = models.CharField(max_length=50, blank=True, default="Overview", verbose_name="Tab: Overview Label")
+    analytics_engagement_tab_label = models.CharField(max_length=50, blank=True, default="Engagement", verbose_name="Tab: Engagement Label")
+    analytics_traffic_tab_label = models.CharField(max_length=50, blank=True, default="Traffic & Tech", verbose_name="Tab: Traffic & Tech Label")
+    analytics_conversions_tab_label = models.CharField(max_length=50, blank=True, default="Conversions", verbose_name="Tab: Conversions Label")
+    
+    analytics_traffic_heading = models.CharField(max_length=150, blank=True, default="Traffic & Technology Analytics", verbose_name="Traffic Page Heading")
+    analytics_traffic_subtext = models.CharField(max_length=255, blank=True, default="Detailed breakdown of referral channels, visitor devices, operating systems, and browsers", verbose_name="Traffic Page Subtitle")
+    
+    analytics_conversions_page_heading = models.CharField(max_length=150, blank=True, default="Conversions & Goal Tracking", verbose_name="Conversions Page Heading")
+    analytics_conversions_page_subtext = models.CharField(max_length=255, blank=True, default="Monitor reader subscriptions, lead generation, contact submissions, and goal completions", verbose_name="Conversions Page Subtitle")
+    conversions_log_heading = models.CharField(max_length=150, blank=True, default="Recent Conversion Activity", verbose_name="Conversions Activity Table Heading")
+    conversions_log_subtext = models.CharField(max_length=255, blank=True, default="Latest visitor submissions and lead capture events", verbose_name="Conversions Activity Table Subtitle")
+    th_conversion_type_label = models.CharField(max_length=50, blank=True, default="Conversion Type", verbose_name="Table: Conversion Type Column")
+    th_conversion_email_label = models.CharField(max_length=50, blank=True, default="Visitor / Email", verbose_name="Table: Visitor/Email Column")
+    th_conversion_blog_label = models.CharField(max_length=50, blank=True, default="Blog Post", verbose_name="Table: Blog Post Column")
+    th_conversion_date_label = models.CharField(max_length=50, blank=True, default="Date & Time", verbose_name="Table: Date/Time Column")
+
+    # Additional Dynamic Analytics Fields
+    engagement_depth_heading = models.CharField(max_length=150, blank=True, default="Article Engagement Depth", verbose_name="Engagement Table Heading")
+    engagement_depth_subtext = models.CharField(max_length=255, blank=True, default="Reader time, scroll completion, and interaction per article", verbose_name="Engagement Table Subtitle")
+
+    traffic_top_channel_label = models.CharField(max_length=50, blank=True, default="Top Channel", verbose_name="Traffic: Top Channel Label")
+    traffic_top_channel_sub = models.CharField(max_length=100, blank=True, default="Leading traffic source", verbose_name="Traffic: Top Channel Subtitle")
+    traffic_top_device_label = models.CharField(max_length=50, blank=True, default="Top Device", verbose_name="Traffic: Top Device Label")
+    traffic_top_device_sub = models.CharField(max_length=100, blank=True, default="Most popular form factor", verbose_name="Traffic: Top Device Subtitle")
+    traffic_top_browser_label = models.CharField(max_length=50, blank=True, default="Top Browser", verbose_name="Traffic: Top Browser Label")
+    traffic_top_browser_sub = models.CharField(max_length=100, blank=True, default="Most used web browser", verbose_name="Traffic: Top Browser Subtitle")
+    traffic_os_label = models.CharField(max_length=50, blank=True, default="OPERATING SYSTEMS", verbose_name="Traffic: Operating Systems Label")
+
+    conversions_total_label = models.CharField(max_length=50, blank=True, default="Total Conversions", verbose_name="Conversions: Total KPI Label")
+    conversions_total_sub = models.CharField(max_length=100, blank=True, default="Recorded user actions & submissions", verbose_name="Conversions: Total KPI Subtitle")
+    conversions_rate_label = models.CharField(max_length=50, blank=True, default="Conversion Rate (CR%)", verbose_name="Conversions: Rate KPI Label")
+    conversions_rate_sub = models.CharField(max_length=100, blank=True, default="Conversions per unique visitor", verbose_name="Conversions: Rate KPI Subtitle")
+    conversions_unique_label = models.CharField(max_length=50, blank=True, default="Unique Visitors", verbose_name="Conversions: Unique KPI Label")
+    conversions_unique_sub = models.CharField(max_length=100, blank=True, default="Potential conversion audience", verbose_name="Conversions: Unique KPI Subtitle")
+
     # 11. SEO & Growth Page Configuration (Editable from Wagtail CMS)
     seo_page_title = models.CharField(max_length=150, blank=True, default="SEO & Growth", verbose_name="SEO Page Title")
     seo_page_subtext = models.CharField(max_length=255, blank=True, default="Manage XML sitemaps, robots.txt, 301 redirects, schema markup, and search visibility", verbose_name="SEO Page Subtitle")
@@ -743,6 +780,35 @@ class UserDashboardPage(Page):
             FieldPanel("engagement_pages_sub"),
             FieldPanel("engagement_bounce_sub"),
             FieldPanel("conversions_total_suffix"),
+            FieldPanel("analytics_overview_tab_label"),
+            FieldPanel("analytics_engagement_tab_label"),
+            FieldPanel("analytics_traffic_tab_label"),
+            FieldPanel("analytics_conversions_tab_label"),
+            FieldPanel("analytics_traffic_heading"),
+            FieldPanel("analytics_traffic_subtext"),
+            FieldPanel("analytics_conversions_page_heading"),
+            FieldPanel("analytics_conversions_page_subtext"),
+            FieldPanel("conversions_log_heading"),
+            FieldPanel("conversions_log_subtext"),
+            FieldPanel("th_conversion_type_label"),
+            FieldPanel("th_conversion_email_label"),
+            FieldPanel("th_conversion_blog_label"),
+            FieldPanel("th_conversion_date_label"),
+            FieldPanel("engagement_depth_heading"),
+            FieldPanel("engagement_depth_subtext"),
+            FieldPanel("traffic_top_channel_label"),
+            FieldPanel("traffic_top_channel_sub"),
+            FieldPanel("traffic_top_device_label"),
+            FieldPanel("traffic_top_device_sub"),
+            FieldPanel("traffic_top_browser_label"),
+            FieldPanel("traffic_top_browser_sub"),
+            FieldPanel("traffic_os_label"),
+            FieldPanel("conversions_total_label"),
+            FieldPanel("conversions_total_sub"),
+            FieldPanel("conversions_rate_label"),
+            FieldPanel("conversions_rate_sub"),
+            FieldPanel("conversions_unique_label"),
+            FieldPanel("conversions_unique_sub"),
         ], heading="Analytics & Reports Page Settings (Custom Headings & Labels)", classname="collapsible collapsed"),
         MultiFieldPanel([
             FieldPanel("seo_page_title"),

@@ -65,17 +65,17 @@
           {% elif link.submenus or link.direct_sublinks %}
             <div class="bp-nav-dropdown-wrap">
               <a href="javascript:void(0);" onclick="toggleSidebarMenu('sidebar-menu-{{ forloop.counter }}', 'chevron-menu-{{ forloop.counter }}')"
-                 class="bp-nav-item d-flex align-items-center justify-content-between {% if link.is_active or active_tab in title_lower %}active{% endif %}"
+                 class="bp-nav-item d-flex align-items-center justify-content-between {% if link.is_active or active_tab in title_lower or 'analytics' in title_lower and '/analytics' in request.path %}active{% endif %}"
                  style="cursor: pointer;">
                 <div class="d-flex align-items-center gap-2">
                   <i class="{% if link.icon %}{{ link.icon }}{% else %}fa-solid fa-folder{% endif %}"></i>
                   <span>{{ link.title }}</span>
                 </div>
-                <i class="fa-solid fa-chevron-down" id="chevron-menu-{{ forloop.counter }}" style="font-size: 0.68rem; transition: transform 0.25s ease;"></i>
+                <i class="fa-solid fa-chevron-down" id="chevron-menu-{{ forloop.counter }}" style="font-size: 0.68rem; transition: transform 0.25s ease; {% if active_tab in title_lower or 'analytics' in title_lower and '/analytics' in request.path %}transform: rotate(0deg);{% else %}transform: rotate(-90deg);{% endif %}"></i>
               </a>
 
               <!-- Level 1 Subnav Menu -->
-              <div id="sidebar-menu-{{ forloop.counter }}" class="bp-subnav" style="display:none;">
+              <div id="sidebar-menu-{{ forloop.counter }}" class="bp-subnav" style="{% if active_tab in title_lower or 'analytics' in title_lower and '/analytics' in request.path %}display:block;{% else %}display:none;{% endif %}">
                 
                 {# Dynamic Submenus #}
                 {% for sub in link.submenus %}

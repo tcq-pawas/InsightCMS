@@ -257,11 +257,13 @@
         </div>
       {% endif %}
 
-      <!-- 5 Top KPI Cards (Dynamic Values & Labels from Wagtail + Conversions) -->
+      <!-- Shared Analytics Sub-navigation Pills -->
+      {% include "blogs/blocks/analytics_subnav.html" %}
+
+      <!-- 4 Top Clean KPI Cards (Overview Summary) -->
       <div class="row g-2 mb-3">
-        
         <!-- Total Views -->
-        <div class="col-sm-6 col-lg">
+        <div class="col-sm-6 col-lg-3">
           <div class="analytics-card card-accent-blue">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_total_views_label|default:"Total Views" }}</span>
@@ -275,7 +277,7 @@
         </div>
 
         <!-- Unique Visitors -->
-        <div class="col-sm-6 col-lg">
+        <div class="col-sm-6 col-lg-3">
           <div class="analytics-card card-accent-purple">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_unique_visitors_label|default:"Unique Visitors" }}</span>
@@ -288,8 +290,8 @@
           </div>
         </div>
 
-        <!-- Avg Read Time (Engagement) -->
-        <div class="col-sm-6 col-lg">
+        <!-- Avg Read Time -->
+        <div class="col-sm-6 col-lg-3">
           <div class="analytics-card card-accent-emerald">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_avg_time_label|default:"Avg Time on Page" }}</span>
@@ -302,22 +304,8 @@
           </div>
         </div>
 
-        <!-- Published Articles -->
-        <div class="col-sm-6 col-lg">
-          <div class="analytics-card card-accent-amber">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_live_articles_label|default:"Live Articles" }}</span>
-              <div class="icon-badge-gradient badge-grad-amber">
-                <i class="fa-solid fa-newspaper"></i>
-              </div>
-            </div>
-            <div class="fs-3 fw-bold text-dark">{{ published_posts|default:0 }} <span class="fs-6 fw-normal text-muted">/ {{ total_posts|default:0 }}</span></div>
-            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.card_live_articles_sub|default:"Total articles published" }}</div>
-          </div>
-        </div>
-
         <!-- Conversions & Conversion Rate -->
-        <div class="col-sm-6 col-lg">
+        <div class="col-sm-6 col-lg-3">
           <div class="analytics-card card-accent-indigo">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.card_conversions_label|default:"Conversions" }}</span>
@@ -332,69 +320,6 @@
               </span>
             </div>
             <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.card_conversions_sub|default:"Subscribers & Leads" }}</div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Reader Engagement Metrics Bar (Time on Page, Scroll Depth, Pages per Visit, Bounce Rate) -->
-      <div class="card border-0 shadow-sm rounded-4 mb-3" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); border: 1px solid #e2e8f0 !important;">
-        <div class="card-body py-2 px-3">
-          <div class="d-flex align-items-center justify-content-between mb-2 pb-1 border-bottom border-light">
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1">
-                <i class="fa-solid fa-gauge-high me-1"></i> {{ dashboard_page.engagement_heading|default:"Engagement Metrics" }}
-              </span>
-              <small class="text-muted" style="font-size: 0.78rem;">{{ dashboard_page.engagement_subtext|default:"Visitor interaction, depth & session quality" }}</small>
-            </div>
-            <span class="text-muted small" style="font-size: 0.74rem;">{{ dashboard_page.engagement_cr_formula|default:"CR = (Conversions / Unique Visitors) × 100" }}</span>
-          </div>
-
-          <div class="row g-2 text-center">
-            <!-- Time on Page -->
-            <div class="col-6 col-md">
-              <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
-                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-clock text-primary me-1"></i> {{ dashboard_page.engagement_time_label|default:"Time on Page" }}</div>
-                <div class="fw-bold fs-5 text-dark">{{ avg_read_time_str|default:"0s" }}</div>
-                <small class="text-muted" style="font-size: 0.7rem;">{{ dashboard_page.engagement_time_sub|default:"Avg reading time" }}</small>
-              </div>
-            </div>
-
-            <!-- Scroll Depth -->
-            <div class="col-6 col-md">
-              <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
-                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-angles-down text-info me-1"></i> {{ dashboard_page.engagement_scroll_label|default:"Scroll Depth" }}</div>
-                <div class="fw-bold fs-5 text-dark">{{ avg_scroll_depth|default:0 }}%</div>
-                <small class="text-muted" style="font-size: 0.7rem;">{{ dashboard_page.engagement_scroll_sub|default:"Average content read" }}</small>
-              </div>
-            </div>
-
-            <!-- Interactions (Clicks) -->
-            <div class="col-6 col-md">
-              <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
-                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-arrow-pointer text-purple me-1" style="color: #9333ea;"></i> {{ dashboard_page.engagement_interactions_label|default:"Interactions" }}</div>
-                <div class="fw-bold fs-5 text-dark">{{ total_interactions|default:0 }}</div>
-                <small class="text-muted" style="font-size: 0.7rem;">{{ dashboard_page.engagement_interactions_sub|default:"Clicks & elements" }}</small>
-              </div>
-            </div>
-
-            <!-- Pages per Visit -->
-            <div class="col-6 col-md">
-              <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
-                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-layer-group text-success me-1"></i> {{ dashboard_page.engagement_pages_label|default:"Pages / Visit" }}</div>
-                <div class="fw-bold fs-5 text-dark">{{ pages_per_visit|default:1 }}</div>
-                <small class="text-muted" style="font-size: 0.7rem;">{{ dashboard_page.engagement_pages_sub|default:"Per visitor session" }}</small>
-              </div>
-            </div>
-
-            <!-- Bounce Rate -->
-            <div class="col-6 col-md">
-              <div class="p-2 rounded-3 bg-white border border-light shadow-xs">
-                <div class="text-muted small mb-1" style="font-size: 0.75rem;"><i class="fa-solid fa-arrow-right-from-bracket text-warning me-1"></i> {{ dashboard_page.engagement_bounce_label|default:"Bounce Rate" }}</div>
-                <div class="fw-bold fs-5 text-dark">{{ bounce_rate|default:0 }}%</div>
-                <small class="text-muted" style="font-size: 0.7rem;">{{ dashboard_page.engagement_bounce_sub|default:"Single-touch exits" }}</small>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -415,232 +340,91 @@
             <i class="fa-solid fa-chart-simple text-primary me-1"></i> {{ dashboard_page.chart_badge_text|default:"Blogger-Style Stats" }}
           </span>
         </div>
-        <div style="height: 200px; position: relative;">
+        <div style="height: 220px; position: relative;">
           <canvas id="analyticsChart"></canvas>
         </div>
       </div>
 
-      <!-- Bottom Grid: Left Popular Articles, Right Referrers & Tech -->
-      <div class="row g-3">
-
-        <!-- Left: Popular Articles -->
-        <div class="col-lg-8">
-          <div class="analytics-card card-accent-amber">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <div class="d-flex align-items-center gap-2">
-                <span class="icon-badge-gradient badge-grad-amber" style="width: 32px; height: 32px; font-size: 0.82rem;">
-                  <i class="fa-solid fa-fire"></i>
-                </span>
-                <div>
-                  <h5 class="fw-bold mb-0" style="font-size: 1rem;">{{ dashboard_page.popular_articles_heading|default:"Popular Articles" }}</h5>
-                  <small class="text-muted" style="font-size: 0.78rem;">{{ dashboard_page.popular_articles_subtext|default:"Top articles ranked by visitor pageviews" }}</small>
-                </div>
-              </div>
+      <!-- Popular Articles (Clean & Readable) -->
+      <div class="analytics-card card-accent-amber mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex align-items-center gap-2">
+            <span class="icon-badge-gradient badge-grad-amber" style="width: 32px; height: 32px; font-size: 0.82rem;">
+              <i class="fa-solid fa-fire"></i>
+            </span>
+            <div>
+              <h5 class="fw-bold mb-0" style="font-size: 1rem;">{{ dashboard_page.popular_articles_heading|default:"Popular Articles" }}</h5>
+              <small class="text-muted" style="font-size: 0.78rem;">{{ dashboard_page.popular_articles_subtext|default:"Top articles ranked by visitor pageviews" }}</small>
             </div>
-
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                  <tr style="font-size: 0.8rem; color: #64748b;">
-                    <th scope="col" style="width: 50px;">#</th>
-                    <th scope="col">{{ dashboard_page.th_article_label|default:"Article" }}</th>
-                    <th scope="col">{{ dashboard_page.th_author_label|default:"Author" }}</th>
-                    <th scope="col" class="text-center">{{ dashboard_page.th_views_label|default:"Views" }}</th>
-                    <th scope="col" class="text-center">{{ dashboard_page.th_leads_label|default:"Leads" }}</th>
-                    <th scope="col" class="text-end">{{ dashboard_page.th_action_label|default:"Action" }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for post in popular_blogs %}
-                    <tr>
-                      <td>
-                        <span class="rank-badge {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-default{% endif %}">
-                          {{ forloop.counter }}
-                        </span>
-                      </td>
-                      <td>
-                        <div class="d-flex flex-column">
-                          <span class="fw-semibold text-dark text-truncate" style="max-width: 320px;">{{ post.title }}</span>
-                          <small class="text-muted">
-                            {% if post.category %}<span class="badge me-1" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">{{ post.category.name }}</span>{% endif %}
-                            {{ post.first_published_at|default:post.latest_revision_created_at|date:"M d, Y" }}
-                          </small>
-                        </div>
-                      </td>
-                      <td>
-                        <span class="badge rounded-pill" style="background: #f1f5f9; color: #475569; font-weight: 500;">
-                          <i class="fa-solid fa-user-pen me-1 text-primary"></i>
-                          {% if post.author %}{{ post.author.get_full_name|default:post.author.username }}{% else %}Admin{% endif %}
-                        </span>
-                      </td>
-                      <td class="text-center">
-                        <span class="badge rounded-pill fw-bold px-3 py-1" style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;">
-                          {{ post.views_count|default:0 }}
-                        </span>
-                      </td>
-                      <td class="text-center">
-                        <span class="badge rounded-pill fw-bold px-3 py-1
-                          {% if post.conversions_count %}style="background: #dcfce7; color: #15803d; border: 1px solid #86efac;"{% else %}style="background: #f1f5f9; color: #64748b;"{% endif %}">
-                          {{ post.conversions_count|default:0 }}
-                        </span>
-                      </td>
-                      <td class="text-end">
-                        <a href="{{ post.url }}" target="_blank" class="btn btn-sm rounded-pill px-3" style="font-size: 0.75rem; background: #f8fafc; border: 1px solid #cbd5e1; color: #334155; font-weight: 600;">
-                          <i class="fa-solid fa-arrow-up-right-from-square me-1 text-primary"></i> {{ dashboard_page.btn_view_label|default:"View" }}
-                        </a>
-                      </td>
-                    </tr>
-                  {% empty %}
-                    <tr>
-                      <td colspan="6" class="text-center py-4 text-muted">
-                        <i class="fa-solid fa-chart-pie fa-2x mb-2 text-secondary opacity-50"></i>
-                        <div>{{ dashboard_page.no_views_text|default:"No blog views recorded yet for this period." }}</div>
-                      </td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-
           </div>
+          <a href="{% url 'dashboard_analytics_engagement' %}{% if time_range %}?range={{ time_range }}{% endif %}{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" class="btn btn-sm btn-light border rounded-pill px-3 py-1 text-primary fw-semibold" style="font-size: 0.78rem;">
+            View Detailed Engagement ›
+          </a>
         </div>
 
-        <!-- Right: Traffic Sources & Technology -->
-        <div class="col-lg-4">
-          
-          <!-- Referral Sources -->
-          <div class="analytics-card card-accent-emerald mb-3">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <span class="icon-badge-gradient badge-grad-emerald" style="width: 32px; height: 32px; font-size: 0.82rem;">
-                <i class="fa-solid fa-route"></i>
-              </span>
-              <div>
-                <h5 class="fw-bold mb-0" style="font-size: 1rem;">{{ dashboard_page.traffic_sources_heading|default:"Traffic Sources" }}</h5>
-                <small class="text-muted d-block" style="font-size: 0.78rem;">{{ dashboard_page.traffic_sources_subtext|default:"Where your visitors came from" }}</small>
-              </div>
-            </div>
-
-            {% if referrers_list %}
-              <div class="d-flex flex-column gap-3 mt-3">
-                {% for ref in referrers_list %}
-                  <div>
-                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.82rem;">
-                      <span class="fw-semibold text-dark">
-                        {% if 'Google' in ref.referrer_domain %}<i class="fa-brands fa-google text-danger me-1"></i>
-                        {% elif 'Twitter' in ref.referrer_domain %}<i class="fa-brands fa-x-twitter text-dark me-1"></i>
-                        {% elif 'Facebook' in ref.referrer_domain %}<i class="fa-brands fa-facebook text-primary me-1"></i>
-                        {% elif 'LinkedIn' in ref.referrer_domain %}<i class="fa-brands fa-linkedin text-info me-1"></i>
-                        {% elif 'Direct' in ref.referrer_domain %}<i class="fa-solid fa-link text-success me-1"></i>
-                        {% else %}<i class="fa-solid fa-globe text-secondary me-1"></i>{% endif %}
-                        {{ ref.referrer_domain }}
-                      </span>
-                      <span class="badge rounded-pill" style="background: #f1f5f9; color: #334155;">{{ ref.count }} <small class="text-muted">({{ ref.percentage }}%)</small></span>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr style="font-size: 0.8rem; color: #64748b;">
+                <th scope="col" style="width: 50px;">#</th>
+                <th scope="col">{{ dashboard_page.th_article_label|default:"Article" }}</th>
+                <th scope="col">{{ dashboard_page.th_author_label|default:"Author" }}</th>
+                <th scope="col" class="text-center">{{ dashboard_page.th_views_label|default:"Views" }}</th>
+                <th scope="col" class="text-center">{{ dashboard_page.th_leads_label|default:"Leads" }}</th>
+                <th scope="col" class="text-end">{{ dashboard_page.th_action_label|default:"Action" }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for post in popular_blogs|slice:":6" %}
+                <tr>
+                  <td>
+                    <span class="rank-badge {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-default{% endif %}">
+                      {{ forloop.counter }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="d-flex flex-column">
+                      <span class="fw-semibold text-dark text-truncate" style="max-width: 380px;">{{ post.title }}</span>
+                      <small class="text-muted">
+                        {% if post.category %}<span class="badge me-1" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">{{ post.category.name }}</span>{% endif %}
+                        {{ post.first_published_at|default:post.latest_revision_created_at|date:"M d, Y" }}
+                      </small>
                     </div>
-                    <div class="progress" style="height: 6px; border-radius: 999px;">
-                      <div class="progress-bar {% if 'Google' in ref.referrer_domain %}bg-danger{% elif 'Twitter' in ref.referrer_domain %}bg-dark{% elif 'Facebook' in ref.referrer_domain %}bg-primary{% elif 'LinkedIn' in ref.referrer_domain %}bg-info{% elif 'Direct' in ref.referrer_domain %}bg-success{% else %}bg-primary{% endif %}" role="progressbar" style="width: {{ ref.percentage }}%; border-radius: 999px;"></div>
-                    </div>
-                  </div>
-                {% endfor %}
-              </div>
-            {% else %}
-              <div class="text-center py-3 text-muted" style="font-size: 0.82rem;">
-                {{ dashboard_page.no_referrer_text|default:"No referrer data yet. Visits will appear here." }}
-              </div>
-            {% endif %}
-          </div>
-
-          <!-- Devices Breakdown -->
-          <div class="analytics-card card-accent-purple">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <span class="icon-badge-gradient badge-grad-purple" style="width: 32px; height: 32px; font-size: 0.82rem;">
-                <i class="fa-solid fa-mobile-screen"></i>
-              </span>
-              <div>
-                <h5 class="fw-bold mb-0" style="font-size: 1rem;">{{ dashboard_page.devices_heading|default:"Devices & Browsers" }}</h5>
-                <small class="text-muted d-block" style="font-size: 0.78rem;">{{ dashboard_page.devices_subtext|default:"Visitor hardware & software" }}</small>
-              </div>
-            </div>
-
-            <div class="mb-3 mt-3">
-              <label class="form-label text-muted fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">{{ dashboard_page.device_usage_label|default:"DEVICE USAGE" }}</label>
-              {% for dev in devices_list %}
-                <div class="d-flex justify-content-between align-items-center mb-2" style="font-size: 0.82rem;">
-                  <span>
-                    {% if dev.device_type == 'Mobile' %}<i class="fa-solid fa-mobile-screen-button text-purple me-1" style="color: #9333ea;"></i>
-                    {% elif dev.device_type == 'Tablet' %}<i class="fa-solid fa-tablet-screen-button text-info me-1" style="color: #0284c7;"></i>
-                    {% else %}<i class="fa-solid fa-desktop text-primary me-1" style="color: #2563eb;"></i>{% endif %}
-                    <span class="fw-medium text-dark">{{ dev.device_type }}</span>
-                  </span>
-                  <span class="badge rounded-pill px-2 py-1" style="background: #f3e8ff; color: #7e22ce; font-weight: 600;">{{ dev.percentage }}%</span>
-                </div>
+                  </td>
+                  <td>
+                    <span class="badge rounded-pill" style="background: #f1f5f9; color: #475569; font-weight: 500;">
+                      <i class="fa-solid fa-user-pen me-1 text-primary"></i>
+                      {% if post.author %}{{ post.author.get_full_name|default:post.author.username }}{% else %}Admin{% endif %}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge rounded-pill fw-bold px-3 py-1" style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;">
+                      {{ post.views_count|default:0 }}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge rounded-pill fw-bold px-3 py-1
+                      {% if post.conversions_count %}style="background: #dcfce7; color: #15803d; border: 1px solid #86efac;"{% else %}style="background: #f1f5f9; color: #64748b;"{% endif %}">
+                      {{ post.conversions_count|default:0 }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <a href="{{ post.url }}" target="_blank" class="btn btn-sm rounded-pill px-3" style="font-size: 0.75rem; background: #f8fafc; border: 1px solid #cbd5e1; color: #334155; font-weight: 600;">
+                      <i class="fa-solid fa-arrow-up-right-from-square me-1 text-primary"></i> {{ dashboard_page.btn_view_label|default:"View" }}
+                    </a>
+                  </td>
+                </tr>
               {% empty %}
-                <span class="badge rounded-pill px-2 py-1" style="background: #eff6ff; color: #1d4ed8;">Desktop (100%)</span>
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-muted">
+                    <i class="fa-solid fa-chart-pie fa-2x mb-2 text-secondary opacity-50"></i>
+                    <div>{{ dashboard_page.no_views_text|default:"No blog views recorded yet for this period." }}</div>
+                  </td>
+                </tr>
               {% endfor %}
-            </div>
-
-            <hr class="my-3 opacity-25">
-
-            <div>
-              <label class="form-label text-muted fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">{{ dashboard_page.top_browsers_label|default:"TOP BROWSERS" }}</label>
-              <div class="d-flex flex-wrap gap-2">
-                {% for b in browsers_list %}
-                  <span class="badge border px-3 py-1 rounded-pill" style="font-size: 0.78rem; background: #f8fafc; border-color: #cbd5e1 !important; color: #1e293b; font-weight: 600;">
-                    <i class="fa-solid fa-globe me-1 text-primary"></i> {{ b.browser }}: <span class="text-primary">{{ b.count }}</span>
-                  </span>
-                {% empty %}
-                  <span class="badge border px-2 py-1 rounded-pill" style="background: #f8fafc; color: #64748b;">Chrome, Safari</span>
-                {% endfor %}
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Conversions Breakdown by Type Card -->
-          <div class="analytics-card card-accent-indigo mt-3">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <div class="d-flex align-items-center gap-2">
-                <span class="icon-badge-gradient badge-grad-indigo" style="width: 32px; height: 32px; font-size: 0.82rem;">
-                  <i class="fa-solid fa-bullseye"></i>
-                </span>
-                <div>
-                  <h5 class="fw-bold mb-0" style="font-size: 1rem;">{{ dashboard_page.conversions_breakdown_heading|default:"Conversions Breakdown" }}</h5>
-                  <small class="text-muted d-block" style="font-size: 0.78rem;">{{ dashboard_page.conversions_breakdown_subtext|default:"Actions completed by visitors" }}</small>
-                </div>
-              </div>
-              <span class="badge rounded-pill fw-bold" style="background:#e0e7ff; color:#4338ca;">{{ total_conversions }} {{ dashboard_page.conversions_total_suffix|default:"Total" }}</span>
-            </div>
-
-            {% if conversion_breakdown %}
-              <div class="d-flex flex-column gap-2 mt-3">
-                {% for cb in conversion_breakdown %}
-                  <div>
-                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.82rem;">
-                      <span class="fw-semibold text-dark">
-                        {% if cb.type_key == 'newsletter' %}<i class="fa-regular fa-envelope text-primary me-1"></i>
-                        {% elif cb.type_key == 'lead' %}<i class="fa-solid fa-user-plus text-success me-1"></i>
-                        {% elif cb.type_key == 'cta_click' %}<i class="fa-solid fa-arrow-pointer text-info me-1"></i>
-                        {% elif cb.type_key == 'contact_form' %}<i class="fa-solid fa-message text-warning me-1"></i>
-                        {% elif cb.type_key == 'registration' %}<i class="fa-solid fa-id-card text-purple me-1"></i>
-                        {% elif cb.type_key == 'purchase' %}<i class="fa-solid fa-cart-shopping text-danger me-1"></i>
-                        {% else %}<i class="fa-solid fa-check text-secondary me-1"></i>{% endif %}
-                        {{ cb.label }}
-                      </span>
-                      <span class="badge rounded-pill" style="background: #f1f5f9; color: #334155;">{{ cb.count }} <small class="text-muted">({{ cb.percentage }}%)</small></span>
-                    </div>
-                    <div class="progress" style="height: 6px; border-radius: 999px;">
-                      <div class="progress-bar {% if cb.type_key == 'newsletter' %}bg-primary{% elif cb.type_key == 'lead' %}bg-success{% elif cb.type_key == 'cta_click' %}bg-info{% elif cb.type_key == 'contact_form' %}bg-warning{% else %}bg-indigo{% endif %}" role="progressbar" style="width: {{ cb.percentage }}%; border-radius: 999px;"></div>
-                    </div>
-                  </div>
-                {% endfor %}
-              </div>
-            {% else %}
-              <div class="text-center py-3 text-muted" style="font-size: 0.82rem;">
-                <i class="fa-solid fa-inbox fa-2x mb-2 text-secondary opacity-50 d-block"></i>
-                {{ dashboard_page.no_conversions_text|default:"No conversions recorded for this period yet." }}
-              </div>
-            {% endif %}
-          </div>
-
+            </tbody>
+          </table>
+        </div>
       </div>
 
     </main>

@@ -1,0 +1,35 @@
+<!-- Shared Analytics Sub-navigation Pills -->
+<div class="d-flex align-items-center gap-2 mb-3 pb-1 border-bottom border-light overflow-x-auto" style="white-space: nowrap;">
+  <a href="{% url 'dashboard_analytics' %}{% if time_range %}?range={{ time_range }}{% endif %}{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" 
+     class="btn btn-sm rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-2 {% if analytics_subtab == 'overview' %}btn-primary text-white shadow-sm{% else %}btn-white border text-secondary bg-white shadow-xs{% endif %}"
+     style="font-size: 0.82rem; transition: all 0.2s ease;">
+    <i class="fa-solid fa-chart-line"></i>
+    <span>{{ dashboard_page.analytics_overview_tab_label|default:"Overview" }}</span>
+  </a>
+
+  <a href="{% url 'dashboard_analytics_engagement' %}{% if time_range %}?range={{ time_range }}{% endif %}{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" 
+     class="btn btn-sm rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-2 {% if analytics_subtab == 'engagement' %}btn-primary text-white shadow-sm{% else %}btn-white border text-secondary bg-white shadow-xs{% endif %}"
+     style="font-size: 0.82rem; transition: all 0.2s ease;">
+    <i class="fa-solid fa-gauge-high"></i>
+    <span>{{ dashboard_page.analytics_engagement_tab_label|default:"Engagement" }}</span>
+  </a>
+
+  <a href="{% url 'dashboard_analytics_traffic' %}{% if time_range %}?range={{ time_range }}{% endif %}{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" 
+     class="btn btn-sm rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-2 {% if analytics_subtab == 'traffic' %}btn-primary text-white shadow-sm{% else %}btn-white border text-secondary bg-white shadow-xs{% endif %}"
+     style="font-size: 0.82rem; transition: all 0.2s ease;">
+    <i class="fa-solid fa-route"></i>
+    <span>{{ dashboard_page.analytics_traffic_tab_label|default:"Traffic & Tech" }}</span>
+  </a>
+
+  <a href="{% url 'dashboard_analytics_conversions' %}{% if time_range %}?range={{ time_range }}{% endif %}{% if selected_blog_id %}&blog_id={{ selected_blog_id }}{% endif %}" 
+     class="btn btn-sm rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-2 {% if analytics_subtab == 'conversions' %}btn-primary text-white shadow-sm{% else %}btn-white border text-secondary bg-white shadow-xs{% endif %}"
+     style="font-size: 0.82rem; transition: all 0.2s ease;">
+    <i class="fa-solid fa-bullseye"></i>
+    <span>{{ dashboard_page.analytics_conversions_tab_label|default:"Conversions" }}</span>
+    {% if total_conversions %}
+      <span class="badge rounded-pill {% if analytics_subtab == 'conversions' %}bg-white text-primary{% else %}bg-primary bg-opacity-10 text-primary{% endif %} px-2 py-0" style="font-size:0.7rem;">
+        {{ total_conversions }}
+      </span>
+    {% endif %}
+  </a>
+</div>

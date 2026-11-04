@@ -41,6 +41,9 @@ from Apps.blogs.views import (
     dashboard_blog_reject,
     dashboard_website_integration,
     dashboard_analytics_view,
+    dashboard_engagement_view,
+    dashboard_traffic_view,
+    dashboard_conversions_view,
     dashboard_seo_view,
     dashboard_redirect_add,
     blog_conversion_submit,
@@ -72,8 +75,11 @@ urlpatterns = [
         path('blogs/<int:page_id>/delete/', dashboard_blog_delete, name='dashboard_blog_delete'),
         path('blogs/<int:page_id>/approve/', dashboard_blog_approve, name='dashboard_blog_approve'),
         path('blogs/<int:page_id>/reject/', dashboard_blog_reject, name='dashboard_blog_reject'),
-        # Analytics & Reports
+        # Analytics & Reports (Modularized Sub-pages)
         path('analytics/', dashboard_analytics_view, name='dashboard_analytics'),
+        path('analytics/engagement/', dashboard_engagement_view, name='dashboard_analytics_engagement'),
+        path('analytics/traffic/', dashboard_traffic_view, name='dashboard_analytics_traffic'),
+        path('analytics/conversions/', dashboard_conversions_view, name='dashboard_analytics_conversions'),
         # SEO & Growth Management
         path('seo/', dashboard_seo_view, name='dashboard_seo'),
         path('seo/redirects/add/', dashboard_redirect_add, name='dashboard_redirect_add'),
