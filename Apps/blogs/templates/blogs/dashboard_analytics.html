@@ -403,8 +403,7 @@
                     </span>
                   </td>
                   <td class="text-center">
-                    <span class="badge rounded-pill fw-bold px-3 py-1
-                      {% if post.conversions_count %}style="background: #dcfce7; color: #15803d; border: 1px solid #86efac;"{% else %}style="background: #f1f5f9; color: #64748b;"{% endif %}">
+                    <span class="badge rounded-pill fw-bold px-3 py-1" {% if post.conversions_count %}style="background: #dcfce7; color: #15803d; border: 1px solid #86efac;"{% else %}style="background: #f1f5f9; color: #64748b;"{% endif %}>
                       {{ post.conversions_count|default:0 }}
                     </span>
                   </td>

@@ -161,75 +161,122 @@
       <!-- Shared Analytics Sub-navigation Pills -->
       {% include "blogs/blocks/analytics_subnav.html" %}
 
-      <!-- 5 Engagement Cards -->
-      <div class="row g-2 mb-3">
-        <!-- Time on Page -->
-        <div class="col-sm-6 col-lg">
-          <div class="analytics-card card-accent-blue">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.engagement_time_label|default:"Time on Page" }}</span>
-              <div class="icon-badge-gradient badge-grad-blue">
-                <i class="fa-solid fa-clock"></i>
+      <!-- Visual Engagement Feature Section (Unique UI Layout) -->
+      <div class="row g-3 mb-3">
+        <!-- Reading Quality & Attention Gauge -->
+        <div class="col-lg-4">
+          <div class="analytics-card card-accent-blue h-100 d-flex flex-column justify-content-between">
+            <div>
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="icon-badge-gradient badge-grad-blue" style="width: 32px; height: 32px; font-size: 0.82rem;">
+                    <i class="fa-solid fa-stopwatch"></i>
+                  </span>
+                  <div>
+                    <h6 class="fw-bold mb-0" style="font-size: 0.95rem;">{{ dashboard_page.engagement_reading_quality_heading|default:"Reading Time & Quality" }}</h6>
+                    <small class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.engagement_reading_quality_subtext|default:"Active reader session attention" }}</small>
+                  </div>
+                </div>
+                <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1" style="font-size: 0.72rem;">{{ dashboard_page.engagement_live_gauge_badge|default:"Live Gauge" }}</span>
+              </div>
+
+              <!-- Big Reading Time Hero Badge -->
+              <div class="p-3 rounded-3 text-center mb-3" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe;">
+                <div class="text-primary fw-bold display-6 mb-0">{{ avg_read_time_str|default:"0s" }}</div>
+                <div class="text-secondary fw-semibold small mt-1">{{ dashboard_page.engagement_reading_hero_label|default:"Average Attention Time / Reader" }}</div>
+              </div>
+
+              <!-- Mini Stats Grid -->
+              <div class="row g-2 text-center">
+                <div class="col-6">
+                  <div class="p-2 rounded-2 bg-light border border-light">
+                    <small class="text-muted d-block" style="font-size: 0.72rem;">{{ dashboard_page.engagement_pages_label|default:"Pages / Visit" }}</small>
+                    <span class="fw-bold fs-6 text-dark">{{ pages_per_visit|default:1 }}</span>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="p-2 rounded-2 bg-light border border-light">
+                    <small class="text-muted d-block" style="font-size: 0.72rem;">{{ dashboard_page.engagement_interactions_label|default:"Interactions" }}</small>
+                    <span class="fw-bold fs-6 text-dark">{{ total_interactions|default:0 }}</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="fs-3 fw-bold text-dark">{{ avg_read_time_str|default:"0s" }}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.engagement_time_sub|default:"Avg reading time" }}</div>
+
+            <div class="mt-3 pt-2 border-top border-light d-flex justify-content-between align-items-center" style="font-size: 0.75rem;">
+              <span class="text-muted"><i class="fa-solid fa-circle-check text-success me-1"></i> {{ dashboard_page.engagement_readability_score_label|default:"Content Readability Score" }}</span>
+              <span class="fw-bold text-success">{% if avg_scroll_depth >= 50 %}High{% else %}Moderate{% endif %}</span>
+            </div>
           </div>
         </div>
 
-        <!-- Scroll Depth -->
-        <div class="col-sm-6 col-lg">
-          <div class="analytics-card card-accent-emerald">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.engagement_scroll_label|default:"Scroll Depth" }}</span>
-              <div class="icon-badge-gradient badge-grad-emerald">
-                <i class="fa-solid fa-angles-down"></i>
+        <!-- Scroll Completion Funnel (Visual Horizontal Funnel Bars) -->
+        <div class="col-lg-5">
+          <div class="analytics-card card-accent-emerald h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div class="d-flex align-items-center gap-2">
+                <span class="icon-badge-gradient badge-grad-emerald" style="width: 32px; height: 32px; font-size: 0.82rem;">
+                  <i class="fa-solid fa-filter"></i>
+                </span>
+                <div>
+                  <h6 class="fw-bold mb-0" style="font-size: 0.95rem;">{{ dashboard_page.engagement_funnel_heading|default:"Article Scroll Depth Funnel" }}</h6>
+                  <small class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.engagement_funnel_subtext|default:"Reader drop-off as they scroll down" }}</small>
+                </div>
               </div>
+              <span class="badge rounded-pill bg-success bg-opacity-10 text-success fw-bold px-2 py-1" style="font-size: 0.75rem;">
+                Avg {{ avg_scroll_depth|default:0 }}% {{ dashboard_page.engagement_funnel_badge_suffix|default:"Read" }}
+              </span>
             </div>
-            <div class="fs-3 fw-bold text-dark">{{ avg_scroll_depth|default:0 }}%</div>
-            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.engagement_scroll_sub|default:"Average content read" }}</div>
+
+            <!-- Funnel Bars -->
+            <div class="d-flex flex-column gap-2 mt-2">
+              {% for f in scroll_funnel %}
+                <div>
+                  <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.8rem;">
+                    <span class="fw-semibold text-secondary">
+                      <i class="fa-solid fa-angles-down me-1" style="color: {{ f.color }};"></i> {{ f.label }}
+                    </span>
+                    <span class="fw-bold text-dark">{{ f.count }} reads <small class="text-muted">({{ f.pct }}%)</small></span>
+                  </div>
+                  <div class="progress" style="height: 9px; border-radius: 999px; background-color: #f1f5f9;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" 
+                         style="width: {{ f.pct }}%; background-color: {{ f.color }}; border-radius: 999px;"></div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
           </div>
         </div>
 
-        <!-- Interactions -->
-        <div class="col-sm-6 col-lg">
-          <div class="analytics-card card-accent-purple">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.engagement_interactions_label|default:"Interactions" }}</span>
-              <div class="icon-badge-gradient badge-grad-purple">
-                <i class="fa-solid fa-arrow-pointer"></i>
+        <!-- Reader Retention vs Bounce Card -->
+        <div class="col-lg-3">
+          <div class="analytics-card card-accent-indigo h-100 d-flex flex-column justify-content-between">
+            <div>
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="icon-badge-gradient badge-grad-indigo" style="width: 32px; height: 32px; font-size: 0.82rem;">
+                  <i class="fa-solid fa-users-viewfinder"></i>
+                </span>
+                <div>
+                  <h6 class="fw-bold mb-0" style="font-size: 0.95rem;">{{ dashboard_page.engagement_retention_heading|default:"Reader Retention" }}</h6>
+                  <small class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.engagement_retention_subtext|default:"Single vs multi-action visits" }}</small>
+                </div>
               </div>
-            </div>
-            <div class="fs-3 fw-bold text-dark">{{ total_interactions|default:0 }}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.engagement_interactions_sub|default:"Clicks & elements" }}</div>
-          </div>
-        </div>
 
-        <!-- Pages per Visit -->
-        <div class="col-sm-6 col-lg">
-          <div class="analytics-card card-accent-amber">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.engagement_pages_label|default:"Pages / Visit" }}</span>
-              <div class="icon-badge-gradient badge-grad-amber">
-                <i class="fa-solid fa-layer-group"></i>
+              <!-- Retention Ring Card -->
+              <div class="p-3 rounded-3 text-center mb-2" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                <div class="text-indigo fw-bold display-6 mb-0" style="color: #4f46e5;">{{ retention_rate|default:0 }}%</div>
+                <div class="text-muted small fw-medium mt-1">{{ dashboard_page.engagement_retention_rate_label|default:"Reader Retention Rate" }}</div>
               </div>
-            </div>
-            <div class="fs-3 fw-bold text-dark">{{ pages_per_visit|default:1 }}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.engagement_pages_sub|default:"Per visitor session" }}</div>
-          </div>
-        </div>
 
-        <!-- Bounce Rate -->
-        <div class="col-sm-6 col-lg">
-          <div class="analytics-card card-accent-indigo">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-muted fw-semibold" style="font-size: 0.85rem;">{{ dashboard_page.engagement_bounce_label|default:"Bounce Rate" }}</span>
-              <div class="icon-badge-gradient badge-grad-indigo">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              <div class="d-flex justify-content-between align-items-center p-2 rounded-2 mt-2" style="background:#fef2f2; border: 1px solid #fee2e2;">
+                <span class="small fw-semibold text-danger"><i class="fa-solid fa-arrow-right-from-bracket me-1"></i> {{ dashboard_page.engagement_bounce_label|default:"Bounce Rate" }}</span>
+                <span class="badge rounded-pill bg-danger text-white">{{ bounce_rate|default:0 }}%</span>
               </div>
             </div>
-            <div class="fs-3 fw-bold text-dark">{{ bounce_rate|default:0 }}%</div>
-            <div class="text-muted" style="font-size: 0.75rem;">{{ dashboard_page.engagement_bounce_sub|default:"Single-touch exits" }}</div>
+
+            <small class="text-muted d-block mt-3" style="font-size: 0.72rem; line-height: 1.3;">
+              <i class="fa-solid fa-info-circle text-primary me-1"></i> {{ dashboard_page.engagement_retention_tip|default:"Lower bounce rate indicates readers find the content highly relevant." }}
+            </small>
           </div>
         </div>
       </div>

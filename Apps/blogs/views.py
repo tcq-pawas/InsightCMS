@@ -1139,6 +1139,17 @@ def _get_analytics_base_data(request):
 
     total_conversions = filtered_conversions.count()
     conversion_rate = round((total_conversions / unique_visitors * 100), 1) if unique_visitors > 0 else 0
+    avg_daily_leads = round(total_conversions / max(days_count, 1), 1) if total_conversions > 0 else 0
+
+    # Best Converting Blog Post
+    best_blog_agg = filtered_conversions.values('blog__title', 'blog__id').annotate(
+        conv_cnt=Count('id')
+    ).order_by('-conv_cnt').first()
+    best_converting_blog = {
+        'title': best_blog_agg['blog__title'] if best_blog_agg else 'None',
+        'count': best_blog_agg['conv_cnt'] if best_blog_agg else 0,
+        'share': round(best_blog_agg['conv_cnt'] / total_conversions * 100, 1) if (best_blog_agg and total_conversions > 0) else 0
+    } if best_blog_agg else None
 
     # Engagement Metrics
     engagement_data = filtered_views.aggregate(
@@ -1160,6 +1171,20 @@ def _get_analytics_base_data(request):
     bounce_count = filtered_views.filter(is_bounce=True).count()
     bounce_rate = round((bounce_count / total_views * 100), 1) if total_views > 0 else 0
     pages_per_visit = round((total_views / unique_visitors), 1) if unique_visitors > 0 else 0
+    retention_rate = round(100 - bounce_rate, 1)
+
+    # Scroll Depth Distribution Funnel
+    scroll_25 = filtered_views.filter(scroll_depth__gte=25).count()
+    scroll_50 = filtered_views.filter(scroll_depth__gte=50).count()
+    scroll_75 = filtered_views.filter(scroll_depth__gte=75).count()
+    scroll_100 = filtered_views.filter(scroll_depth__gte=95).count()
+
+    scroll_funnel = [
+        {'label': 'Top / Intro (25%+)', 'count': scroll_25, 'pct': round(scroll_25 / total_views * 100, 1) if total_views > 0 else 0, 'color': '#3b82f6'},
+        {'label': 'Mid Section (50%+)', 'count': scroll_50, 'pct': round(scroll_50 / total_views * 100, 1) if total_views > 0 else 0, 'color': '#06b6d4'},
+        {'label': 'Deep Read (75%+)', 'count': scroll_75, 'pct': round(scroll_75 / total_views * 100, 1) if total_views > 0 else 0, 'color': '#8b5cf6'},
+        {'label': 'Completed (100%)', 'count': scroll_100, 'pct': round(scroll_100 / total_views * 100, 1) if total_views > 0 else 0, 'color': '#10b981'},
+    ]
 
     # Conversion Breakdown by Type
     type_labels = {
@@ -1202,8 +1227,8 @@ def _get_analytics_base_data(request):
 
     # Popular Articles ranked table
     popular_blogs = list(blogs_qs.filter(live=True).annotate(
-        views_count=Count('page_views'),
-        conversions_count=Count('conversions'),
+        views_count=Count('page_views', distinct=True),
+        conversions_count=Count('conversions', distinct=True),
         avg_scroll=Avg('page_views__scroll_depth'),
         avg_time=Avg('page_views__time_on_page')
     ).order_by('-views_count')[:15])
@@ -1316,13 +1341,17 @@ def _get_analytics_base_data(request):
         'avg_views_per_post': avg_views_per_post,
         'total_conversions': total_conversions,
         'conversion_rate': conversion_rate,
+        'avg_daily_leads': avg_daily_leads,
+        'best_converting_blog': best_converting_blog,
         'conversion_breakdown': conversion_breakdown,
         'recent_conversions': recent_conversions,
         'avg_read_time_str': avg_read_time_str,
         'avg_scroll_depth': avg_scroll_depth,
         'total_interactions': total_interactions,
         'bounce_rate': bounce_rate,
+        'retention_rate': retention_rate,
         'pages_per_visit': pages_per_visit,
+        'scroll_funnel': scroll_funnel,
         'chart_labels': chart_labels,
         'chart_views': chart_views,
         'popular_blogs': popular_blogs,

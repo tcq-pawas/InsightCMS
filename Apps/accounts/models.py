@@ -669,6 +669,22 @@ class UserDashboardPage(Page):
     engagement_depth_heading = models.CharField(max_length=150, blank=True, default="Article Engagement Depth", verbose_name="Engagement Table Heading")
     engagement_depth_subtext = models.CharField(max_length=255, blank=True, default="Reader time, scroll completion, and interaction per article", verbose_name="Engagement Table Subtitle")
 
+    # Engagement Studio Layout Fields
+    engagement_reading_quality_heading = models.CharField(max_length=100, blank=True, default="Reading Time & Quality", verbose_name="Engagement: Reading Quality Heading")
+    engagement_reading_quality_subtext = models.CharField(max_length=200, blank=True, default="Active reader session attention", verbose_name="Engagement: Reading Quality Subtitle")
+    engagement_live_gauge_badge = models.CharField(max_length=50, blank=True, default="Live Gauge", verbose_name="Engagement: Live Gauge Badge")
+    engagement_reading_hero_label = models.CharField(max_length=100, blank=True, default="Average Attention Time / Reader", verbose_name="Engagement: Reading Hero Label")
+    engagement_readability_score_label = models.CharField(max_length=100, blank=True, default="Content Readability Score", verbose_name="Engagement: Readability Score Label")
+
+    engagement_funnel_heading = models.CharField(max_length=100, blank=True, default="Article Scroll Depth Funnel", verbose_name="Engagement: Scroll Funnel Heading")
+    engagement_funnel_subtext = models.CharField(max_length=200, blank=True, default="Reader drop-off as they scroll down", verbose_name="Engagement: Scroll Funnel Subtitle")
+    engagement_funnel_badge_suffix = models.CharField(max_length=50, blank=True, default="Read", verbose_name="Engagement: Funnel Badge Suffix")
+
+    engagement_retention_heading = models.CharField(max_length=100, blank=True, default="Reader Retention", verbose_name="Engagement: Retention Heading")
+    engagement_retention_subtext = models.CharField(max_length=200, blank=True, default="Single vs multi-action visits", verbose_name="Engagement: Retention Subtitle")
+    engagement_retention_rate_label = models.CharField(max_length=100, blank=True, default="Reader Retention Rate", verbose_name="Engagement: Retention Rate Label")
+    engagement_retention_tip = models.CharField(max_length=255, blank=True, default="Lower bounce rate indicates readers find the content highly relevant.", verbose_name="Engagement: Retention Tip")
+
     traffic_top_channel_label = models.CharField(max_length=50, blank=True, default="Top Channel", verbose_name="Traffic: Top Channel Label")
     traffic_top_channel_sub = models.CharField(max_length=100, blank=True, default="Leading traffic source", verbose_name="Traffic: Top Channel Subtitle")
     traffic_top_device_label = models.CharField(max_length=50, blank=True, default="Top Device", verbose_name="Traffic: Top Device Label")
@@ -683,6 +699,17 @@ class UserDashboardPage(Page):
     conversions_rate_sub = models.CharField(max_length=100, blank=True, default="Conversions per unique visitor", verbose_name="Conversions: Rate KPI Subtitle")
     conversions_unique_label = models.CharField(max_length=50, blank=True, default="Unique Visitors", verbose_name="Conversions: Unique KPI Label")
     conversions_unique_sub = models.CharField(max_length=100, blank=True, default="Potential conversion audience", verbose_name="Conversions: Unique KPI Subtitle")
+
+    # Conversions Pipeline Layout Fields
+    conversions_pipeline_heading = models.CharField(max_length=100, blank=True, default="Audience Conversion Pipeline", verbose_name="Conversions: Pipeline Heading")
+    conversions_pipeline_subtext = models.CharField(max_length=200, blank=True, default="From visitor traffic to captured business leads", verbose_name="Conversions: Pipeline Subtitle")
+    conversions_pipeline_step1_label = models.CharField(max_length=50, blank=True, default="1. Total Page Views", verbose_name="Pipeline: Step 1 Title")
+    conversions_pipeline_step1_sub = models.CharField(max_length=50, blank=True, default="Content Reach", verbose_name="Pipeline: Step 1 Subtitle")
+    conversions_pipeline_step2_label = models.CharField(max_length=50, blank=True, default="2. Unique Visitors", verbose_name="Pipeline: Step 2 Title")
+    conversions_pipeline_step2_sub = models.CharField(max_length=50, blank=True, default="Distinct Audience", verbose_name="Pipeline: Step 2 Subtitle")
+    conversions_pipeline_step3_label = models.CharField(max_length=50, blank=True, default="3. Captured Conversions", verbose_name="Pipeline: Step 3 Title")
+    conversions_pipeline_step3_suffix = models.CharField(max_length=30, blank=True, default="Leads", verbose_name="Pipeline: Step 3 Suffix")
+    conversions_pipeline_step3_sub = models.CharField(max_length=50, blank=True, default="Success Rate", verbose_name="Pipeline: Step 3 Subtitle")
 
     # 11. SEO & Growth Page Configuration (Editable from Wagtail CMS)
     seo_page_title = models.CharField(max_length=150, blank=True, default="SEO & Growth", verbose_name="SEO Page Title")
@@ -796,6 +823,18 @@ class UserDashboardPage(Page):
             FieldPanel("th_conversion_date_label"),
             FieldPanel("engagement_depth_heading"),
             FieldPanel("engagement_depth_subtext"),
+            FieldPanel("engagement_reading_quality_heading"),
+            FieldPanel("engagement_reading_quality_subtext"),
+            FieldPanel("engagement_live_gauge_badge"),
+            FieldPanel("engagement_reading_hero_label"),
+            FieldPanel("engagement_readability_score_label"),
+            FieldPanel("engagement_funnel_heading"),
+            FieldPanel("engagement_funnel_subtext"),
+            FieldPanel("engagement_funnel_badge_suffix"),
+            FieldPanel("engagement_retention_heading"),
+            FieldPanel("engagement_retention_subtext"),
+            FieldPanel("engagement_retention_rate_label"),
+            FieldPanel("engagement_retention_tip"),
             FieldPanel("traffic_top_channel_label"),
             FieldPanel("traffic_top_channel_sub"),
             FieldPanel("traffic_top_device_label"),
@@ -809,6 +848,15 @@ class UserDashboardPage(Page):
             FieldPanel("conversions_rate_sub"),
             FieldPanel("conversions_unique_label"),
             FieldPanel("conversions_unique_sub"),
+            FieldPanel("conversions_pipeline_heading"),
+            FieldPanel("conversions_pipeline_subtext"),
+            FieldPanel("conversions_pipeline_step1_label"),
+            FieldPanel("conversions_pipeline_step1_sub"),
+            FieldPanel("conversions_pipeline_step2_label"),
+            FieldPanel("conversions_pipeline_step2_sub"),
+            FieldPanel("conversions_pipeline_step3_label"),
+            FieldPanel("conversions_pipeline_step3_suffix"),
+            FieldPanel("conversions_pipeline_step3_sub"),
         ], heading="Analytics & Reports Page Settings (Custom Headings & Labels)", classname="collapsible collapsed"),
         MultiFieldPanel([
             FieldPanel("seo_page_title"),
